@@ -179,6 +179,13 @@ class Container:
             api_key=Config.LLM_API_KEY,
             model_name=Config.GEMINI_MODEL if Config.LLM_PROVIDER == "gemini" else None,
         )
+        if not Config.LLM_API_KEY:
+            # Said once at startup instead of on the first chat request. Names only, never values.
+            logger.error(
+                "No API key for LLM_PROVIDER=%s: set GEMINI_API_KEY (gemini) or LLM_API_KEY (openai). "
+                "AI chat will answer with the labelled catalog fallback until it is set.",
+                Config.LLM_PROVIDER,
+            )
         if llm_api_keys_conflict(Config.LLM_PROVIDER):
             # Names only, never values. Both are set and differ: GEMINI_API_KEY is used for chat
             # and embeddings, LLM_API_KEY is ignored and can be removed from the environment.

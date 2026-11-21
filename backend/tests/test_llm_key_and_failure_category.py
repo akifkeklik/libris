@@ -233,3 +233,17 @@ def test_successful_generation_has_no_llm_error(recommender):
     res = uc.execute(QUERY)
     assert res["metrics"]["source"] == "rag_llm"
     assert "llm_error" not in res["metrics"]
+
+
+@pytest.mark.parametrize("key, logged", [("", True), ("a-key", False)])
+def test_missing_key_is_logged_once_at_startup(monkeypatch, caplog, key, logged):
+    from backend import container as container_module
+    from backend.config import Config
+
+    monkeypatch.setattr(Config, "LLM_API_KEY", key)
+    monkeypatch.setattr(Config, "LLM_PROVIDER", "gemini")
+    with caplog.at_level("ERROR", logger="backend.container"):
+        container_module.Container(recommender=MagicMock())
+    messages = [r.getMessage() for r in caplog.records if r.name == "backend.container"]
+    assert any("No API key for LLM_PROVIDER=gemini" in m for m in messages) is logged
+    assert key == "" or all(key not in m for m in messages)
