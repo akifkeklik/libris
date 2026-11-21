@@ -1,4 +1,4 @@
-# RAG quality evaluation (live) - 2026-11-21T14:47:50+0300
+# RAG quality evaluation (live) - 2026-11-22T00:24:46+0300
 
 Embedding profile `models/gemini-embedding-2;dim=3072;text=canonical_v1;task=RETRIEVAL_DOCUMENT`, query format `legacy`; vector port `SupabaseBookDataPort`; LLM `gemini-3.5-flash-lite`. Labels: see `label_tiers` in the dataset; human-verified intents: none.
 
@@ -6,13 +6,13 @@ Embedding profile `models/gemini-embedding-2;dim=3072;text=canonical_v1;task=RET
 
 | group | system | n | Hit@5 | R@5 | R@10 | P@5 | P@10 | MRR@5 | MRR@10 | nDCG@5 | nDCG@10 | empty |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|
-| all | production_top5 | 19 | 1.0 | 0.947 | – | 0.442 | – | 1.0 | – | 0.958 | – | 0.0 |
+| all | production_top5 | 19 | 1.0 | 0.979 | – | 0.474 | – | 1.0 | – | 0.982 | – | 0.0 |
 | all | semantic_rpc_top10 | 19 | 1.0 | 0.979 | 0.974 | 0.474 | 0.384 | 0.974 | 0.974 | 0.965 | 0.96 | 0.0 |
 | all | semantic_exact_top10 | 19 | 1.0 | 0.979 | 0.974 | 0.474 | 0.384 | 0.974 | 0.974 | 0.965 | 0.96 | 0.0 |
-| en | production_top5 | 8 | 1.0 | 0.925 | – | 0.425 | – | 1.0 | – | 0.94 | – | 0.0 |
+| en | production_top5 | 8 | 1.0 | 0.975 | – | 0.475 | – | 1.0 | – | 0.979 | – | 0.0 |
 | en | semantic_rpc_top10 | 8 | 1.0 | 0.975 | 0.963 | 0.475 | 0.375 | 1.0 | 1.0 | 0.979 | 0.97 | 0.0 |
 | en | semantic_exact_top10 | 8 | 1.0 | 0.975 | 0.963 | 0.475 | 0.375 | 1.0 | 1.0 | 0.979 | 0.97 | 0.0 |
-| tr (Turkish letters) | production_top5 | 8 | 1.0 | 0.95 | – | 0.45 | – | 1.0 | – | 0.961 | – | 0.0 |
+| tr (Turkish letters) | production_top5 | 8 | 1.0 | 0.975 | – | 0.475 | – | 1.0 | – | 0.979 | – | 0.0 |
 | tr (Turkish letters) | semantic_rpc_top10 | 8 | 1.0 | 0.975 | 0.975 | 0.475 | 0.388 | 0.938 | 0.938 | 0.937 | 0.935 | 0.0 |
 | tr (Turkish letters) | semantic_exact_top10 | 8 | 1.0 | 0.975 | 0.975 | 0.475 | 0.388 | 0.938 | 0.938 | 0.937 | 0.935 | 0.0 |
 | tr (ASCII-typed) | production_top5 | 3 | 1.0 | 1.0 | – | 0.467 | – | 1.0 | – | 1.0 | – | 0.0 |
@@ -23,24 +23,38 @@ Embedding profile `models/gemini-embedding-2;dim=3072;text=canonical_v1;task=RET
 
 | group | system | n | Hit@5 | R@5 | R@10 | P@5 | P@10 | MRR@5 | MRR@10 | nDCG@5 | nDCG@10 | empty |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|
-| all | production_top5 | 21 | 0.952 | 0.421 | – | 0.324 | – | 0.802 | – | 0.474 | – | 0.0 |
+| all | production_top5 | 21 | 0.952 | 0.586 | – | 0.457 | – | 0.786 | – | 0.605 | – | 0.0 |
 | all | semantic_rpc_top10 | 21 | 0.905 | 0.538 | 0.67 | 0.41 | 0.338 | 0.655 | 0.671 | 0.53 | 0.6 | 0.0 |
 | all | semantic_exact_top10 | 21 | 0.905 | 0.538 | 0.67 | 0.41 | 0.338 | 0.655 | 0.671 | 0.53 | 0.6 | 0.0 |
-| en | production_top5 | 10 | 0.9 | 0.433 | – | 0.34 | – | 0.75 | – | 0.47 | – | 0.0 |
+| en | production_top5 | 10 | 0.9 | 0.56 | – | 0.44 | – | 0.717 | – | 0.569 | – | 0.0 |
 | en | semantic_rpc_top10 | 10 | 0.9 | 0.5 | 0.647 | 0.38 | 0.35 | 0.608 | 0.625 | 0.486 | 0.577 | 0.0 |
 | en | semantic_exact_top10 | 10 | 0.9 | 0.5 | 0.647 | 0.38 | 0.35 | 0.608 | 0.625 | 0.486 | 0.577 | 0.0 |
-| tr (Turkish letters) | production_top5 | 10 | 1.0 | 0.4 | – | 0.32 | – | 0.833 | – | 0.463 | – | 0.0 |
+| tr (Turkish letters) | production_top5 | 10 | 1.0 | 0.62 | – | 0.5 | – | 0.833 | – | 0.64 | – | 0.0 |
 | tr (Turkish letters) | semantic_rpc_top10 | 10 | 0.9 | 0.58 | 0.66 | 0.46 | 0.34 | 0.667 | 0.683 | 0.567 | 0.602 | 0.0 |
 | tr (Turkish letters) | semantic_exact_top10 | 10 | 0.9 | 0.58 | 0.66 | 0.46 | 0.34 | 0.667 | 0.683 | 0.567 | 0.602 | 0.0 |
 | tr (ASCII-typed) | production_top5 | 1 | 1.0 | 0.5 | – | 0.2 | – | 1.0 | – | 0.613 | – | 0.0 |
 | tr (ASCII-typed) | semantic_rpc_top10 | 1 | 1.0 | 0.5 | 1.0 | 0.2 | 0.2 | 1.0 | 1.0 | 0.613 | 0.818 | 0.0 |
 | tr (ASCII-typed) | semantic_exact_top10 | 1 | 1.0 | 0.5 | 1.0 | 0.2 | 0.2 | 1.0 | 1.0 | 0.613 | 0.818 | 0.0 |
 
+## Retrieval (automatic_candidate)
+
+| group | system | n | Hit@5 | R@5 | R@10 | P@5 | P@10 | MRR@5 | MRR@10 | nDCG@5 | nDCG@10 | empty |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| all | production_top5 | 60 | 0.883 | 0.703 | – | 0.41 | – | 0.717 | – | 0.661 | – | 0.0 |
+| all | semantic_rpc_top10 | 60 | 0.95 | 0.677 | 0.719 | 0.4 | 0.372 | 0.734 | 0.738 | 0.655 | 0.674 | 0.0 |
+| all | semantic_exact_top10 | 60 | 0.95 | 0.677 | 0.719 | 0.4 | 0.372 | 0.734 | 0.738 | 0.655 | 0.674 | 0.0 |
+| en | production_top5 | 30 | 0.867 | 0.707 | – | 0.413 | – | 0.756 | – | 0.683 | – | 0.0 |
+| en | semantic_rpc_top10 | 30 | 0.967 | 0.697 | 0.699 | 0.42 | 0.367 | 0.761 | 0.761 | 0.682 | 0.681 | 0.0 |
+| en | semantic_exact_top10 | 30 | 0.967 | 0.697 | 0.699 | 0.42 | 0.367 | 0.761 | 0.761 | 0.682 | 0.681 | 0.0 |
+| tr (Turkish letters) | production_top5 | 30 | 0.9 | 0.7 | – | 0.407 | – | 0.678 | – | 0.638 | – | 0.0 |
+| tr (Turkish letters) | semantic_rpc_top10 | 30 | 0.933 | 0.657 | 0.739 | 0.38 | 0.377 | 0.707 | 0.716 | 0.628 | 0.668 | 0.0 |
+| tr (Turkish letters) | semantic_exact_top10 | 30 | 0.933 | 0.657 | 0.739 | 0.38 | 0.377 | 0.707 | 0.716 | 0.628 | 0.667 | 0.0 |
+
 "–" = not applicable: production answers with at most 5 books, so it has no @10 metrics.
 
 ## Dataset composition
 
-120 queries in the dataset, 44 in this run; 20 have no labelled set and are judged by behaviour only.
+120 queries in the dataset, 120 in this run; 20 have no labelled set and are judged by behaviour only.
 
 ```json
 {
@@ -90,51 +104,83 @@ Embedding profile `models/gemini-embedding-2;dim=3072;text=canonical_v1;task=RET
 
 | category | n | production Hit@5 | production nDCG@5 | semantic nDCG@5 | semantic nDCG@10 |
 |---|---|---|---|---|---|
-| author | 7 | 1.0 | 0.887 | 0.957 | 0.944 |
-| exact_title | 5 | 1.0 | 1.0 | 1.0 | 1.0 |
-| genre | 4 | 1.0 | 0.373 | 0.597 | 0.581 |
-| semantic_description | 7 | 1.0 | 1.0 | 0.947 | 0.947 |
-| similar | 8 | 0.875 | 0.368 | 0.256 | 0.344 |
-| topic | 9 | 1.0 | 0.612 | 0.744 | 0.837 |
+| author | 15 | 1.0 | 0.977 | 0.947 | 0.943 |
+| exact_title | 17 | 1.0 | 0.945 | 0.971 | 0.971 |
+| genre | 12 | 1.0 | 0.505 | 0.539 | 0.546 |
+| mood | 4 | 0.5 | 0.245 | 0.304 | 0.315 |
+| multi_constraint | 6 | 0.167 | 0.022 | 0.176 | 0.184 |
+| semantic_description | 17 | 1.0 | 0.913 | 0.861 | 0.878 |
+| similar | 14 | 0.929 | 0.53 | 0.428 | 0.485 |
+| topic | 15 | 1.0 | 0.678 | 0.578 | 0.669 |
 
 ## Paired EN vs TR (nDCG@5, same intent)
 
 | intent | tier | production EN | production TR | semantic EN | semantic TR |
 |---|---|---|---|---|---|
+| author_asimov | automatic_candidate | 1.000 | 1.000 | 0.786 | 0.854 |
 | author_christie | rule_derived | 1.000 | 1.000 | 1.000 | 1.000 |
-| author_orwell | rule_derived | 0.869 | 1.000 | 1.000 | 1.000 |
-| author_tolkien | rule_derived | 0.655 | 0.684 | 0.830 | 0.869 |
+| author_king | automatic_candidate | 1.000 | 1.000 | 0.869 | 1.000 |
+| author_orwell | rule_derived | 1.000 | 1.000 | 1.000 | 1.000 |
+| author_pratchett | automatic_candidate | 1.000 | 1.000 | 1.000 | 1.000 |
+| author_tolkien | rule_derived | 0.830 | 0.830 | 0.830 | 0.869 |
+| author_woolf | automatic_candidate | 1.000 | 1.000 | 1.000 | 1.000 |
 | desc_alice | rule_derived | 1.000 | 1.000 | 1.000 | 1.000 |
+| desc_dracula | automatic_candidate | 1.000 | 1.000 | 1.000 | 1.000 |
+| desc_flies | automatic_candidate | 1.000 | 1.000 | 1.000 | 1.000 |
+| desc_frankenstein | automatic_candidate | 0.631 | 0.631 | 0.000 | 0.000 |
 | desc_hp | rule_derived | 1.000 | 1.000 | 1.000 | 0.631 |
 | desc_kafka | rule_derived | 1.000 | 1.000 | 1.000 | 1.000 |
-| genre_detective | proposed | 0.214 | 0.470 | 0.384 | 0.515 |
-| genre_horror | proposed | 0.339 | 0.470 | 0.661 | 0.830 |
-| sim_1984 | proposed | 0.441 | 0.441 | 0.363 | 0.363 |
-| sim_austen | proposed | 0.655 | 0.384 | 0.384 | 0.491 |
+| desc_moby | automatic_candidate | 0.631 | 0.631 | 1.000 | 1.000 |
+| desc_road | automatic_candidate | 1.000 | 1.000 | 1.000 | 1.000 |
+| genre_comics | automatic_candidate | 0.515 | 0.491 | 0.170 | 0.301 |
+| genre_cooking | automatic_candidate | 0.786 | 0.214 | 0.699 | 0.553 |
+| genre_detective | proposed | 0.301 | 0.723 | 0.384 | 0.515 |
+| genre_horror | proposed | 0.553 | 0.470 | 0.661 | 0.830 |
+| genre_poetry | automatic_candidate | 0.684 | 0.854 | 0.640 | 0.655 |
+| genre_scifi | automatic_candidate | 0.339 | 0.131 | 0.553 | 0.509 |
+| mood_funny | automatic_candidate | 0.000 | 0.000 | 0.277 | 0.277 |
+| mood_scary | automatic_candidate | 0.470 | 0.509 | 0.515 | 0.146 |
+| multi_history_recent | automatic_candidate | 0.000 | 0.000 | 0.237 | 0.264 |
+| multi_king_short | automatic_candidate | 0.000 | 0.000 | 0.277 | 0.146 |
+| multi_poetry_short | automatic_candidate | 0.000 | 0.131 | 0.131 | 0.000 |
+| sim_1984 | proposed | 0.363 | 0.363 | 0.363 | 0.363 |
+| sim_austen | proposed | 0.655 | 0.530 | 0.384 | 0.491 |
 | sim_dune | proposed | 0.000 | 0.339 | 0.000 | 0.000 |
-| sim_hp | proposed | 0.515 | 0.170 | 0.146 | 0.301 |
+| sim_handmaid | automatic_candidate | 0.170 | 0.131 | 0.447 | 0.131 |
+| sim_hitchhiker | automatic_candidate | 1.000 | 0.869 | 1.000 | 0.830 |
+| sim_hp | proposed | 0.515 | 0.661 | 0.146 | 0.301 |
+| sim_sherlock | automatic_candidate | 0.830 | 1.000 | 0.869 | 0.661 |
 | title_crime | rule_derived | 1.000 | 1.000 | 1.000 | 1.000 |
+| title_fahrenheit | automatic_candidate | 1.000 | 0.631 | 1.000 | 1.000 |
+| title_handmaid | automatic_candidate | 1.000 | 1.000 | 1.000 | 1.000 |
 | title_hobbit | rule_derived | 1.000 | 1.000 | 1.000 | 1.000 |
-| topic_habits | proposed | 0.469 | 0.469 | 0.967 | 1.000 |
-| topic_robots | proposed | 0.509 | 0.509 | 0.339 | 0.553 |
+| title_kite | automatic_candidate | 1.000 | 1.000 | 1.000 | 1.000 |
+| title_little_prince | automatic_candidate | 1.000 | 1.000 | 1.000 | 1.000 |
+| title_pride | automatic_candidate | 1.000 | 0.431 | 1.000 | 0.500 |
+| title_rose | automatic_candidate | 1.000 | 1.000 | 1.000 | 1.000 |
+| topic_buddhism | automatic_candidate | 0.447 | 0.491 | 0.146 | 0.170 |
+| topic_cosmology | automatic_candidate | 0.786 | 0.786 | 0.616 | 0.470 |
+| topic_habits | proposed | 0.967 | 1.000 | 0.967 | 1.000 |
+| topic_robots | proposed | 0.723 | 0.699 | 0.339 | 0.553 |
 | topic_rome | proposed | 0.613 | 0.613 | 0.613 | 0.613 |
-| topic_stoic | proposed | 0.947 | 0.765 | 1.000 | 1.000 |
+| topic_stoic | proposed | 1.000 | 1.000 | 1.000 | 1.000 |
+| topic_wwii | automatic_candidate | 0.214 | 0.214 | 0.214 | 0.360 |
 
 ## Performance
 
 ```json
 {
  "end_to_end_cold_all": {
-  "n": 44,
-  "p50": 6749.8,
-  "p95": 16294.7,
-  "max": 25828.0
+  "n": 120,
+  "p50": 2489.9,
+  "p95": 3330.1,
+  "max": 4653.3
  },
  "end_to_end_cold_gemini_answers": {
-  "n": 43,
-  "p50": 6749.8,
-  "p95": 15696.9,
-  "max": 25828.0
+  "n": 119,
+  "p50": 2489.9,
+  "p95": 3330.1,
+  "max": 4653.3
  },
  "end_to_end_cold_deterministic_catalog": {
   "n": 0,
@@ -143,50 +189,50 @@ Embedding profile `models/gemini-embedding-2;dim=3072;text=canonical_v1;task=RET
   "max": null
  },
  "end_to_end_cold_llm_fallback": {
-  "n": 1,
-  "p50": 16294.7,
-  "p95": 16294.7,
-  "max": 16294.7
+  "n": 0,
+  "p50": null,
+  "p95": null,
+  "max": null
  },
  "end_to_end_warm_query_cache": {
-  "n": 44,
-  "p50": 0.5,
+  "n": 120,
+  "p50": 0.4,
   "p95": 0.8,
-  "max": 9556.8
+  "max": 4761.5
  },
  "query_embedding": {
-  "n": 44,
-  "p50": 428.8,
-  "p95": 594.7,
-  "max": 1226.6
+  "n": 120,
+  "p50": 435.0,
+  "p95": 534.5,
+  "max": 1210.5
  },
  "vector_rpc": {
-  "n": 44,
-  "p50": 501.5,
-  "p95": 1387.9,
-  "max": 1733.2
+  "n": 120,
+  "p50": 248.5,
+  "p95": 619.0,
+  "max": 1407.5
  },
  "gemini_generation": {
-  "n": 44,
-  "p50": 5232.6,
-  "p95": 15004.4,
-  "max": 23906.8
+  "n": 120,
+  "p50": 1097.7,
+  "p95": 1763.8,
+  "max": 3022.8
  },
  "http_calls": {
   "generate": {
-   "attempts": 59,
-   "non_200": 5,
+   "attempts": 132,
+   "non_200": 1,
    "status_counts": {
-    "200": 54,
-    "503": 4,
-    "ReadTimeout": 1
+    "200": 131,
+    "503": 1
    }
   },
   "embed": {
-   "attempts": 55,
-   "non_200": 0,
+   "attempts": 134,
+   "non_200": 3,
    "status_counts": {
-    "200": 55
+    "200": 131,
+    "429": 3
    }
   }
  },
@@ -195,14 +241,14 @@ Embedding profile `models/gemini-embedding-2;dim=3072;text=canonical_v1;task=RET
  ],
  "tokens_generate": {
   "promptTokenCount": {
-   "sum": 58693,
-   "n_calls_with_usage": 54,
-   "mean": 1086.9
+   "sum": 137467,
+   "n_calls_with_usage": 131,
+   "mean": 1049.4
   },
   "candidatesTokenCount": {
-   "sum": 11683,
-   "n_calls_with_usage": 54,
-   "mean": 216.4
+   "sum": 29680,
+   "n_calls_with_usage": 131,
+   "mean": 226.6
   },
   "thoughtsTokenCount": {
    "sum": 0,
@@ -210,16 +256,16 @@ Embedding profile `models/gemini-embedding-2;dim=3072;text=canonical_v1;task=RET
    "mean": null
   },
   "totalTokenCount": {
-   "sum": 70376,
-   "n_calls_with_usage": 54,
-   "mean": 1303.3
+   "sum": 167147,
+   "n_calls_with_usage": 131,
+   "mean": 1275.9
   }
  },
  "tokens_embed": {
   "promptTokenCount": {
-   "sum": 550,
-   "n_calls_with_usage": 55,
-   "mean": 10
+   "sum": 1153,
+   "n_calls_with_usage": 131,
+   "mean": 8.8
   },
   "totalTokenCount": {
    "sum": 0,
@@ -227,8 +273,8 @@ Embedding profile `models/gemini-embedding-2;dim=3072;text=canonical_v1;task=RET
    "mean": null
   }
  },
- "warm_served_from_cache": 43,
- "warm_http_calls": 2
+ "warm_served_from_cache": 119,
+ "warm_http_calls": 3
 }
 ```
 
@@ -237,23 +283,25 @@ Embedding profile `models/gemini-embedding-2;dim=3072;text=canonical_v1;task=RET
 ```json
 {
  "statuses": {
-  "success": 43,
-  "llm_fallback": 1
+  "success": 119,
+  "lexical_fallback": 1
  },
  "sources": {
-  "rag_llm": 44
+  "rag_llm": 120
  },
- "gemini_answers": 43,
+ "gemini_answers": 120,
  "context_delivered_rate": 1.0,
  "answers_with_foreign_isbn": 0,
  "answers_with_foreign_catalog_title": 0,
- "answers_with_foreign_author": 0,
- "unsupported_claim_rate": 0.0,
- "answers_with_spans_for_review": 1,
- "answers_in_wrong_language": [],
- "source_attribution_errors": [
-  "sim_hp_tr: fallback answer reported source=rag_llm"
+ "answers_with_foreign_author": 3,
+ "unsupported_claim_rate": 0.025,
+ "answers_with_spans_for_review": 0,
+ "answers_in_wrong_language": [
+  "genre_cooking_en",
+  "title_fahrenheit_en",
+  "title_fahrenheit_tr"
  ],
+ "source_attribution_errors": [],
  "adversarial": {
   "cases": 12,
   "all_checks_passed": 12,
@@ -261,14 +309,16 @@ Embedding profile `models/gemini-embedding-2;dim=3072;text=canonical_v1;task=RET
  },
  "behaviour_checks": {
   "abstain_not_in_catalog": {
-   "n": 0,
-   "passed": 0,
+   "n": 6,
+   "passed": 6,
    "failures": []
   },
   "no_fabrication": {
-   "n": 0,
-   "passed": 0,
-   "failures": []
+   "n": 6,
+   "passed": 5,
+   "failures": [
+    "insuff_one_word_en"
+   ]
   }
  }
 }
