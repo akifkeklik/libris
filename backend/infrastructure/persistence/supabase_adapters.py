@@ -861,6 +861,21 @@ class SupabaseLearningOutcomesRepository:
         self._client = supabase_client
 
     def _get_client(self):
+        # Inside a request, act as the signed-in user (RLS: auth.uid() = user_id), like the other
+        # Supabase repositories. The shared client carries only the anon key, so every query on
+        # review_items / review_attempts ran as anon and RLS rejected it.
+        try:
+            from flask import g, has_request_context
+
+            if has_request_context() and getattr(g, "jwt_token", None):
+                from backend.config import Config
+                from supabase import create_client
+
+                client = create_client(Config.SUPABASE_URL, Config.SUPABASE_ANON_KEY)
+                client.postgrest.auth(g.jwt_token)
+                return client
+        except ImportError:
+            pass
         if self._client:
             return self._client
         from backend.config import Config
