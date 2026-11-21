@@ -812,6 +812,15 @@ def _detect_action_intent(query: str, lang: str = "tr") -> Optional[Dict[str, An
     return None
 
 
+def _llm_failure_category(llm_port: Any, raised: Optional[BaseException]) -> str:
+    """Why generation produced no answer: the port's own category when it reports one
+    (e.g. "auth", "rate_limited", "timeout"), "port_exception" when the port raised."""
+    if raised is not None:
+        return "port_exception"
+    category = getattr(llm_port, "last_error", None)
+    return category if isinstance(category, str) and category else "empty_response"
+
+
 class ProcessRagQueryUseCase:
     def __init__(
         self,
@@ -1429,9 +1438,11 @@ class ProcessRagQueryUseCase:
 
         t_llm_start = time.time()
         raw_answer = None
+        llm_raised: Optional[BaseException] = None
         try:
             raw_answer = self._llm_port.generate_response(system_prompt, user_prompt)
         except Exception as llm_err:
+            llm_raised = llm_err
             logger.warning(f"LLM generate_response raised an exception: {llm_err}")
 
         llm_latency = round((time.time() - t_llm_start) * 1000, 2)
@@ -1475,7 +1486,11 @@ class ProcessRagQueryUseCase:
             ).model_dump()
 
         if not raw_answer:
-            logger.warning("LLM generation unavailable or failed, using grounded deterministic fallback")
+            metrics["llm_error"] = _llm_failure_category(self._llm_port, llm_raised)
+            logger.warning(
+                "LLM generation unavailable or failed, using grounded deterministic fallback",
+                extra={"extra_data": {"llm_error": metrics["llm_error"]}},
+            )
             return _grounded_fallback()
 
         answer_text = raw_answer
@@ -1749,9 +1764,11 @@ class ProcessRagQueryUseCase:
 
         t_llm = time.time()
         raw = None
+        llm_raised: Optional[BaseException] = None
         try:
             raw = self._llm_port.generate_response(system_prompt, user_prompt)
         except Exception as llm_err:
+            llm_raised = llm_err
             logger.warning(f"LLM follow-up generation raised an exception: {llm_err}")
         llm_latency = round((time.time() - t_llm) * 1000, 2)
 
@@ -1774,6 +1791,8 @@ class ProcessRagQueryUseCase:
         # never an error message, and labelled as a fallback (not as a Gemini answer).
         if rejected:
             metrics["generation_rejected"] = rejected
+        elif not raw:
+            metrics["llm_error"] = _llm_failure_category(self._llm_port, llm_raised)
         metrics["source"] = "grounded_fallback"
         lines = [_localized(lang, _MSG_FOLLOW_UP_FALLBACK)]
         for b in books:

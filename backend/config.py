@@ -15,6 +15,33 @@ _ENV_FILE = Path(__file__).resolve().parent.parent / ".env"
 load_dotenv(dotenv_path=_ENV_FILE, override=False)
 
 
+def resolve_gemini_api_key(provider: str) -> str:
+    """The key for Gemini calls (text generation and embeddings), one rule for both.
+
+    GEMINI_API_KEY wins; LLM_API_KEY is the legacy name and is used only when GEMINI_API_KEY is
+    unset and the provider is gemini. Chat used to prefer LLM_API_KEY while embeddings preferred
+    GEMINI_API_KEY, so with both set and LLM_API_KEY stale, embeddings worked and chat got 401.
+    """
+    gemini = (os.getenv("GEMINI_API_KEY") or "").strip()
+    if gemini:
+        return gemini
+    return (os.getenv("LLM_API_KEY") or "").strip() if provider == "gemini" else ""
+
+
+def resolve_llm_api_key(provider: str) -> str:
+    """The key for the configured text-generation provider. OpenAI uses only LLM_API_KEY."""
+    if provider == "gemini":
+        return resolve_gemini_api_key(provider)
+    return (os.getenv("LLM_API_KEY") or "").strip()
+
+
+def llm_api_keys_conflict(provider: str) -> bool:
+    """True when both key variables are set, differ, and the provider is gemini (one is ignored)."""
+    gemini = (os.getenv("GEMINI_API_KEY") or "").strip()
+    legacy = (os.getenv("LLM_API_KEY") or "").strip()
+    return provider == "gemini" and bool(gemini) and bool(legacy) and gemini != legacy
+
+
 class Config:
     # ── General ──────────────────────────────────────────────────────────────
     DEBUG: bool = os.getenv("DEBUG", "False").lower() == "true"
@@ -34,8 +61,9 @@ class Config:
         else "",
     )
     LLM_PROVIDER: str = os.getenv("LLM_PROVIDER", "gemini").lower() # gemini or openai
-    LLM_API_KEY: str = os.getenv("LLM_API_KEY") or os.getenv("GEMINI_API_KEY") or ""
-    GEMINI_API_KEY: str = os.getenv("GEMINI_API_KEY") or os.getenv("LLM_API_KEY") or ""
+    # Effective keys after resolution (see resolve_llm_api_key), not the raw variables.
+    LLM_API_KEY: str = resolve_llm_api_key(LLM_PROVIDER)
+    GEMINI_API_KEY: str = resolve_gemini_api_key(LLM_PROVIDER)
     # flash-lite: fast, cheap, and the highest free-tier quota (2.5-flash-lite is closed to new users).
     GEMINI_MODEL: str = os.getenv("GEMINI_MODEL", "gemini-3.5-flash-lite")
 

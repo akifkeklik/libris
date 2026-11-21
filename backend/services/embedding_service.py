@@ -5,6 +5,8 @@ import re
 import time
 from typing import List, Optional
 
+from backend.config import resolve_gemini_api_key
+
 try:
     from ..domain.ports import BookDataPort, SemanticSearchUnavailable
     from ..infrastructure.llm.gemini_rest import GeminiRestClient
@@ -29,9 +31,10 @@ class EmbeddingService:
         self._profile_check: Optional[tuple] = None  # (monotonic time, problem or None)
 
         # In Libris V1, database vector embeddings are 3072-dimensional vectors produced
-        # by Google Gemini (models/gemini-embedding-2). We accept GEMINI_API_KEY or LLM_API_KEY (when provider is gemini).
+        # by Google Gemini (models/gemini-embedding-2). The key is resolved by the same rule as the
+        # chat model (GEMINI_API_KEY, else LLM_API_KEY when the provider is gemini).
         provider = os.getenv("LLM_PROVIDER", "gemini").lower()
-        self._api_key = os.getenv("GEMINI_API_KEY") or (os.getenv("LLM_API_KEY") if provider == "gemini" else None)
+        self._api_key = resolve_gemini_api_key(provider) or None
 
         if not self._api_key and os.getenv("LLM_API_KEY") and provider == "openai":
             logger.warning(

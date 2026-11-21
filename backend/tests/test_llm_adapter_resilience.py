@@ -82,15 +82,17 @@ def test_generic_llm_adapter_concurrent_calls_thread_safe():
 
 @pytest.mark.unit
 def test_config_api_key_precedence():
-    # If LLM_API_KEY is non-empty, it takes precedence
-    with patch.dict(os.environ, {"LLM_API_KEY": "primary-key", "GEMINI_API_KEY": "fallback-key"}):
-        k = os.getenv("LLM_API_KEY") or os.getenv("GEMINI_API_KEY") or ""
-        assert k == "primary-key"
+    # Calls the real resolver (this test used to re-implement the expression inline, so it could
+    # not fail). For gemini, GEMINI_API_KEY wins over the legacy LLM_API_KEY, the same rule the
+    # embedding service uses; see test_llm_key_and_failure_category.py for the full matrix.
+    from backend.config import resolve_llm_api_key
 
-    # If LLM_API_KEY is empty string, it falls back to GEMINI_API_KEY
-    with patch.dict(os.environ, {"LLM_API_KEY": "", "GEMINI_API_KEY": "fallback-key"}):
-        k = os.getenv("LLM_API_KEY") or os.getenv("GEMINI_API_KEY") or ""
-        assert k == "fallback-key"
+    with patch.dict(os.environ, {"LLM_API_KEY": "legacy-key", "GEMINI_API_KEY": "gemini-key"}):
+        assert resolve_llm_api_key("gemini") == "gemini-key"
+
+    # If GEMINI_API_KEY is empty, the legacy LLM_API_KEY is still accepted
+    with patch.dict(os.environ, {"LLM_API_KEY": "legacy-key", "GEMINI_API_KEY": ""}):
+        assert resolve_llm_api_key("gemini") == "legacy-key"
 
 
 @pytest.mark.unit

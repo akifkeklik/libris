@@ -47,7 +47,7 @@ from backend.application.use_cases.spaced_repetition import (
     ProcessReviewUseCase,
     UpdateReviewSettingsUseCase,
 )
-from backend.config import Config
+from backend.config import Config, llm_api_keys_conflict
 from backend.infrastructure.adapters.book_lookup_adapter import BookLookupAdapter
 from backend.infrastructure.adapters.enrichment_adapter import GoogleBooksEnrichmentAdapter
 from backend.infrastructure.llm.adapters import GenericLlmAdapter
@@ -179,6 +179,10 @@ class Container:
             api_key=Config.LLM_API_KEY,
             model_name=Config.GEMINI_MODEL if Config.LLM_PROVIDER == "gemini" else None,
         )
+        if llm_api_keys_conflict(Config.LLM_PROVIDER):
+            # Names only, never values. Both are set and differ: GEMINI_API_KEY is used for chat
+            # and embeddings, LLM_API_KEY is ignored and can be removed from the environment.
+            logger.warning("GEMINI_API_KEY and LLM_API_KEY are both set and differ; using GEMINI_API_KEY.")
 
         # 2. Application Services
         self.enrichment_service = GoogleBooksEnrichmentAdapter()
