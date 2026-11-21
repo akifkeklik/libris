@@ -53,6 +53,28 @@ jobs:
         working-directory: web
         run: npm audit --audit-level=high
 
+  # Python counterpart of the npm audit above. Flask-Cors 4.0.2 carried three published
+  # advisories for months because only the web dependencies were audited.
+  backend-dependency-audit:
+    name: Backend Dependency Security Audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+          cache: 'pip'
+          cache-dependency-path: 'backend/requirements.txt'
+
+      - name: Install pip-audit
+        run: python -m pip install pip-audit==2.10.1
+
+      - name: Audit runtime and test dependencies
+        run: pip-audit -r backend/requirements-test.txt --progress-spinner off
+
   # ─── Database / Migration CI ──────────────────────────────────────────────
   database-ci:
     name: Migration Validation

@@ -115,6 +115,9 @@ def create_app(config_class=Config) -> Flask:
         origins=allowed_origins,
         supports_credentials=True,
         allow_headers=["Content-Type", "X-Api-Key", "Authorization", "X-Request-Id"],
+        # Flask-Cors 4.0.x defaulted this to True (Access-Control-Allow-Private-Network); the API
+        # is never served from a private network, so the grant is refused explicitly.
+        allow_private_network=False,
     )
 
     # ── Blueprints ────────────────────────────────────────────────────────────
@@ -242,6 +245,10 @@ def create_app(config_class=Config) -> Flask:
         # Propagate request id back to client
         if hasattr(g, "request_id"):
             response.headers["X-Request-Id"] = g.request_id
+        # CORS headers differ by Origin (granted or not), and some responses are publicly
+        # cacheable; Flask-Cors omits Vary: Origin when a single origin is configured.
+        if "Origin" in request.headers:
+            response.vary.add("Origin")
 
         # Cache directives for privacy and CDN correctness:
         if "Cache-Control" not in response.headers:
