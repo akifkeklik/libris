@@ -112,6 +112,63 @@ def test_ranking_and_scores_are_unchanged(recommender, name, diversity):
     assert got == GOLDEN[(name, diversity)]
 
 
+@pytest.mark.parametrize("name", sorted(CONFIGS))
+def test_mmr_ties_do_not_depend_on_the_platform_sort(recommender, monkeypatch, name):
+    # Several GOLDEN entries contain books with exactly equal scores (0.25, 0.2). numpy's default
+    # argsort is unstable and orders ties differently on AVX-512 CPUs (CI) than elsewhere, which
+    # reordered those books in CI. Any ranking path that still relies on that order fails here.
+    import backend.infrastructure.ml.recommender as rec_module
+
+    real_argsort = rec_module.np.argsort
+
+    def reversed_ties_argsort(a, *args, **kwargs):
+        # A valid unstable sort result: ascending by value, ties in reverse row order.
+        order = real_argsort(a, kind="stable")
+        a = rec_module.np.asarray(a)
+        return rec_module.np.array(sorted(order, key=lambda i: (a[i], -i)))
+
+    monkeypatch.setattr(rec_module.np, "argsort", reversed_ties_argsort)
+    for diversity in (True, False):
+        recs = recommender.recommend(top_n=5, use_diversity=diversity, **CONFIGS[name])
+        got = [(str(r["isbn13"]), round(float(r.get("final_score") or 0), 6),
+                round(float(r.get("raw_similarity_score") or 0), 6)) for r in recs]
+        assert got == GOLDEN[(name, diversity)]
+
+
+@pytest.mark.parametrize("name", sorted(CONFIGS))
+def test_mmr_ties_do_not_depend_on_catalog_row_order(name):
+    # Equal scores are broken by ISBN, not row position: rows can be appended at runtime, so the
+    # same catalog in a different row order must give the same diversified ranking.
+    import pandas as pd
+    from backend.infrastructure.ml.recommender import BookRecommender
+    from backend.utils.preprocess import preprocess_dataframe
+
+    rec = BookRecommender()
+    rec.engine.df = preprocess_dataframe(pd.DataFrame(
+        [dict(isbn13=i13, isbn10=i10, title=t, authors=a, categories=c, description=d,
+              average_rating=r, ratings_count=100 if r else 0)
+         for i13, i10, t, a, c, d, r in reversed(grounding.BOOKS)]))
+    rec.fit()
+    recs = rec.recommend(top_n=5, use_diversity=True, **CONFIGS[name])
+    got = [(str(r["isbn13"]), round(float(r.get("final_score") or 0), 6),
+            round(float(r.get("raw_similarity_score") or 0), 6)) for r in recs]
+    assert got == GOLDEN[(name, True)]
+
+
+def test_lexical_search_orders_equal_scores_by_isbn(recommender, monkeypatch):
+    # Real TF-IDF rarely ties exactly on this catalog, so the similarity is stubbed: 301/302/305
+    # tie at 0.5, 303 is higher. Equal scores must come back in descending ISBN order, and the
+    # limit must cut the same books on every machine.
+    import backend.infrastructure.ml.recommender as rec_module
+    import numpy as np
+
+    by_isbn = {"9780000000301": 0.5, "9780000000302": 0.5, "9780000000303": 0.9, "9780000000305": 0.5}
+    row_scores = np.array([[by_isbn.get(str(i), 0.0) for i in recommender.df["isbn13"]]])
+    monkeypatch.setattr(rec_module, "cosine_similarity", lambda *a, **k: row_scores)
+    books = recommender.lexical_search("anything", limit=3)
+    assert [b["isbn13"] for b in books] == ["9780000000303", "9780000000305", "9780000000302"]
+
+
 def test_rag_context_order_follows_relevance_without_mmr(recommender):
     # Order was MMR-based (303,304,305,302,301) before unseeded queries stopped using MMR.
     uc, llm, _ = _use_case(recommender, _llm_json("ok"))

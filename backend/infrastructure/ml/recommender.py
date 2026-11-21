@@ -685,10 +685,31 @@ class BookRecommender:
 
         return recs[:top_n]
 
+    def _isbn_tiebreak_keys(self) -> np.ndarray:
+        """Normalized ISBN per catalog row, used to order equal scores.
+
+        ISBN rather than row position because rows can be appended at runtime (add_book), so
+        row order is not guaranteed to follow the ISBN order the catalog is loaded in. Cached per
+        catalog frame: the cache is reused only while self.df is the same object.
+        """
+        df = self.df
+        cached = getattr(self, "_isbn_keys_cache", None)
+        if cached is not None and cached[0] is df:
+            return cached[1]
+        raw = df["isbn13"].tolist() if "isbn13" in df.columns else [""] * len(df)
+        keys = np.array([normalize_isbn(x) for x in raw], dtype=str)
+        self._isbn_keys_cache = (df, keys)
+        return keys
+
     def _get_diverse_recommendations(self, scores: np.ndarray, top_n: int) -> List[Dict[str, Any]]:
         """Select diverse recommendations using Maximal Marginal Relevance (MMR) with candidate deduplication."""
-        # Exclude suppressed/negative items from candidate pool
-        valid_indices = [int(i) for i in np.argsort(scores)[::-1] if scores[i] > -0.5]
+        # Exclude suppressed/negative items from candidate pool. Candidates are ordered by score,
+        # then by ISBN (both descending). The selection below keeps the first of equally scored
+        # candidates, so this order decides ties; np.argsort's default sort is unstable and its
+        # tie order varies with the CPU (numpy picks an AVX-512 kernel where one is available),
+        # which made the same request rank equal-score books differently across machines.
+        order = np.lexsort((self._isbn_tiebreak_keys(), scores))[::-1]
+        valid_indices = [int(i) for i in order if scores[i] > -0.5]
         candidate_indices = valid_indices[: max(100, top_n * 10)]
 
         if not candidate_indices:
@@ -1033,7 +1054,8 @@ class BookRecommender:
             self.engine.tfidf_vectorizer.transform([text]), self.tfidf_matrix
         ).ravel()
         books: List[Dict[str, Any]] = []
-        for idx in np.argsort(-scores):
+        # Same deterministic order as MMR candidates: score, then ISBN (both descending).
+        for idx in np.lexsort((self._isbn_tiebreak_keys(), scores))[::-1]:
             if scores[idx] <= 0 or len(books) >= limit:
                 break
             if int(idx) in excluded:
