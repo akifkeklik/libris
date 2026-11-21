@@ -6,6 +6,7 @@ Flask factory application with CORS, error handlers, and blueprint registration.
 import hmac
 import logging
 import os
+import re
 import time
 import uuid
 
@@ -19,6 +20,8 @@ from .routes.routes import activity_bp, catalog_bp, discovery_bp, health_bp
 
 setup_logger()
 logger = logging.getLogger(__name__)
+
+_REQUEST_ID_RE = re.compile(r"[A-Za-z0-9._:-]{1,128}")
 
 
 def create_app(config_class=Config) -> Flask:
@@ -124,7 +127,10 @@ def create_app(config_class=Config) -> Flask:
     @app.before_request
     def before_request_hook():
         # Generate Request ID
-        g.request_id = request.headers.get("X-Request-Id", str(uuid.uuid4()))
+        # Client-supplied ids are echoed into every log line and the response header, so only a
+        # short id-shaped value is kept; anything else gets a fresh id.
+        client_id = request.headers.get("X-Request-Id", "")
+        g.request_id = client_id if _REQUEST_ID_RE.fullmatch(client_id) else str(uuid.uuid4())
         g.start_time = time.time()
         g.is_server = False
         g.is_anon = False

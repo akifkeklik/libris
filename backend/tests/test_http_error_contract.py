@@ -107,3 +107,21 @@ def test_authentication_runs_before_the_body_is_read():
     client = _app(ENFORCE_AUTH_IN_TESTS=True).test_client()
     res = client.post("/api/ai/chat", data=_body(CAP + 1), content_type="application/json")
     assert res.status_code == 401
+
+
+@pytest.mark.parametrize("sent, kept", [
+    ("req-123", True),
+    ("6f1c2b1e-0d3a-4c55-9a3e-1f2d3c4b5a69", True),
+    ("x" * 128, True),
+    ("x" * 129, False),                       # unbounded values used to be logged verbatim
+    ("abc def", False),
+    ('{"level": "CRITICAL"}', False),          # cannot forge structured-log fields
+    ("", False),
+])
+def test_client_request_id_is_kept_only_when_id_shaped(sent, kept):
+    res = _app().test_client().get("/api/health", headers={"X-Request-Id": sent})
+    echoed = res.headers["X-Request-Id"]
+    if kept:
+        assert echoed == sent
+    else:
+        assert echoed != sent and len(echoed) == 36  # a fresh uuid4
