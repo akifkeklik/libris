@@ -2,6 +2,7 @@ import datetime
 import logging
 from typing import Any, Dict, List, Optional
 
+from postgrest.types import ReturnMethod
 from supabase import Client
 
 try:
@@ -251,7 +252,10 @@ class SupabaseInteractionRepository:
         if not client:
             raise RuntimeError("Database client is not available")
         try:
-            client.table("user_activities").insert(payload).execute()
+            # return=minimal: the inserted row is not used, and returning it makes PostgREST run
+            # INSERT ... RETURNING, which RLS rejects (42501) unless a SELECT policy also matches.
+            # Production has only the INSERT policy on user_activities.
+            client.table("user_activities").insert(payload, returning=ReturnMethod.minimal).execute()
         except Exception as e:
             logger.error(f"Failed to track activity: {e}")
             raise e
