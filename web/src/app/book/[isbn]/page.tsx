@@ -34,8 +34,8 @@ export default async function BookPage({ params }: { params: Promise<{ isbn: str
     serviceError = {
       isTimeout,
       message: isTimeout
-        ? 'The book catalog service timed out. Please check your connection and try again.'
-        : 'The book catalog service is temporarily unavailable. Please try again shortly.',
+        ? t('service_timeout')
+        : t('service_unavailable'),
     };
   }
 
