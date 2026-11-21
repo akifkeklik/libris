@@ -81,6 +81,22 @@ def test_conflicting_keys_are_detected(monkeypatch, env, conflict):
     assert llm_api_keys_conflict("openai") is False
 
 
+def test_embedding_service_imports_the_way_the_backfill_script_does():
+    # backfill_embeddings.py puts backend/ on sys.path and imports `services.embedding_service`
+    # as a top-level package; an absolute `backend.` import inside it broke that script once.
+    import subprocess
+    import sys
+    from pathlib import Path
+
+    backend_dir = Path(__file__).resolve().parents[1]
+    code = ("import sys; sys.path.insert(0, sys.argv[1]); import config; "
+            "from services.embedding_service import EmbeddingService; print('ok')")
+    out = subprocess.run([sys.executable, "-c", code, str(backend_dir)], capture_output=True, text=True,
+                         timeout=120, cwd=str(backend_dir.parent / "web"))  # cwd without a backend/ package
+    assert out.returncode == 0, out.stderr[-2000:]
+    assert out.stdout.strip().endswith("ok")
+
+
 # ── Failure categories ───────────────────────────────────────────────────────
 
 

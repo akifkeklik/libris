@@ -5,12 +5,14 @@ import re
 import time
 from typing import List, Optional
 
-from backend.config import resolve_gemini_api_key
-
 try:
+    from ..config import resolve_gemini_api_key
     from ..domain.ports import BookDataPort, SemanticSearchUnavailable
     from ..infrastructure.llm.gemini_rest import GeminiRestClient
 except ImportError:
+    # Imported as a top-level package by scripts that put backend/ on sys.path
+    # (backend/scripts/backfill_embeddings.py).
+    from config import resolve_gemini_api_key
     from domain.ports import BookDataPort, SemanticSearchUnavailable
     from infrastructure.llm.gemini_rest import GeminiRestClient
 
