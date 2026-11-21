@@ -108,3 +108,6 @@ class Config:
 
     # ── CORS ──────────────────────────────────────────────────────────────────
     ALLOWED_ORIGINS: list = os.getenv("ALLOWED_ORIGINS", "*").split(",")
+    # Largest accepted request body. The biggest legitimate body (a learning item) is ~41 KB, so
+    # 1 MiB leaves ample headroom; Flask/werkzeug answers 413 above it, before JSON is parsed.
+    MAX_REQUEST_BYTES: int = int(os.getenv("MAX_REQUEST_BYTES", str(1024 * 1024)))

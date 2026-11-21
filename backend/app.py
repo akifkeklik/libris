@@ -11,6 +11,7 @@ import uuid
 
 from flask import Flask, g, jsonify, request
 from flask_cors import CORS
+from werkzeug.exceptions import HTTPException
 
 from .config import Config
 from .infrastructure.logging.structured_logger import log_event, setup_logger
@@ -24,6 +25,8 @@ def create_app(config_class=Config) -> Flask:
     """Application factory."""
     app = Flask(__name__)
     app.config.from_object(config_class)
+    # Unbounded bodies used to be read and parsed in full (a 3 MiB chat body returned 200).
+    app.config["MAX_CONTENT_LENGTH"] = int(app.config.get("MAX_REQUEST_BYTES") or 1024 * 1024)
 
     configured_origins = app.config.get("ALLOWED_ORIGINS") or []
     if isinstance(configured_origins, str):
@@ -284,6 +287,18 @@ def create_app(config_class=Config) -> Flask:
     def method_not_allowed(error):
         log_event(__name__, logging.WARNING, msg="Method not allowed")
         return jsonify({"error": "Method not allowed"}), 405
+
+    @app.errorhandler(HTTPException)
+    def handle_http_exception(error):
+        # Without this, the Exception handler below also caught werkzeug's HTTP errors (413, 400,
+        # 415, ...) and answered 500. Client errors keep their status and are not logged as ERROR.
+        status = error.code or 500
+        log_event(__name__, logging.WARNING if status < 500 else logging.ERROR,
+                  msg="HTTP error", status=status, error=error.name)
+        body = {"error": error.name}
+        if status == 413:
+            body = {"error": "Request body too large", "max_bytes": app.config.get("MAX_CONTENT_LENGTH")}
+        return jsonify(body), status
 
     @app.errorhandler(Exception)
     def handle_global_exception(error):
