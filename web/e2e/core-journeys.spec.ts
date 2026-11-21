@@ -107,7 +107,10 @@ test('phones get a bottom tab bar with the review tab', async ({ page, isMobile 
 
 test('a missing book can be added: guests are sent to log in first', async ({ page }) => {
   await page.goto('/catalog?q=zzqxbook-that-does-not-exist');
-  await expect(page.getByText("Can't find your book? Add it to Libris.")).toBeVisible();
+  // The route streams behind catalog/loading.tsx, so for a moment the DOM holds a second, hidden
+  // copy of the empty state; an unscoped getByText then fails strict mode (flaky in CI). Assert on
+  // the copy the user can see.
+  await expect(page.getByText("Can't find your book? Add it to Libris.").filter({ visible: true })).toBeVisible();
   const add = page.getByTestId('add-book-button').last();
   await expect(add).toBeVisible();
   await add.click();
