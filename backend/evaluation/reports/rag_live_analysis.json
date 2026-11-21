@@ -1,0 +1,387 @@
+{
+ "run_at": "2026-11-22T00:24:46+0300",
+ "git_sha": "6ab1e6ae0ddf44cbaf0cd1fbff249643b99fb3c7",
+ "catalog_size": 6446,
+ "reliability": {
+  "n_queries": 120,
+  "statuses": {
+   "success": 119,
+   "lexical_fallback": 1
+  },
+  "sources": {
+   "rag_llm": 120
+  },
+  "degraded_queries": [
+   "open_sad_en"
+  ],
+  "errored_queries": [],
+  "fallback_rate": 0.0,
+  "degraded_rate": 0.0083,
+  "gemini_generate_failure_rate": 0.0076,
+  "gemini_embed_failure_rate": 0.0224,
+  "http_calls": {
+   "generate": {
+    "attempts": 132,
+    "non_200": 1,
+    "status_counts": {
+     "200": 131,
+     "503": 1
+    }
+   },
+   "embed": {
+    "attempts": 134,
+    "non_200": 3,
+    "status_counts": {
+     "200": 131,
+     "429": 3
+    }
+   }
+  }
+ },
+ "diversity": {
+  "distinct_primary_category_share@5_mean": 0.543,
+  "distinct_first_author_share@5_mean": 0.705
+ },
+ "coverage": {
+  "distinct_books_shown": 307,
+  "slots": 600,
+  "catalog_coverage": 0.0476
+ },
+ "most_repeated_books": [
+  {
+   "isbn13": "9780143034902",
+   "title": "The Shadow of the Wind",
+   "queries": 10
+  },
+  {
+   "isbn13": "9780385490818",
+   "title": "The Handmaid's Tale",
+   "queries": 7
+  },
+  {
+   "isbn13": "9780450040184",
+   "title": "The Shining",
+   "queries": 7
+  },
+  {
+   "isbn13": "9780060776091",
+   "title": "Brave New World and Brave New World Revisited",
+   "queries": 6
+  },
+  {
+   "isbn13": "9780450610097",
+   "title": "Nightmares and Dreamscapes",
+   "queries": 6
+  },
+  {
+   "isbn13": "9781579126278",
+   "title": "The Murder of Roger Ackroyd",
+   "queries": 6
+  },
+  {
+   "isbn13": "9781857989342",
+   "title": "The Gods Themselves",
+   "queries": 6
+  },
+  {
+   "isbn13": "9780739444054",
+   "title": "The Foundation Trilogy",
+   "queries": 5
+  },
+  {
+   "isbn13": "9780553380965",
+   "title": "The Diamond Age",
+   "queries": 5
+  },
+  {
+   "isbn13": "9780452284234",
+   "title": "1984",
+   "queries": 5
+  }
+ ],
+ "bottom_10": [
+  {
+   "id": "mood_funny_en",
+   "category": "mood",
+   "tier": "automatic_candidate",
+   "ndcg@5": 0.0,
+   "recall@5": 0.0
+  },
+  {
+   "id": "mood_funny_tr",
+   "category": "mood",
+   "tier": "automatic_candidate",
+   "ndcg@5": 0.0,
+   "recall@5": 0.0
+  },
+  {
+   "id": "multi_history_recent_en",
+   "category": "multi_constraint",
+   "tier": "automatic_candidate",
+   "ndcg@5": 0.0,
+   "recall@5": 0.0
+  },
+  {
+   "id": "multi_history_recent_tr",
+   "category": "multi_constraint",
+   "tier": "automatic_candidate",
+   "ndcg@5": 0.0,
+   "recall@5": 0.0
+  },
+  {
+   "id": "multi_king_short_en",
+   "category": "multi_constraint",
+   "tier": "automatic_candidate",
+   "ndcg@5": 0.0,
+   "recall@5": 0.0
+  },
+  {
+   "id": "multi_king_short_tr",
+   "category": "multi_constraint",
+   "tier": "automatic_candidate",
+   "ndcg@5": 0.0,
+   "recall@5": 0.0
+  },
+  {
+   "id": "multi_poetry_short_en",
+   "category": "multi_constraint",
+   "tier": "automatic_candidate",
+   "ndcg@5": 0.0,
+   "recall@5": 0.0
+  },
+  {
+   "id": "sim_dune_en",
+   "category": "similar",
+   "tier": "proposed",
+   "ndcg@5": 0.0,
+   "recall@5": 0.0
+  },
+  {
+   "id": "genre_scifi_tr",
+   "category": "genre",
+   "tier": "automatic_candidate",
+   "ndcg@5": 0.1312,
+   "recall@5": 0.2
+  },
+  {
+   "id": "multi_poetry_short_tr",
+   "category": "multi_constraint",
+   "tier": "automatic_candidate",
+   "ndcg@5": 0.1312,
+   "recall@5": 0.2
+  }
+ ],
+ "top_10": [
+  {
+   "id": "author_asimov_en",
+   "category": "author",
+   "tier": "automatic_candidate",
+   "ndcg@5": 1.0,
+   "recall@5": 1.0
+  },
+  {
+   "id": "author_asimov_tr",
+   "category": "author",
+   "tier": "automatic_candidate",
+   "ndcg@5": 1.0,
+   "recall@5": 1.0
+  },
+  {
+   "id": "author_christie_en",
+   "category": "author",
+   "tier": "rule_derived",
+   "ndcg@5": 1.0,
+   "recall@5": 1.0
+  },
+  {
+   "id": "author_christie_tr",
+   "category": "author",
+   "tier": "rule_derived",
+   "ndcg@5": 1.0,
+   "recall@5": 1.0
+  },
+  {
+   "id": "author_christie_tr_ascii",
+   "category": "author",
+   "tier": "rule_derived",
+   "ndcg@5": 1.0,
+   "recall@5": 1.0
+  },
+  {
+   "id": "author_king_en",
+   "category": "author",
+   "tier": "automatic_candidate",
+   "ndcg@5": 1.0,
+   "recall@5": 1.0
+  },
+  {
+   "id": "author_king_tr",
+   "category": "author",
+   "tier": "automatic_candidate",
+   "ndcg@5": 1.0,
+   "recall@5": 1.0
+  },
+  {
+   "id": "author_orwell_en",
+   "category": "author",
+   "tier": "rule_derived",
+   "ndcg@5": 1.0,
+   "recall@5": 1.0
+  },
+  {
+   "id": "author_orwell_tr",
+   "category": "author",
+   "tier": "rule_derived",
+   "ndcg@5": 1.0,
+   "recall@5": 1.0
+  },
+  {
+   "id": "author_pratchett_en",
+   "category": "author",
+   "tier": "automatic_candidate",
+   "ndcg@5": 1.0,
+   "recall@5": 1.0
+  }
+ ],
+ "n_scored": 100,
+ "answer_issues": [
+  {
+   "id": "title_fahrenheit_en",
+   "flags": [
+    "language_mismatch"
+   ],
+   "ndcg@5": 1.0
+  },
+  {
+   "id": "title_fahrenheit_tr",
+   "flags": [
+    "language_mismatch"
+   ],
+   "ndcg@5": 0.6309
+  },
+  {
+   "id": "genre_poetry_en",
+   "flags": [
+    "unsupported",
+    "foreign_author_names"
+   ],
+   "ndcg@5": 0.6844
+  },
+  {
+   "id": "genre_cooking_en",
+   "flags": [
+    "language_mismatch"
+   ],
+   "ndcg@5": 0.786
+  },
+  {
+   "id": "multi_king_short_en",
+   "flags": [
+    "unsupported",
+    "foreign_author_names"
+   ],
+   "ndcg@5": 0.0
+  },
+  {
+   "id": "insuff_one_word_en",
+   "flags": [
+    "unsupported",
+    "foreign_author_names"
+   ],
+   "ndcg@5": null
+  }
+ ],
+ "gemini_answer_but_weak_retrieval": [
+  {
+   "id": "mood_funny_en",
+   "ndcg@5": 0.0,
+   "category": "mood",
+   "tier": "automatic_candidate"
+  },
+  {
+   "id": "mood_funny_tr",
+   "ndcg@5": 0.0,
+   "category": "mood",
+   "tier": "automatic_candidate"
+  },
+  {
+   "id": "multi_history_recent_en",
+   "ndcg@5": 0.0,
+   "category": "multi_constraint",
+   "tier": "automatic_candidate"
+  },
+  {
+   "id": "multi_history_recent_tr",
+   "ndcg@5": 0.0,
+   "category": "multi_constraint",
+   "tier": "automatic_candidate"
+  },
+  {
+   "id": "multi_king_short_en",
+   "ndcg@5": 0.0,
+   "category": "multi_constraint",
+   "tier": "automatic_candidate"
+  },
+  {
+   "id": "multi_king_short_tr",
+   "ndcg@5": 0.0,
+   "category": "multi_constraint",
+   "tier": "automatic_candidate"
+  },
+  {
+   "id": "multi_poetry_short_en",
+   "ndcg@5": 0.0,
+   "category": "multi_constraint",
+   "tier": "automatic_candidate"
+  },
+  {
+   "id": "sim_dune_en",
+   "ndcg@5": 0.0,
+   "category": "similar",
+   "tier": "proposed"
+  },
+  {
+   "id": "genre_scifi_tr",
+   "ndcg@5": 0.1312,
+   "category": "genre",
+   "tier": "automatic_candidate"
+  },
+  {
+   "id": "multi_poetry_short_tr",
+   "ndcg@5": 0.1312,
+   "category": "multi_constraint",
+   "tier": "automatic_candidate"
+  },
+  {
+   "id": "sim_handmaid_tr",
+   "ndcg@5": 0.1312,
+   "category": "similar",
+   "tier": "automatic_candidate"
+  },
+  {
+   "id": "sim_handmaid_en",
+   "ndcg@5": 0.1696,
+   "category": "similar",
+   "tier": "automatic_candidate"
+  },
+  {
+   "id": "genre_cooking_tr",
+   "ndcg@5": 0.214,
+   "category": "genre",
+   "tier": "automatic_candidate"
+  },
+  {
+   "id": "topic_wwii_en",
+   "ndcg@5": 0.214,
+   "category": "topic",
+   "tier": "automatic_candidate"
+  },
+  {
+   "id": "topic_wwii_tr",
+   "ndcg@5": 0.214,
+   "category": "topic",
+   "tier": "automatic_candidate"
+  }
+ ],
+ "adversarial": null
+}

@@ -5,7 +5,7 @@ import time
 from typing import Optional
 
 from ...domain.ports import LlmPort
-from .gemini_rest import DEFAULT_TEXT_MODEL, GeminiRestClient
+from .gemini_rest import DEFAULT_TEXT_MODEL, GeminiError, GeminiRestClient
 
 logger = logging.getLogger(__name__)
 
@@ -29,6 +29,32 @@ def _sanitize_secret(msg: str) -> str:
     return sanitized
 
 
+def classify_llm_error(exc: Optional[BaseException]) -> str:
+    """Why a generation call failed, as a short category safe to log and return in metrics.
+
+    "auth" (401/403: missing, invalid or revoked key) is a configuration error that retrying
+    cannot fix; "rate_limited" (429) and "provider_unavailable" (5xx) are transient.
+    """
+    if exc is None:
+        return "empty_response"
+    status = getattr(exc, "status", None) or getattr(exc, "status_code", None)
+    if isinstance(status, int):
+        if status in (401, 403):
+            return "auth"
+        if status == 429:
+            return "rate_limited"
+        if status >= 500:
+            return "provider_unavailable"
+        if 400 <= status < 500:
+            return "bad_request"
+    name = type(exc).__name__.lower()
+    if "timeout" in name:
+        return "timeout"
+    if "connection" in name:
+        return "network"
+    return "error"
+
+
 class GenericLlmAdapter(LlmPort):
     def __init__(self, provider: str, api_key: str, model_name: Optional[str] = None):
         self._provider = provider
@@ -38,11 +64,19 @@ class GenericLlmAdapter(LlmPort):
         self._openai_client = None
         self._lock = threading.Lock()
         self.last_latency_ms: float = 0.0
+        # Per thread, so a caller reads the outcome of its own call, not a concurrent request's.
+        self._outcome = threading.local()
 
+    @property
+    def last_error(self) -> Optional[str]:
+        """Category of this thread's last failed call (classify_llm_error), or None on success."""
+        return getattr(self._outcome, "error", None)
 
     def generate_response(self, system_prompt: str, user_prompt: str) -> Optional[str]:
+        self._outcome.error = None
         if not self._api_key:
-            logger.error("LLM_API_KEY is missing.")
+            self._outcome.error = "not_configured"
+            logger.error("No API key for the LLM provider (set GEMINI_API_KEY for gemini).")
             return None
 
         t0 = time.time()
@@ -56,6 +90,7 @@ class GenericLlmAdapter(LlmPort):
                 with self._lock:
                     self.last_latency_ms = lat
                 if text is None:
+                    self._outcome.error = "empty_response"
                     logger.warning("Gemini returned no text (safety filter or empty response).")
                 return text
 
@@ -79,6 +114,7 @@ class GenericLlmAdapter(LlmPort):
                     self.last_latency_ms = lat
                 return response.choices[0].message.content
             else:
+                self._outcome.error = "not_configured"
                 logger.error(f"Unsupported LLM provider: {self._provider}")
                 return None
 
@@ -87,6 +123,8 @@ class GenericLlmAdapter(LlmPort):
             with self._lock:
                 self.last_latency_ms = lat
             clean_err = _sanitize_secret(str(e))
+            category = classify_llm_error(e)
+            self._outcome.error = category
             logger.error(
                 "LLM provider error",
                 extra={
@@ -95,6 +133,8 @@ class GenericLlmAdapter(LlmPort):
                         "model": self._model_name,
                         "error": clean_err,
                         "error_type": type(e).__name__,
+                        "error_category": category,
+                        "http_status": getattr(e, "status", None) if isinstance(e, GeminiError) else None,
                         "latency_ms": lat,
                     }
                 },

@@ -6,11 +6,13 @@ Flask factory application with CORS, error handlers, and blueprint registration.
 import hmac
 import logging
 import os
+import re
 import time
 import uuid
 
 from flask import Flask, g, jsonify, request
 from flask_cors import CORS
+from werkzeug.exceptions import HTTPException
 
 from .config import Config
 from .infrastructure.logging.structured_logger import log_event, setup_logger
@@ -19,11 +21,15 @@ from .routes.routes import activity_bp, catalog_bp, discovery_bp, health_bp
 setup_logger()
 logger = logging.getLogger(__name__)
 
+_REQUEST_ID_RE = re.compile(r"[A-Za-z0-9._:-]{1,128}")
+
 
 def create_app(config_class=Config) -> Flask:
     """Application factory."""
     app = Flask(__name__)
     app.config.from_object(config_class)
+    # Unbounded bodies used to be read and parsed in full (a 3 MiB chat body returned 200).
+    app.config["MAX_CONTENT_LENGTH"] = int(app.config.get("MAX_REQUEST_BYTES") or 1024 * 1024)
 
     configured_origins = app.config.get("ALLOWED_ORIGINS") or []
     if isinstance(configured_origins, str):
@@ -49,6 +55,13 @@ def create_app(config_class=Config) -> Flask:
         if app.config.get("DEBUG"):
             raise ValueError(
                 "Critical Security Misconfiguration: DEBUG mode cannot be enabled when running in production."
+            )
+        # TESTING skips the authentication hook in before_request, so a stray TESTING=true in a
+        # production environment would leave every /api/ endpoint unauthenticated.
+        if app.config.get("TESTING"):
+            raise ValueError(
+                "Critical Security Misconfiguration: TESTING mode cannot be enabled when running in "
+                "production; it disables API authentication."
             )
         secret_key = str(app.config.get("SECRET_KEY", "")).strip()
         if not secret_key or secret_key in ("replace-with-a-long-random-string", "dev-insecure-secret-key"):
@@ -102,6 +115,9 @@ def create_app(config_class=Config) -> Flask:
         origins=allowed_origins,
         supports_credentials=True,
         allow_headers=["Content-Type", "X-Api-Key", "Authorization", "X-Request-Id"],
+        # Flask-Cors 4.0.x defaulted this to True (Access-Control-Allow-Private-Network); the API
+        # is never served from a private network, so the grant is refused explicitly.
+        allow_private_network=False,
     )
 
     # ── Blueprints ────────────────────────────────────────────────────────────
@@ -114,7 +130,10 @@ def create_app(config_class=Config) -> Flask:
     @app.before_request
     def before_request_hook():
         # Generate Request ID
-        g.request_id = request.headers.get("X-Request-Id", str(uuid.uuid4()))
+        # Client-supplied ids are echoed into every log line and the response header, so only a
+        # short id-shaped value is kept; anything else gets a fresh id.
+        client_id = request.headers.get("X-Request-Id", "")
+        g.request_id = client_id if _REQUEST_ID_RE.fullmatch(client_id) else str(uuid.uuid4())
         g.start_time = time.time()
         g.is_server = False
         g.is_anon = False
@@ -226,6 +245,10 @@ def create_app(config_class=Config) -> Flask:
         # Propagate request id back to client
         if hasattr(g, "request_id"):
             response.headers["X-Request-Id"] = g.request_id
+        # CORS headers differ by Origin (granted or not), and some responses are publicly
+        # cacheable; Flask-Cors omits Vary: Origin when a single origin is configured.
+        if "Origin" in request.headers:
+            response.vary.add("Origin")
 
         # Cache directives for privacy and CDN correctness:
         if "Cache-Control" not in response.headers:
@@ -277,6 +300,18 @@ def create_app(config_class=Config) -> Flask:
     def method_not_allowed(error):
         log_event(__name__, logging.WARNING, msg="Method not allowed")
         return jsonify({"error": "Method not allowed"}), 405
+
+    @app.errorhandler(HTTPException)
+    def handle_http_exception(error):
+        # Without this, the Exception handler below also caught werkzeug's HTTP errors (413, 400,
+        # 415, ...) and answered 500. Client errors keep their status and are not logged as ERROR.
+        status = error.code or 500
+        log_event(__name__, logging.WARNING if status < 500 else logging.ERROR,
+                  msg="HTTP error", status=status, error=error.name)
+        body = {"error": error.name}
+        if status == 413:
+            body = {"error": "Request body too large", "max_bytes": app.config.get("MAX_CONTENT_LENGTH")}
+        return jsonify(body), status
 
     @app.errorhandler(Exception)
     def handle_global_exception(error):

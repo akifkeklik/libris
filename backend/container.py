@@ -47,7 +47,7 @@ from backend.application.use_cases.spaced_repetition import (
     ProcessReviewUseCase,
     UpdateReviewSettingsUseCase,
 )
-from backend.config import Config
+from backend.config import Config, llm_api_keys_conflict
 from backend.infrastructure.adapters.book_lookup_adapter import BookLookupAdapter
 from backend.infrastructure.adapters.enrichment_adapter import GoogleBooksEnrichmentAdapter
 from backend.infrastructure.llm.adapters import GenericLlmAdapter
@@ -91,13 +91,20 @@ class Container:
 
         if Config.SUPABASE_URL and Config.SUPABASE_ANON_KEY:
             try:
-                from supabase import create_client
+                from backend.infrastructure.persistence.supabase_config import (
+                    SupabaseConfigError,
+                    create_supabase_client,
+                )
 
-                self.supabase = create_client(Config.SUPABASE_URL, Config.SUPABASE_ANON_KEY)
+                try:
+                    self.supabase = create_supabase_client(Config.SUPABASE_URL, Config.SUPABASE_ANON_KEY)
+                except SupabaseConfigError as e:
+                    # Message is secret-free; reason is a stable code for log searches.
+                    logger.warning("Could not initialize Supabase client [%s]: %s", e.reason, e)
             except ImportError:
                 logger.warning("Supabase client could not be imported.")
             except Exception as e:
-                logger.warning(f"Could not initialize Supabase client: {e}")
+                logger.warning(f"Could not initialize Supabase client: {type(e).__name__}")
 
         # 1. Infrastructure Adapters
         if interaction_repo is not None:
@@ -172,6 +179,17 @@ class Container:
             api_key=Config.LLM_API_KEY,
             model_name=Config.GEMINI_MODEL if Config.LLM_PROVIDER == "gemini" else None,
         )
+        if not Config.LLM_API_KEY:
+            # Said once at startup instead of on the first chat request. Names only, never values.
+            logger.error(
+                "No API key for LLM_PROVIDER=%s: set GEMINI_API_KEY (gemini) or LLM_API_KEY (openai). "
+                "AI chat will answer with the labelled catalog fallback until it is set.",
+                Config.LLM_PROVIDER,
+            )
+        if llm_api_keys_conflict(Config.LLM_PROVIDER):
+            # Names only, never values. Both are set and differ: GEMINI_API_KEY is used for chat
+            # and embeddings, LLM_API_KEY is ignored and can be removed from the environment.
+            logger.warning("GEMINI_API_KEY and LLM_API_KEY are both set and differ; using GEMINI_API_KEY.")
 
         # 2. Application Services
         self.enrichment_service = GoogleBooksEnrichmentAdapter()
@@ -184,7 +202,9 @@ class Container:
 
         # 3. Use Cases
         self.get_books_uc = GetBooksUseCase(self.recommender, self.enrichment_service)
-        self.add_catalog_book_uc = AddCatalogBookUseCase(self.recommender, self.book_data_port)
+        self.add_catalog_book_uc = AddCatalogBookUseCase(
+            self.recommender, self.book_data_port, embedding_service=self.embedding_service
+        )
         self.lookup_books_uc = LookupBooksUseCase(BookLookupAdapter(), self.recommender)
         self.search_books_uc = SearchBooksUseCase(self.recommender, self.enrichment_service)
         self.get_popular_books_uc = GetPopularBooksUseCase(
