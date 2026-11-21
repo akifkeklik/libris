@@ -8,9 +8,9 @@ python-dotenv==1.2.4
 requests==2.34.2
 gunicorn==23.0.0
 pytest==9.0.3
-supabase~=2.3.0
-# supabase 2.3 does not cap gotrue; gotrue>=2.9 passes `proxy` to httpx<0.26 and the client fails to start.
-gotrue>=2.8,<2.9
+# 2.18 is the first line that accepts the new sb_publishable_/sb_secret_ API keys (2.15 rejects
+# them); it pins its own auth/postgrest/realtime versions, so no separate gotrue pin is needed.
+supabase==2.18.1
 psycopg2-binary~=2.9.13
 
 openai~=1.109.1

@@ -65,7 +65,7 @@ flowchart LR
 | Data | PostgreSQL 16, Supabase (Auth, RLS, pgvector) |
 | Quality | Pytest, Ruff, ESLint, Playwright, GitHub Actions |
 
-Gemini is called through its REST API rather than the `google-genai` SDK, because that SDK requires `websockets>=13`, which conflicts with the Supabase client. More detail: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
+Gemini is called through its REST API rather than the `google-genai` SDK. The original reason, a `websockets` conflict with supabase-py 2.3, no longer applies since the upgrade to supabase-py 2.18; the small REST client stays because it has no extra dependencies and keeps the API key in a header. More detail: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
 ## Run locally
 

@@ -2,8 +2,9 @@
 
 Why REST instead of an SDK: the legacy `google-generativeai` package is no longer
 maintained, and every version of its replacement `google-genai` requires
-`websockets>=13`, which conflicts with the Supabase client used here
-(`realtime` requires `websockets<13`). The REST API is what both SDKs call.
+`websockets>=13`, which conflicted with supabase-py 2.3 (`realtime` required
+`websockets<13`). supabase-py 2.18 removed that conflict; this client stays because it is small,
+has no extra dependencies, and the REST API is what both SDKs call.
 The API key is sent in a header, never in the URL, so it cannot leak into logs.
 """
 
