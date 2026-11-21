@@ -6,23 +6,10 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { usePreferences } from '@/components/PreferencesProvider';
 
-export function sanitizeRedirect(url: string | null): string {
-  if (!url) return '/catalog';
-  const trimmed = url.trim();
-  // Reject protocol-relative slashes (//) or backslashes (/\)
-  if (!trimmed.startsWith('/') || trimmed.startsWith('//') || trimmed.startsWith('/\\')) {
-    return '/catalog';
-  }
-  try {
-    const parsed = new URL(trimmed, 'http://localhost');
-    if (parsed.origin === 'http://localhost' && parsed.pathname.startsWith('/')) {
-      return parsed.pathname + parsed.search;
-    }
-  } catch {
-    return '/catalog';
-  }
-  return '/catalog';
-}
+import { sanitizeRedirect } from '@/lib/safeRedirect';
+
+// Re-exported for existing imports (tests).
+export { sanitizeRedirect };
 
 function LoginForm() {
   const { t } = usePreferences();
@@ -64,6 +51,11 @@ function LoginForm() {
       <h1 style={{ fontSize: '2rem', textAlign: 'center', marginBottom: '0.5rem' }}>{t('login_title')}</h1>
       <p className="text-muted text-center" style={{ marginBottom: '2rem' }}>{t('login_subtitle')}</p>
       
+      {searchParams.get('error') === 'link_invalid' && !error && (
+        <div role="alert" style={{ padding: '0.75rem', background: 'rgba(239, 68, 68, 0.1)', color: 'var(--danger)', borderRadius: '8px', marginBottom: '1.5rem', fontSize: '0.875rem' }}>
+          {t('auth_link_invalid')}
+        </div>
+      )}
       {error && (
         <div style={{ padding: '0.75rem', background: 'rgba(239, 68, 68, 0.1)', color: 'var(--danger)', borderRadius: '8px', marginBottom: '1.5rem', fontSize: '0.875rem' }}>
           {error}
@@ -85,7 +77,12 @@ function LoginForm() {
         </div>
         
         <div className="input-group">
-          <label className="input-label" htmlFor="password">{t('password_label')}</label>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+            <label className="input-label" htmlFor="password">{t('password_label')}</label>
+            <Link href="/forgot-password" style={{ fontSize: '0.8rem', color: 'var(--primary)' }} data-testid="forgot-password-link">
+              {t('forgot_password_link')}
+            </Link>
+          </div>
           <input 
             id="password"
             type="password" 
@@ -103,7 +100,7 @@ function LoginForm() {
           style={{ width: '100%', marginTop: '1rem', padding: '1rem' }}
           disabled={loading}
         >
-          {loading ? 'Logging in...' : 'Log in'}
+          {loading ? t('login_button_loading') : t('login_button')}
         </button>
       </form>
       

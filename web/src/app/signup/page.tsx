@@ -4,7 +4,7 @@ import { Suspense, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { sanitizeRedirect } from '../login/page';
+import { sanitizeRedirect } from '@/lib/safeRedirect';
 import { usePreferences } from '@/components/PreferencesProvider';
 
 function SignUpForm() {
