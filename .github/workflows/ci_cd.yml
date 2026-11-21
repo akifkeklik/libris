@@ -127,6 +127,75 @@ jobs:
           echo "Testing 04_DRAFT Catalog Lifecycle (Baseline -> Forward -> Verify -> DepCheck -> Rollback -> VerifyBaseline -> Forward -> Re-Verify)..."
           psql -v ON_ERROR_STOP=1 -h localhost -U postgres -d postgres -f "backend/scripts/hardening/test_04_vector_rpc_catalog_lifecycle.sql"
 
+          echo "Testing 01c catalog write lockdown (books / book_embeddings) under anon and authenticated..."
+          psql -v ON_ERROR_STOP=1 -h localhost -U postgres -d postgres -f "backend/scripts/hardening/test_01c_catalog_write_lockdown_runtime.sql"
+
+          echo "Running read-only 01c verification against the post-migration state..."
+          # Default `bash -e` has no pipefail; without it a psql error would be hidden by tee.
+          set -o pipefail
+          psql -v ON_ERROR_STOP=1 -h localhost -U postgres -d postgres -At -F '|' -f "backend/scripts/hardening/verify_01c_catalog_write_lockdown.sql" | tee /tmp/verify_01c.txt
+          if grep -q '|FAIL$' /tmp/verify_01c.txt; then echo "01c verification has FAIL rows"; exit 1; fi
+          grep -q '^OVERALL|.*|PASS$' /tmp/verify_01c.txt || { echo "01c verification produced no OVERALL PASS row"; exit 1; }
+
+      - name: Validate 01c as a non-superuser table owner (Supabase-like)
+        env:
+          PGPASSWORD: postgrespassword
+        run: |
+          set -o pipefail
+          # In this service container `postgres` is a superuser, so verify_01c check 64
+          # ("add_catalog_book owner can insert into books") passes through rolsuper alone.
+          # On Supabase the owner is not a superuser. Rebuild the schema in a separate database
+          # owned by a NOSUPERUSER NOBYPASSRLS role and run the 01c test + verify as that role,
+          # so the definer insert must work through table ownership alone.
+          psql -v ON_ERROR_STOP=1 -h localhost -U postgres -d postgres <<'SQL'
+          CREATE ROLE catalog_owner LOGIN NOSUPERUSER NOBYPASSRLS NOCREATEDB NOCREATEROLE PASSWORD 'catalog_owner_ci';
+          GRANT anon, authenticated, service_role TO catalog_owner;
+          CREATE DATABASE libris_01c_owner OWNER catalog_owner;
+          SQL
+          # pgvector is not a trusted extension; Supabase pre-installs it the same way.
+          psql -v ON_ERROR_STOP=1 -h localhost -U postgres -d libris_01c_owner -c "CREATE EXTENSION IF NOT EXISTS vector;"
+
+          export PGPASSWORD=catalog_owner_ci
+          OWNER_PSQL="psql -v ON_ERROR_STOP=1 -h localhost -U catalog_owner -d libris_01c_owner"
+          $OWNER_PSQL -c "DO \$\$ BEGIN
+              IF (SELECT rolsuper OR rolbypassrls FROM pg_roles WHERE rolname = current_user) THEN
+                RAISE EXCEPTION 'catalog_owner must be NOSUPERUSER NOBYPASSRLS';
+              END IF;
+            END \$\$;"
+          $OWNER_PSQL -f backend/ci_stubs.sql
+          for sql in $(ls backend/scripts/[0-9][0-9]_*.sql | sort); do
+            echo "Applying $sql as catalog_owner..."
+            $OWNER_PSQL -f "$sql"
+          done
+          $OWNER_PSQL -f backend/tests/sql/test_15_add_catalog_book.sql
+          # 01_PROD targets `FOR ROLE postgres` (already applied in production by that role), so it
+          # runs as postgres here; only the 01c test and verify below run as catalog_owner.
+          PGPASSWORD=postgrespassword psql -v ON_ERROR_STOP=1 -h localhost -U postgres -d libris_01c_owner \
+            -f backend/scripts/hardening/01_PROD_revoke_dangerous_privileges_stage1_stage2.sql
+
+          echo "Testing 01c as a non-superuser owner..."
+          $OWNER_PSQL -f backend/scripts/hardening/test_01c_catalog_write_lockdown_runtime.sql
+          $OWNER_PSQL -At -F '|' -f backend/scripts/hardening/verify_01c_catalog_write_lockdown.sql | tee /tmp/verify_01c_owner.txt
+          if grep -q '|FAIL$' /tmp/verify_01c_owner.txt; then echo "01c verification (non-superuser owner) has FAIL rows"; exit 1; fi
+          grep -q '^OVERALL|.*|PASS$' /tmp/verify_01c_owner.txt || { echo "01c verification (non-superuser owner) produced no OVERALL PASS row"; exit 1; }
+
+          # Check 64 must hold through ownership here, not through superuser / BYPASSRLS.
+          $OWNER_PSQL -c "DO \$\$ BEGIN
+              IF NOT EXISTS (
+                SELECT 1
+                FROM pg_proc p
+                JOIN pg_class c ON c.oid = 'public.books'::regclass
+                JOIN pg_roles r ON r.oid = p.proowner
+                WHERE p.oid = 'public.add_catalog_book(text,text,text,text,text,text,integer,text)'::regprocedure
+                  AND p.proowner = c.relowner
+                  AND r.rolname = 'catalog_owner'
+                  AND NOT r.rolsuper AND NOT r.rolbypassrls
+                  AND NOT c.relforcerowsecurity
+              ) THEN
+                RAISE EXCEPTION 'add_catalog_book and public.books must share the non-superuser, non-BYPASSRLS owner catalog_owner';
+              END IF;
+            END \$\$;"
+
   #   Backend CI (Python/Flask) 
   backend-ci:
     name: Backend Lint & Fast Tests
