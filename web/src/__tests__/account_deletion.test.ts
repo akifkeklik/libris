@@ -33,3 +33,23 @@ test('the delete button stays disabled until the reader types their own e-mail',
   assert.match(src, /auth\.signOut\(\)/, 'the deleted account must be signed out');
   assert.match(read('app', 'settings', 'page.tsx'), /<DeleteAccountSection email=\{user\.email\}/);
 });
+
+test('exportAccount downloads the reader\'s own data uncached and keeps the server filename', async () => {
+  const realFetch = globalThis.fetch;
+  let seen: { url: string; init: RequestInit } | null = null;
+  globalThis.fetch = (async (url: string, init: RequestInit) => {
+    seen = { url: String(url), init };
+    return new Response('# Libris: my data', { status: 200, headers: {
+      'Content-Type': 'text/markdown; charset=utf-8', 'Content-Disposition': 'attachment; filename="libris-export-2026-11-22.md"' } });
+  }) as typeof fetch;
+  try {
+    const file = await ApiService.exportAccount('markdown');
+    assert.deepEqual(file, { content: '# Libris: my data', filename: 'libris-export-2026-11-22.md', mimeType: 'text/markdown; charset=utf-8' });
+  } finally {
+    globalThis.fetch = realFetch;
+  }
+  const { url, init } = seen as unknown as { url: string; init: RequestInit };
+  assert.match(url, /\/api\/account\/export\?format=markdown$/);
+  assert.equal(init.cache, 'no-store');
+  assert.match(read('app', 'settings', 'page.tsx'), /<DataExportSection \/>/);
+});

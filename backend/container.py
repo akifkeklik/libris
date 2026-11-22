@@ -1,6 +1,7 @@
 import logging
 
 from backend.application.use_cases.account import DeleteAccountUseCase
+from backend.application.use_cases.account_export import ExportAccountDataUseCase
 from backend.application.use_cases.ai_rag import ProcessRagQueryUseCase
 from backend.application.use_cases.catalog import (
     GetBookDetailsUseCase,
@@ -279,6 +280,12 @@ class Container:
         # Account deletion needs the Supabase RPC (migration 16); unavailable on direct-Postgres stacks.
         self.account_port = SupabaseAccountAdapter() if self.supabase else None
         self.delete_account_uc = DeleteAccountUseCase(self.account_port) if self.account_port else None
+        self.export_account_uc = ExportAccountDataUseCase(
+            self.interaction_repo,
+            note_repo=self.note_repo,
+            note_review_repo=getattr(self, "note_review_repo", None),
+            learning_repo=getattr(self, "learning_outcomes_repo", None),
+        )
 
         self.process_rag_query_uc = ProcessRagQueryUseCase(
             embedding_port=self.embedding_service,

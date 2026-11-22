@@ -756,6 +756,23 @@ export class ApiService {
     return normalizeLearningNote(data?.note || {});
   }
 
+  /** GET /api/account/export: everything stored about the reader, as a downloadable file. */
+  static async exportAccount(
+    format: 'json' | 'markdown',
+    options: { signal?: AbortSignal } = {}
+  ): Promise<{ content: string; filename: string; mimeType: string } | null> {
+    const headers = await this.getHeaders();
+    const res = await this.fetchWithTimeout(`${API_URL}/api/account/export?format=${format}`, {
+      headers,
+      cache: 'no-store',
+      signal: options.signal,
+    }, 30000);
+    if (!res.ok) return null;
+    const disposition = res.headers.get('Content-Disposition') || '';
+    const filename = /filename="([^"]+)"/.exec(disposition)?.[1] || `libris-export.${format === 'json' ? 'json' : 'md'}`;
+    return { content: await res.text(), filename, mimeType: res.headers.get('Content-Type') || 'text/plain' };
+  }
+
   /** DELETE /api/account with the reader's session; returns the HTTP status. Never cached. */
   static async deleteAccount(options: { signal?: AbortSignal } = {}): Promise<number> {
     const headers = await this.getHeaders();

@@ -1418,6 +1418,22 @@ def update_review_settings(note_id: str):
 # ─────────────────────────────────────────────────────────────────────────────
 
 
+@activity_bp.route("/account/export", methods=["GET"])
+@require_auth
+def export_account_data():
+    """Everything Libris stores about the reader. ?format=json (default) | markdown."""
+    if not g.user_id:
+        return jsonify({"error": "Unauthorized"}), 401
+    try:
+        result = container.export_account_uc.execute(g.user_id, request.args.get("format", "json"))
+    except ValueError as val_err:
+        return jsonify({"error": str(val_err)}), 400
+    response = Response(result["content"], mimetype=result["mime_type"])
+    response.headers["Content-Disposition"] = f'attachment; filename="{result["filename"]}"'
+    response.headers["Cache-Control"] = "no-store, private"
+    return response
+
+
 @activity_bp.route("/account", methods=["DELETE"])
 @require_auth
 def delete_account():
