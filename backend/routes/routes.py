@@ -1518,6 +1518,83 @@ def record_product_event():
         return jsonify({"recorded": False}), 202
 
 
+# ─────────────────────────────────────────────────────────────────────────────
+# Imports (Faz 4): Kindle / Readwise / Goodreads -> approval queue -> notes and shelves
+# ─────────────────────────────────────────────────────────────────────────────
+
+IMPORT_MAX_BYTES = 6 * 1024 * 1024
+
+
+def _import_uc_or_503():
+    uc = getattr(container, "import_uc", None)
+    if uc is None:
+        return None, (jsonify({"error": "Imports are not available on this server"}), 503)
+    return uc, None
+
+
+@activity_bp.route("/imports", methods=["POST"])
+@require_auth
+def create_import():
+    """Body: {source: kindle|readwise|goodreads, text: <file contents>}. Larger body limit than the
+    rest of the API (a Kindle clippings file is often a few MB); still bounded."""
+    request.max_content_length = IMPORT_MAX_BYTES
+    uc, err = _import_uc_or_503()
+    if err:
+        return err
+    data = request.get_json(silent=True) or {}
+    try:
+        summary = uc.import_text(g.user_id, getattr(g, "jwt_token", None), str(data.get("source") or ""), data.get("text"))
+        return jsonify(summary), 201
+    except ValueError as val_err:
+        return jsonify({"error": str(val_err)}), 400
+    except Exception as exc:
+        logger.error("Import failed: %s", type(exc).__name__)
+        return jsonify({"error": "The import could not be processed right now"}), 503
+
+
+@activity_bp.route("/imports/pending", methods=["GET"])
+@require_auth
+def list_import_queue():
+    uc, err = _import_uc_or_503()
+    if err:
+        return err
+    try:
+        limit = int(request.args.get("limit", 200))
+        return jsonify(uc.list_pending(g.user_id, getattr(g, "jwt_token", None), limit)), 200
+    except ValueError:
+        return jsonify({"error": "limit must be a number"}), 400
+    except Exception as exc:
+        logger.error("Import queue failed: %s", type(exc).__name__)
+        return jsonify({"error": "The import queue is temporarily unavailable"}), 503
+
+
+@activity_bp.route("/imports/decide", methods=["POST"])
+@require_auth
+def decide_imports():
+    """Body: {action: approve|reject, ids: [...], highlight_as?: key_takeaway|personal_note,
+    book_overrides?: {item_id: isbn13}}."""
+    uc, err = _import_uc_or_503()
+    if err:
+        return err
+    data = request.get_json(silent=True) or {}
+    token = getattr(g, "jwt_token", None)
+    try:
+        if data.get("action") == "reject":
+            return jsonify({"rejected": uc.reject(g.user_id, token, data.get("ids"))}), 200
+        if data.get("action") == "approve":
+            overrides = data.get("book_overrides") or {}
+            if not isinstance(overrides, dict):
+                raise ValueError("book_overrides must be an object")
+            return jsonify(uc.approve(g.user_id, token, data.get("ids"), str(data.get("highlight_as") or "key_takeaway"),
+                                      overrides)), 200
+        raise ValueError("action must be approve or reject")
+    except ValueError as val_err:
+        return jsonify({"error": str(val_err)}), 400
+    except Exception as exc:
+        logger.error("Import decision failed: %s", type(exc).__name__)
+        return jsonify({"error": "The import queue is temporarily unavailable"}), 503
+
+
 @activity_bp.route("/account/export", methods=["GET"])
 @require_auth
 def export_account_data():

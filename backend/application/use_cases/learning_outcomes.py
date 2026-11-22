@@ -186,16 +186,20 @@ class GetReviewQueueUseCase:
         self._book_data_port = book_data_port
         self._llm_port = llm_port
 
-    def _recall_question(self, takeaway: str, book_title: str, budget: List[int]) -> str:
+    def _recall_question(self, takeaway: str, book_title: str, budget: List[int]) -> Optional[str]:
         """
         Turns a key takeaway into an active-recall question whose answer is the takeaway.
-        Falls back to a deterministic prompt when no LLM is available, the per-request
-        budget is exhausted, or the model output is unusable.
+        Falls back to a deterministic prompt when no LLM is available or the model output is
+        unusable. When the LLM is available but this request's budget is spent, returns None:
+        the note waits for the next request instead of getting a generic question for good
+        (an import of 200 highlights would otherwise turn 195 of them into the same card).
         """
         fallback = f"What is the key takeaway from {book_title}?"
         text = (takeaway or "").strip()
-        if not self._llm_port or not text or budget[0] <= 0:
+        if not self._llm_port or not text:
             return fallback
+        if budget[0] <= 0:
+            return None
         budget[0] -= 1
         try:
             raw = self._llm_port.generate_response(
@@ -233,6 +237,8 @@ class GetReviewQueueUseCase:
         concept_name = self._book_title_for_note(note)
         content = note.get("content", "")
         question = content if note_type == "question" else self._recall_question(content, concept_name, budget)
+        if question is None:
+            return None  # deferred: no LLM budget left in this request
         return self._learning_repo.create_review_item(
             user_id=user_id,
             title="Takeaway Review" if note_type == "key_takeaway" else "Reading Question",
@@ -259,6 +265,21 @@ class GetReviewQueueUseCase:
             if str(item.get("source_id") or "") == note_id:
                 return item
         return self._build_item_for_note(clean_user_id, note, [1])
+
+    def create_items_for_notes(
+        self, user_id: str, notes: List[Dict[str, Any]], max_llm_calls: int = MAX_RECALL_QUESTIONS_PER_REQUEST
+    ) -> Tuple[List[Dict[str, Any]], int]:
+        """Batch version for imports: at most `max_llm_calls` model calls for the whole batch.
+        Returns (created items, number of notes deferred to later requests)."""
+        budget = [max(0, min(max_llm_calls, MAX_RECALL_QUESTIONS_PER_REQUEST))]
+        created, deferred = [], 0
+        for note in notes:
+            item = self._build_item_for_note(user_id, note, budget)
+            if item:
+                created.append(item)
+            elif note.get("note_type") in {"key_takeaway", "question"}:
+                deferred += 1
+        return created, deferred
 
     def execute(
         self,

@@ -54,11 +54,30 @@ def test_falls_back_when_llm_raises():
     assert _queue(StubLlm(error=RuntimeError("provider down")))[0]["question"].startswith(FALLBACK_PREFIX)
 
 
-def test_llm_calls_are_bounded_per_request():
+def test_llm_calls_are_bounded_per_request_and_the_rest_wait_instead_of_getting_a_generic_card():
     llm = StubLlm(reply="What compounds over time according to the note?")
-    items = _queue(llm, takeaways=MAX_RECALL_QUESTIONS_PER_REQUEST + 3)
+    note_repo = InMemoryNoteRepository()
+    for i in range(MAX_RECALL_QUESTIONS_PER_REQUEST + 3):
+        note_repo.create_note(USER, "9780000000001", "key_takeaway", f"Habits compound over time #{i}")
+    uc = GetReviewQueueUseCase(learning_repo=InMemoryLearningOutcomesRepository(), note_repo=note_repo, llm_port=llm)
+    first = uc.execute(USER, limit=50)
     assert len(llm.calls) == MAX_RECALL_QUESTIONS_PER_REQUEST
-    assert len(items) == MAX_RECALL_QUESTIONS_PER_REQUEST + 3
+    assert len(first) == MAX_RECALL_QUESTIONS_PER_REQUEST
+    assert not any(i["question"].startswith(FALLBACK_PREFIX) for i in first)
+    second = uc.execute(USER, limit=50)  # the next request converts the remaining notes
+    assert len(llm.calls) == MAX_RECALL_QUESTIONS_PER_REQUEST + 3
+    assert len(second) == MAX_RECALL_QUESTIONS_PER_REQUEST + 3
+    assert not any(i["question"].startswith(FALLBACK_PREFIX) for i in second)
+
+
+def test_batch_conversion_for_imports_uses_at_most_the_budget():
+    llm = StubLlm(reply="What compounds over time according to the note?")
+    note_repo = InMemoryNoteRepository()
+    notes = [note_repo.create_note(USER, "9780000000001", "key_takeaway", f"Idea {i}") for i in range(12)]
+    uc = GetReviewQueueUseCase(learning_repo=InMemoryLearningOutcomesRepository(), note_repo=note_repo, llm_port=llm)
+    created, deferred = uc.create_items_for_notes(USER, notes)
+    assert len(llm.calls) == MAX_RECALL_QUESTIONS_PER_REQUEST
+    assert len(created) == MAX_RECALL_QUESTIONS_PER_REQUEST and deferred == 12 - MAX_RECALL_QUESTIONS_PER_REQUEST
 
 
 def test_user_written_questions_are_not_sent_to_llm():

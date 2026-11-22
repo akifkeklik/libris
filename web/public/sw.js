@@ -142,3 +142,28 @@ self.addEventListener('notificationclick', (event) => {
     })
   );
 });
+
+// ── PWA share target (Faz 4): another app shares a clippings/CSV file or a quote ──
+// The POST never reaches the server: the file or text is parked in Cache Storage (this origin
+// only) and the reader lands on /import, which picks it up once and deletes it.
+const SHARE_CACHE = 'libris-share-target';
+self.addEventListener('fetch', (event) => {
+  const url = new URL(event.request.url);
+  if (event.request.method !== 'POST' || url.origin !== self.location.origin || url.pathname !== '/import/share') return;
+  event.respondWith((async () => {
+    try {
+      const form = await event.request.formData();
+      const cache = await caches.open(SHARE_CACHE);
+      const file = form.get('file');
+      if (file && typeof file === 'object' && file.size > 0 && file.size <= 4 * 1024 * 1024) {
+        await cache.put('/__share/file', new Response(file, { headers: { 'x-file-name': encodeURIComponent(file.name || 'shared.txt') } }));
+      } else {
+        const text = [form.get('title'), form.get('text'), form.get('url')].filter((v) => typeof v === 'string' && v.trim()).join('\n');
+        if (text) await cache.put('/__share/text', new Response(text.slice(0, 5000)));
+      }
+    } catch (e) {
+      // Fall through to the import page without a payload.
+    }
+    return Response.redirect('/import?shared=1', 303);
+  })());
+});

@@ -26,6 +26,7 @@ import {
   Lock,
   ArrowUpDown,
   RefreshCw,
+  FileUp,
 } from 'lucide-react';
 import { BookCoverFallback } from '@/components/BookCoverFallback';
 import { ReadingJourneyDashboard } from '@/components/ReadingJourneyDashboard';
@@ -235,6 +236,11 @@ export default function FavoritesPage() {
             {t('library_subtitle')}
           </p>
         </div>
+        <div style={{ display: 'flex', gap: '0.6rem', flexWrap: 'wrap' }}>
+        <Link href="/import" className="btn btn-outline" style={{ padding: '0.5rem 1rem', fontSize: '0.85rem' }} data-testid="library-import-link">
+          <FileUp size={15} aria-hidden="true" />
+          <span>{t('import_cta')}</span>
+        </Link>
         <button
           onClick={handleRefresh}
           disabled={loading}
@@ -246,6 +252,7 @@ export default function FavoritesPage() {
           <RefreshCw size={15} className={loading ? 'animate-spin' : ''} />
           <span>{t('refresh')}</span>
         </button>
+        </div>
       </div>
 
       {/* Error Banner with Retry */}
@@ -658,7 +665,7 @@ export default function FavoritesPage() {
           </h2>
           <p className="text-muted" style={{ maxWidth: '440px', margin: '0 auto 2rem', fontSize: '0.95rem' }}>
             {searchQuery
-              ? 'Try adjusting your search terms or clearing the filter.'
+              ? t('library_search_hint')
               : t('empty_library_desc')}
           </p>
           <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center', flexWrap: 'wrap' }}>
@@ -670,6 +677,12 @@ export default function FavoritesPage() {
               <Sparkles size={16} color="var(--accent-ink)" />
               <span>{t('ai_discovery_cta')}</span>
             </Link>
+            {!searchQuery && (
+              <Link href="/import" className="btn btn-outline">
+                <FileUp size={16} aria-hidden="true" />
+                <span>{t('import_cta')}</span>
+              </Link>
+            )}
           </div>
         </div>
       )}

@@ -2,7 +2,7 @@ import datetime
 import logging
 from typing import Any, Dict, List, Optional
 
-from postgrest.types import ReturnMethod
+from postgrest.types import CountMethod, ReturnMethod
 from supabase import Client
 
 try:
@@ -1247,3 +1247,51 @@ class SupabaseReminderRepository:
     def record_event(self, user_id: str, user_token: str, event) -> None:
         self._user_client(user_token).table("product_events").insert(
             {"user_id": user_id, **event}, returning=ReturnMethod.minimal).execute()
+
+
+class SupabaseImportRepository:
+    """import_items (migration 19) through the reader's own JWT: RLS limits every call to their rows."""
+
+    FIELDS = "id,source,kind,content_hash,book_title,book_author,book_id,content,location,shelf,rating,created_at"
+
+    def _table(self, user_token: str):
+        from supabase import create_client
+
+        from ...config import Config
+
+        client = create_client(Config.SUPABASE_URL, Config.SUPABASE_ANON_KEY)
+        client.postgrest.auth(user_token)
+        return client.table("import_items")
+
+    def count_pending(self, user_id: str, user_token: str) -> int:
+        res = (self._table(user_token).select("id", count=CountMethod.exact, head=True)
+               .eq("user_id", user_id).eq("status", "pending").execute())
+        return int(res.count or 0)
+
+    def insert_pending(self, user_id: str, user_token: str, rows) -> int:
+        inserted = 0
+        for start in range(0, len(rows), 500):
+            chunk = [{**r, "user_id": user_id} for r in rows[start:start + 500]]
+            res = (self._table(user_token).upsert(chunk, on_conflict="user_id,content_hash", ignore_duplicates=True)
+                   .execute())
+            inserted += len(res.data or [])
+        return inserted
+
+    def list_pending(self, user_id: str, user_token: str, limit: int):
+        return (self._table(user_token).select(self.FIELDS).eq("user_id", user_id).eq("status", "pending")
+                .order("book_title").order("created_at").limit(limit).execute().data) or []
+
+    def get_pending(self, user_id: str, user_token: str, ids):
+        return (self._table(user_token).select(self.FIELDS).eq("user_id", user_id).eq("status", "pending")
+                .in_("id", ids).execute().data) or []
+
+    def set_status(self, user_id: str, user_token: str, ids, status: str) -> int:
+        res = (self._table(user_token).update({"status": status, "decided_at": datetime.datetime.now(datetime.timezone.utc).isoformat()})
+               .eq("user_id", user_id).eq("status", "pending").in_("id", ids).execute())
+        return len(res.data or [])
+
+    def mark_approved(self, user_id: str, user_token: str, item_id: str, note_id, book_id: str) -> None:
+        (self._table(user_token).update({"status": "approved", "note_id": note_id, "book_id": book_id,
+                                         "decided_at": datetime.datetime.now(datetime.timezone.utc).isoformat()},
+                                        returning=ReturnMethod.minimal)
+         .eq("user_id", user_id).eq("id", item_id).execute())

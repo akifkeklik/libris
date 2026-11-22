@@ -125,6 +125,16 @@ export interface ReminderPreferencesInput {
 }
 export interface ReminderPreferences extends ReminderPreferencesInput { saved: boolean; email?: string | null }
 export interface PushSubscriptionInput { endpoint: string; keys: { p256dh: string; auth: string } }
+export interface ImportSummary { parsed: number; new: number; duplicates: number; skipped: number; truncated: number; books: number; books_matched: number }
+export interface ImportItem {
+  id: string; source: string; kind: 'highlight' | 'note' | 'shelf'; book_title: string; book_author: string | null;
+  book_id: string | null; content: string | null; location: string | null; shelf: 'want_to_read' | 'reading' | 'finished' | null;
+  rating: number | null; created_at: string;
+}
+export type ImportDecision =
+  | { action: 'reject'; ids: string[] }
+  | { action: 'approve'; ids: string[]; highlight_as: 'key_takeaway' | 'personal_note'; book_overrides?: Record<string, string> };
+export interface ImportDecisionResult { approved?: number; rejected?: number; needs_book?: string[]; failed?: number; questions_created?: number; questions_deferred?: number }
 export type ProductEvent =
   | { event: 'reminder_opened'; props: { channel: 'email' | 'push'; reminder_date?: string } }
   | { event: 'review_session_completed'; props: { reviewed_count: number } };
@@ -782,6 +792,31 @@ export class ApiService {
       method: 'PUT', headers, body: JSON.stringify(prefs), cache: 'no-store',
     });
     return { ok: res.ok, status: res.status };
+  }
+
+  /** POST /api/imports: one piece of an import file -> approval queue. */
+  static async importPiece(source: string, text: string): Promise<{ ok: boolean; status: number; body: ImportSummary | { error?: string } }> {
+    const headers = await this.getHeaders();
+    const res = await this.fetchWithTimeout(`${API_URL}/api/imports`, {
+      method: 'POST', headers, body: JSON.stringify({ source, text }), cache: 'no-store',
+    }, 60000);
+    const body = await res.json().catch(() => ({}));
+    return { ok: res.ok, status: res.status, body };
+  }
+
+  static async getImportQueue(limit = 300): Promise<{ items: ImportItem[]; pending: number } | null> {
+    const headers = await this.getHeaders();
+    const res = await this.fetchWithTimeout(`${API_URL}/api/imports/pending?limit=${limit}`, { headers, cache: 'no-store' });
+    return res.ok ? ((await res.json()) as { items: ImportItem[]; pending: number }) : null;
+  }
+
+  static async decideImports(body: ImportDecision): Promise<{ ok: boolean; status: number; body: ImportDecisionResult | { error?: string } }> {
+    const headers = await this.getHeaders();
+    const res = await this.fetchWithTimeout(`${API_URL}/api/imports/decide`, {
+      method: 'POST', headers, body: JSON.stringify(body), cache: 'no-store',
+    }, 60000);
+    const json = await res.json().catch(() => ({}));
+    return { ok: res.ok, status: res.status, body: json };
   }
 
   /** VAPID public key for Web Push, or null when push is not configured on the server. */

@@ -30,5 +30,26 @@
     }
   ],
   "id": "/",
-  "scope": "/"
+  "scope": "/",
+  "share_target": {
+    "action": "/import/share",
+    "method": "POST",
+    "enctype": "multipart/form-data",
+    "params": {
+      "title": "title",
+      "text": "text",
+      "url": "url",
+      "files": [
+        {
+          "name": "file",
+          "accept": [
+            "text/plain",
+            "text/csv",
+            ".txt",
+            ".csv"
+          ]
+        }
+      ]
+    }
+  }
 }

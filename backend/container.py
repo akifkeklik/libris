@@ -14,6 +14,7 @@ from backend.application.use_cases.catalog_contributions import (
     LookupBooksUseCase,
 )
 from backend.application.use_cases.export_notes import ExportNotesUseCase
+from backend.application.use_cases.imports import ImportUseCase
 from backend.application.use_cases.interactions import (
     GetUserPreferencesUseCase,
     ResetPreferencesUseCase,
@@ -55,6 +56,7 @@ from backend.infrastructure.adapters.book_lookup_adapter import BookLookupAdapte
 from backend.infrastructure.adapters.enrichment_adapter import GoogleBooksEnrichmentAdapter
 from backend.infrastructure.llm.adapters import GenericLlmAdapter
 from backend.infrastructure.ml.recommender import BookRecommender
+from backend.infrastructure.persistence.in_memory_import_repository import InMemoryImportRepository
 from backend.infrastructure.persistence.in_memory_learning_repository import (
     InMemoryLearningOutcomesRepository,
 )
@@ -66,6 +68,7 @@ from backend.infrastructure.persistence.supabase_adapters import (
     SupabaseAccountAdapter,
     SupabaseAuthPort,
     SupabaseBookDataPort,
+    SupabaseImportRepository,
     SupabaseInteractionRepository,
     SupabaseLearningOutcomesRepository,
     SupabaseNoteRepository,
@@ -284,6 +287,13 @@ class Container:
         self.delete_account_uc = DeleteAccountUseCase(self.account_port) if self.account_port else None
         self.reminder_repo = SupabaseReminderRepository(self.supabase) if self.supabase else None
         self.reminder_prefs_uc = ReminderPreferencesUseCase(self.reminder_repo) if self.reminder_repo else None
+        # Faz 4 imports: the approval queue lives in Supabase (migration 19, reader's JWT).
+        self.import_repo = SupabaseImportRepository() if self.supabase else InMemoryImportRepository()
+        self.import_uc = ImportUseCase(
+            self.import_repo, self.recommender, self.create_note_uc,
+            review_queue_uc=getattr(self, "get_review_queue_uc", None),
+            feedback_uc=self.submit_feedback_uc, book_data_port=self.book_data_port,
+        ) if self.import_repo else None
         self.export_account_uc = ExportAccountDataUseCase(
             self.interaction_repo,
             note_repo=self.note_repo,
