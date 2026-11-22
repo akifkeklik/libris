@@ -124,6 +124,10 @@ export interface ReminderPreferencesInput {
   language: string;
 }
 export interface ReminderPreferences extends ReminderPreferencesInput { saved: boolean; email?: string | null }
+export interface PushSubscriptionInput { endpoint: string; keys: { p256dh: string; auth: string } }
+export type ProductEvent =
+  | { event: 'reminder_opened'; props: { channel: 'email' | 'push'; reminder_date?: string } }
+  | { event: 'review_session_completed'; props: { reviewed_count: number } };
 
 export class ApiService {
   private static async fetchWithTimeout(
@@ -778,6 +782,40 @@ export class ApiService {
       method: 'PUT', headers, body: JSON.stringify(prefs), cache: 'no-store',
     });
     return { ok: res.ok, status: res.status };
+  }
+
+  /** VAPID public key for Web Push, or null when push is not configured on the server. */
+  static async getPushPublicKey(): Promise<string | null> {
+    const headers = await this.getHeaders();
+    const res = await this.fetchWithTimeout(`${API_URL}/api/reminders/push-key`, { headers, cache: 'no-store' });
+    if (!res.ok) return null;
+    const body = (await res.json()) as { public_key?: string | null };
+    return body.public_key || null;
+  }
+
+  static async savePushSubscription(sub: PushSubscriptionInput): Promise<{ ok: boolean; status: number }> {
+    const headers = await this.getHeaders();
+    const res = await this.fetchWithTimeout(`${API_URL}/api/reminders/push-subscription`, {
+      method: 'POST', headers, body: JSON.stringify(sub), cache: 'no-store',
+    });
+    return { ok: res.ok, status: res.status };
+  }
+
+  static async deletePushSubscription(endpoint: string): Promise<{ ok: boolean; status: number }> {
+    const headers = await this.getHeaders();
+    const res = await this.fetchWithTimeout(`${API_URL}/api/reminders/push-subscription`, {
+      method: 'DELETE', headers, body: JSON.stringify({ endpoint }), cache: 'no-store',
+    });
+    return { ok: res.ok, status: res.status };
+  }
+
+  /** First-party product event (reminder_opened, review_session_completed). */
+  static async recordEvent(event: ProductEvent): Promise<boolean> {
+    const headers = await this.getHeaders();
+    const res = await this.fetchWithTimeout(`${API_URL}/api/events`, {
+      method: 'POST', headers, body: JSON.stringify(event), cache: 'no-store',
+    }, 5000);
+    return res.ok;
   }
 
   /** GET /api/account/export: everything stored about the reader, as a downloadable file. */

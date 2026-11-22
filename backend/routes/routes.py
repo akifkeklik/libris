@@ -1463,6 +1463,61 @@ def reminders_unsubscribe():
     return jsonify({"unsubscribed": ok}), 200
 
 
+@activity_bp.route("/reminders/push-key", methods=["GET"])
+@require_auth
+def reminder_push_key():
+    """The VAPID public key the browser subscribes with; empty when push is not configured."""
+    from ..config import Config
+
+    return jsonify({"public_key": Config.VAPID_PUBLIC_KEY or None}), 200
+
+
+@activity_bp.route("/reminders/push-subscription", methods=["POST", "DELETE"])
+@require_auth
+def reminder_push_subscription():
+    from ..application.use_cases.reminders import validate_push_subscription
+
+    repo = getattr(container, "reminder_repo", None)
+    if repo is None:
+        return jsonify({"error": "Reminders are not available on this server"}), 503
+    token = getattr(g, "jwt_token", None)
+    data = request.get_json(silent=True) or {}
+    try:
+        if request.method == "POST":
+            repo.save_push_subscription(token, validate_push_subscription(data))
+            return jsonify({"subscribed": True}), 200
+        endpoint = data.get("endpoint")
+        if not isinstance(endpoint, str) or not endpoint.startswith("https://"):
+            raise ValueError("endpoint must be an https URL")
+        repo.delete_push_subscription(g.user_id, token, endpoint)
+        return jsonify({"subscribed": False}), 200
+    except ValueError as val_err:
+        return jsonify({"error": str(val_err)}), 400
+    except Exception as exc:
+        logger.error("Push subscription failed: %s", type(exc).__name__)
+        return jsonify({"error": "Push notifications are temporarily unavailable"}), 503
+
+
+@activity_bp.route("/events", methods=["POST"])
+@require_auth
+def record_product_event():
+    """First-party product events (reminder_opened, review_session_completed). Never blocks the UI:
+    the client fires and forgets; failures are logged by type only."""
+    from ..application.use_cases.reminders import validate_event
+
+    repo = getattr(container, "reminder_repo", None)
+    if repo is None:
+        return jsonify({"recorded": False}), 202
+    try:
+        repo.record_event(g.user_id, getattr(g, "jwt_token", None), validate_event(request.get_json(silent=True) or {}))
+        return jsonify({"recorded": True}), 201
+    except ValueError as val_err:
+        return jsonify({"error": str(val_err)}), 400
+    except Exception as exc:
+        logger.warning("Product event not recorded: %s", type(exc).__name__)
+        return jsonify({"recorded": False}), 202
+
+
 @activity_bp.route("/account/export", methods=["GET"])
 @require_auth
 def export_account_data():

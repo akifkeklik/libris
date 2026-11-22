@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import { recordEventAction } from '@/app/actions/reminders';
 import {
   Brain,
   CheckCircle2,
@@ -86,7 +87,14 @@ export function LearningDashboard({
     };
   }, [selectedConcept, initialConceptFilter, initialProgress, initialQueue]);
 
+  const reviewedThisSession = useRef(0);
   const handleAttemptSubmitted = (itemId: string) => {
+    reviewedThisSession.current += 1;
+    // review_session_completed: the reader cleared every due question on this visit.
+    if (queue.length > 0 && queue.every((i) => i.id === itemId)) {
+      void recordEventAction({ event: 'review_session_completed', props: { reviewed_count: reviewedThisSession.current } });
+      reviewedThisSession.current = 0;
+    }
     // Optimistically update queue & refresh progress
     setQueue((prev) => prev.filter((i) => i.id !== itemId));
     // Soft reload stats in background

@@ -139,3 +139,66 @@ def build_reminder_email(candidate: Dict[str, Any], app_url: str, api_url: str) 
     )
     headers = {"List-Unsubscribe": f"<{unsub_url}>", "List-Unsubscribe-Post": "List-Unsubscribe=One-Click"}
     return ReminderEmail(subject=subject, html=body, text="\n".join(lines), headers=headers)
+
+
+# ── Web Push ─────────────────────────────────────────────────────────────────
+
+_B64URL = re.compile(r"^[A-Za-z0-9_-]+=*$")
+
+
+def validate_push_subscription(data: Dict[str, Any]) -> Dict[str, str]:
+    """The browser's PushSubscription.toJSON(): {endpoint, keys: {p256dh, auth}}."""
+    endpoint = data.get("endpoint") if isinstance(data, dict) else None
+    keys = data.get("keys") if isinstance(data, dict) else None
+    if not isinstance(endpoint, str) or not endpoint.startswith("https://") or len(endpoint) > 1024:
+        raise ValueError("endpoint must be an https URL")
+    if not isinstance(keys, dict):
+        raise ValueError("keys are required")
+    p256dh, auth = keys.get("p256dh"), keys.get("auth")
+    if not isinstance(p256dh, str) or not 40 <= len(p256dh) <= 200 or not _B64URL.match(p256dh):
+        raise ValueError("keys.p256dh is invalid")
+    if not isinstance(auth, str) or not 8 <= len(auth) <= 100 or not _B64URL.match(auth):
+        raise ValueError("keys.auth is invalid")
+    return {"endpoint": endpoint, "p256dh": p256dh, "auth": auth}
+
+
+def build_reminder_push(candidate: Dict[str, Any], app_url: str) -> Dict[str, str]:
+    """Notification payload. Shows the count and time only: lock screens are visible to others,
+    so the question text stays out of push notifications."""
+    lang = candidate.get("language") if candidate.get("language") in TEXT else "en"
+    t = TEXT[lang]
+    n = int(candidate["due_count"])
+    minutes = max(1, math.ceil(n * SECONDS_PER_CARD / 60))
+    return {
+        "title": _plural(t["subject"], n).format(n=n),
+        "body": _plural(t["minutes"], minutes).format(m=minutes),
+        "url": f"{app_url.rstrip('/')}/learning?utm_source=reminder&reminder_channel=push&reminder_date={candidate['local_date']}",
+        "tag": "libris-review-reminder",
+    }
+
+
+# ── Product events ───────────────────────────────────────────────────────────
+
+_DATE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
+
+
+def validate_event(data: Dict[str, Any]) -> Dict[str, Any]:
+    """Only known events with known, small properties are stored (no free text)."""
+    event = data.get("event") if isinstance(data, dict) else None
+    props = data.get("props") or {}
+    if not isinstance(props, dict):
+        raise ValueError("props must be an object")
+    if event == "reminder_opened":
+        channel = props.get("channel", "email")
+        date = props.get("reminder_date")
+        if channel not in ("email", "push"):
+            raise ValueError("channel must be email or push")
+        if date is not None and (not isinstance(date, str) or not _DATE.match(date)):
+            raise ValueError("reminder_date must be YYYY-MM-DD")
+        return {"event": event, "props": {"channel": channel, **({"reminder_date": date} if date else {})}}
+    if event == "review_session_completed":
+        count = props.get("reviewed_count")
+        if not isinstance(count, int) or isinstance(count, bool) or not 0 <= count <= 1000:
+            raise ValueError("reviewed_count must be a number between 0 and 1000")
+        return {"event": event, "props": {"reviewed_count": count}}
+    raise ValueError("unknown event")

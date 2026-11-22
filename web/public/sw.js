@@ -103,3 +103,42 @@ self.addEventListener('message', (event) => {
     });
   }
 });
+
+// ── Web Push: daily review reminder (Faz 3) ─────────────────────────────────
+// Payload (backend build_reminder_push): { title, body, url, tag }. Count and time only.
+self.addEventListener('push', (event) => {
+  let data = {};
+  try {
+    data = event.data ? event.data.json() : {};
+  } catch (e) {
+    data = {};
+  }
+  const title = data.title || 'Libris';
+  event.waitUntil(
+    self.registration.showNotification(title, {
+      body: data.body || '',
+      tag: data.tag || 'libris-review-reminder',
+      renotify: false,
+      icon: '/icon-192.png',
+      badge: '/icon-192.png',
+      data: { url: data.url || '/learning?utm_source=reminder&reminder_channel=push' },
+    })
+  );
+});
+
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+  const target = new URL((event.notification.data && event.notification.data.url) || '/learning', self.location.origin);
+  // Only ever open our own origin.
+  const url = target.origin === self.location.origin ? target.href : self.location.origin + '/learning';
+  event.waitUntil(
+    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((wins) => {
+      for (const w of wins) {
+        if (new URL(w.url).origin === self.location.origin && 'navigate' in w) {
+          return w.navigate(url).then((c) => (c || w).focus());
+        }
+      }
+      return self.clients.openWindow(url);
+    })
+  );
+});

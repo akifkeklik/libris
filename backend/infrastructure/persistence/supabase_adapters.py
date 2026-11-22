@@ -1235,3 +1235,15 @@ class SupabaseReminderRepository:
 
     def unsubscribe(self, token: str) -> bool:
         return bool(self._anon.rpc("reminders_unsubscribe", {"p_token": token}).execute().data)
+
+    def save_push_subscription(self, user_token: str, sub) -> None:
+        self._user_client(user_token).rpc(
+            "push_subscribe", {"p_endpoint": sub["endpoint"], "p_p256dh": sub["p256dh"], "p_auth": sub["auth"]}).execute()
+
+    def delete_push_subscription(self, user_id: str, user_token: str, endpoint: str) -> None:
+        (self._user_client(user_token).table("push_subscriptions").delete(returning=ReturnMethod.minimal)
+         .eq("user_id", user_id).eq("endpoint", endpoint).execute())
+
+    def record_event(self, user_id: str, user_token: str, event) -> None:
+        self._user_client(user_token).table("product_events").insert(
+            {"user_id": user_id, **event}, returning=ReturnMethod.minimal).execute()

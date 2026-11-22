@@ -1,4 +1,4 @@
-# Hourly review reminders (Faz 3). Each run e-mails readers whose local reminder time has come and
+# Hourly review reminders (Faz 3). Each run e-mails (or push-notifies) readers whose local reminder time has come and
 # who have due questions; the database guarantees at most one e-mail per reader per day.
 #
 # Why here and not a backend endpoint: no public trigger to protect, Render does not have to be
@@ -11,6 +11,8 @@
 #   REMINDER_FROM    e.g. "Libris <reminders@your-domain>" (domain verified in Resend)
 #   APP_URL          public web address, e.g. https://libris.example
 #   API_URL          public API address (for the unsubscribe link)
+#   VAPID_PRIVATE_KEY  Web Push signing key (backend/scripts/generate_vapid_keys.py); optional
+#   VAPID_SUBJECT      e.g. "mailto:you@your-domain"; push runs only when both are set
 name: Review Reminders
 
 on:
@@ -44,7 +46,7 @@ jobs:
           python-version: "3.12"
 
       - name: Install the worker's dependencies only
-        run: python -m pip install --quiet "psycopg2-binary~=2.9.13" "requests==2.34.2"
+        run: python -m pip install --quiet "psycopg2-binary~=2.9.13" "requests==2.34.2" "pywebpush==2.5.0"
 
       - name: Send reminders
         env:
@@ -53,5 +55,7 @@ jobs:
           REMINDER_FROM: ${{ secrets.REMINDER_FROM }}
           APP_URL: ${{ secrets.APP_URL }}
           API_URL: ${{ secrets.API_URL }}
+          VAPID_PRIVATE_KEY: ${{ secrets.VAPID_PRIVATE_KEY }}
+          VAPID_SUBJECT: ${{ secrets.VAPID_SUBJECT }}
           DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run && '--dry-run' || '' }}
         run: python -m backend.scripts.send_reminders $DRY_RUN

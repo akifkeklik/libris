@@ -22,6 +22,7 @@ const privacy: Record<Language, LegalDoc> = {
         'Reading data: your library, shelves, favourites and ratings; your notes, review cards and review history; your preferences (genres, language, theme).',
         'Technical logs: request time, duration and a random request id. Note contents are not written to logs.',
         'If error reporting is enabled: technical error reports without your identity, notes, e-mail address or search text.'] },
+      { title: 'Reminders', body: ["Only if you turn them on in Settings. We store your channel (e-mail or notification), time, time zone, quiet days and language, and for notifications this device's push address and keys. E-mails are sent through Resend; notifications through your browser maker's push service (e.g. Google, Apple, Mozilla) and contain only the number of questions due. We record when a reminder was sent and two usage events (reminder opened, review session completed) to see whether reminders help; no advertising or third-party analytics. Every e-mail has a one-click unsubscribe link."] },
       { title: 'Artificial intelligence (Google Gemini)', body: [
         'When you save a key takeaway, its text (up to 1,500 characters) and the book title are sent to Google Gemini to turn it into a review question.',
         'When you use Ask AI, your question and data about catalogue books are sent to Google Gemini to search the catalogue and write the answer.',
@@ -50,6 +51,7 @@ const privacy: Record<Language, LegalDoc> = {
         'Okuma verileri: kütüphanen, rafların, favorilerin ve puanların; notların, tekrar kartların ve tekrar geçmişin; tercihlerin (türler, dil, tema).',
         'Teknik kayıtlar: istek zamanı, süresi ve rastgele bir istek numarası. Not içerikleri kayıtlara yazılmaz.',
         'Hata raporlama açıksa: kimliğin, notların, e-posta adresin ve arama metnin olmadan teknik hata raporları.'] },
+      { title: 'Hatırlatmalar', body: ["Yalnızca Ayarlar'dan açarsan. Kanalını (e-posta veya bildirim), saatini, saat dilimini, sessiz günlerini ve dilini; bildirimler için bu cihazın push adresini ve anahtarlarını saklarız. E-postalar Resend üzerinden, bildirimler tarayıcının push servisi (ör. Google, Apple, Mozilla) üzerinden gönderilir ve yalnızca bekleyen soru sayısını içerir. Hatırlatmaların işe yarayıp yaramadığını görmek için gönderim zamanını ve iki kullanım olayını (hatırlatma açıldı, tekrar oturumu tamamlandı) kaydederiz; reklam veya üçüncü taraf analitik yoktur. Her e-postada tek tıkla abonelikten çıkma bağlantısı bulunur."] },
       { title: 'Yapay zekâ (Google Gemini)', body: [
         'Önemli bir çıkarım kaydettiğinde, metni (en fazla 1.500 karakter) ve kitabın adı, bir tekrar sorusuna dönüştürülmesi için Google Gemini\'ye gönderilir.',
         'Yapay zekâya sor özelliğini kullandığında, sorun ve katalogdaki kitaplara ait bilgiler, katalogda arama yapmak ve cevabı yazmak için Google Gemini\'ye gönderilir.',
@@ -78,6 +80,7 @@ const privacy: Record<Language, LegalDoc> = {
         'Lesedaten: Bibliothek, Regale, Favoriten und Bewertungen; Notizen, Lernkarten und Lernverlauf; Einstellungen (Genres, Sprache, Design).',
         'Technische Protokolle: Zeitpunkt, Dauer und eine zufällige Anfrage-ID. Notizinhalte werden nicht protokolliert.',
         'Falls die Fehlerberichterstattung aktiv ist: technische Fehlerberichte ohne deine Identität, Notizen, E-Mail-Adresse oder Suchtexte.'] },
+      { title: 'Erinnerungen', body: ["Nur wenn du sie in den Einstellungen einschaltest. Wir speichern Kanal (E-Mail oder Mitteilung), Uhrzeit, Zeitzone, Ruhetage und Sprache, für Mitteilungen außerdem die Push-Adresse und Schlüssel dieses Geräts. E-Mails werden über Resend versendet, Mitteilungen über den Push-Dienst deines Browserherstellers (z. B. Google, Apple, Mozilla) und enthalten nur die Zahl fälliger Fragen. Wir speichern, wann eine Erinnerung versendet wurde, und zwei Nutzungsereignisse (Erinnerung geöffnet, Wiederholung abgeschlossen), um zu sehen, ob Erinnerungen helfen; keine Werbung, keine Analyse durch Dritte. Jede E-Mail enthält einen Abmeldelink mit einem Klick."] },
       { title: 'Künstliche Intelligenz (Google Gemini)', body: [
         'Wenn du eine wichtige Erkenntnis speicherst, werden ihr Text (bis zu 1.500 Zeichen) und der Buchtitel an Google Gemini gesendet, um daraus eine Lernfrage zu machen.',
         'Wenn du „KI fragen“ nutzt, werden deine Frage und Daten zu Katalogbüchern an Google Gemini gesendet, um den Katalog zu durchsuchen und die Antwort zu schreiben.',
@@ -106,6 +109,7 @@ const privacy: Record<Language, LegalDoc> = {
         'Datos de lectura: biblioteca, estanterías, favoritos y valoraciones; notas, tarjetas de repaso e historial; preferencias (géneros, idioma, tema).',
         'Registros técnicos: hora, duración y un identificador aleatorio de la solicitud. El contenido de las notas no se registra.',
         'Si el informe de errores está activo: informes técnicos sin tu identidad, notas, correo ni textos de búsqueda.'] },
+      { title: 'Recordatorios', body: ["Solo si los activas en Ajustes. Guardamos el canal (correo o notificación), la hora, la zona horaria, los días sin recordatorio y el idioma, y para las notificaciones la dirección push y las claves de este dispositivo. Los correos se envían a través de Resend; las notificaciones, a través del servicio push del fabricante de tu navegador (p. ej. Google, Apple, Mozilla) y solo contienen el número de preguntas pendientes. Registramos cuándo se envió un recordatorio y dos eventos de uso (recordatorio abierto, sesión de repaso completada) para saber si los recordatorios ayudan; sin publicidad ni analítica de terceros. Cada correo incluye un enlace para darse de baja con un clic."] },
       { title: 'Inteligencia artificial (Google Gemini)', body: [
         'Cuando guardas una idea clave, su texto (hasta 1.500 caracteres) y el título del libro se envían a Google Gemini para convertirla en una pregunta de repaso.',
         'Cuando usas Preguntar a la IA, tu pregunta y datos de libros del catálogo se envían a Google Gemini para buscar en el catálogo y redactar la respuesta.',
@@ -134,6 +138,7 @@ const privacy: Record<Language, LegalDoc> = {
         'Données de lecture : bibliothèque, étagères, favoris et notes attribuées ; vos notes, cartes de révision et historique ; vos préférences (genres, langue, thème).',
         'Journaux techniques : heure, durée et un identifiant de requête aléatoire. Le contenu des notes n\'est pas journalisé.',
         'Si le signalement d\'erreurs est activé : rapports techniques sans votre identité, vos notes, votre e-mail ni vos recherches.'] },
+      { title: 'Rappels', body: ["Uniquement si vous les activez dans les paramètres. Nous enregistrons le canal (e-mail ou notification), l'heure, le fuseau horaire, les jours sans rappel et la langue, et pour les notifications l'adresse push et les clés de cet appareil. Les e-mails sont envoyés via Resend ; les notifications via le service push de l'éditeur de votre navigateur (p. ex. Google, Apple, Mozilla) et ne contiennent que le nombre de questions dues. Nous enregistrons l'heure d'envoi d'un rappel et deux événements d'usage (rappel ouvert, séance de révision terminée) pour savoir si les rappels aident ; ni publicité ni analyse tierce. Chaque e-mail contient un lien de désabonnement en un clic."] },
       { title: 'Intelligence artificielle (Google Gemini)', body: [
         'Lorsque vous enregistrez une idée clé, son texte (jusqu\'à 1 500 caractères) et le titre du livre sont envoyés à Google Gemini pour en faire une question de révision.',
         'Lorsque vous utilisez « Demander à l\'IA », votre question et des données sur les livres du catalogue sont envoyées à Google Gemini pour chercher dans le catalogue et rédiger la réponse.',
@@ -162,6 +167,7 @@ const privacy: Record<Language, LegalDoc> = {
         'Dati di lettura: libreria, scaffali, preferiti e valutazioni; note, schede di ripasso e cronologia; preferenze (generi, lingua, tema).',
         'Log tecnici: orario, durata e un identificativo casuale della richiesta. Il contenuto delle note non viene registrato.',
         'Se la segnalazione degli errori è attiva: report tecnici senza la tua identità, note, e-mail o testi di ricerca.'] },
+      { title: 'Promemoria', body: ["Solo se li attivi nelle Impostazioni. Salviamo il canale (e-mail o notifica), l'ora, il fuso orario, i giorni senza promemoria e la lingua, e per le notifiche l'indirizzo push e le chiavi di questo dispositivo. Le e-mail vengono inviate tramite Resend; le notifiche tramite il servizio push del produttore del tuo browser (es. Google, Apple, Mozilla) e contengono solo il numero di domande da ripassare. Registriamo quando è stato inviato un promemoria e due eventi d'uso (promemoria aperto, sessione di ripasso completata) per capire se i promemoria aiutano; niente pubblicità né analisi di terze parti. Ogni e-mail contiene un link per annullare l'iscrizione con un clic."] },
       { title: 'Intelligenza artificiale (Google Gemini)', body: [
         'Quando salvi un concetto chiave, il suo testo (fino a 1.500 caratteri) e il titolo del libro vengono inviati a Google Gemini per trasformarlo in una domanda di ripasso.',
         'Quando usi «Chiedi all\'IA», la tua domanda e dati sui libri del catalogo vengono inviati a Google Gemini per cercare nel catalogo e scrivere la risposta.',

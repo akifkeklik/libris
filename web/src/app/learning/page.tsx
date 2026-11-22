@@ -1,16 +1,34 @@
 'use client';
 
-import React, { Suspense } from 'react';
+import React, { Suspense, useEffect } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { useAuth } from '@/components/AuthProvider';
 import { usePreferences } from '@/components/PreferencesProvider';
 import { LearningDashboard } from '@/components/LearningDashboard';
 import { Lock, Loader2 } from 'lucide-react';
+import { recordEventAction } from '@/app/actions/reminders';
 
 function LearningDashboardWithParams() {
   const searchParams = useSearchParams();
   const concept = searchParams.get('concept') || undefined;
+  const fromReminder = searchParams.get('utm_source') === 'reminder';
+  const channel = searchParams.get('reminder_channel') === 'push' ? 'push' : 'email';
+  const reminderDate = searchParams.get('reminder_date') ?? '';
+
+  useEffect(() => {
+    // reminder_opened: once per reminder (date + channel) and tab, even if the page reloads.
+    if (!fromReminder) return;
+    const key = `libris-reminder-opened:${channel}:${reminderDate}`;
+    try {
+      if (sessionStorage.getItem(key)) return;
+      sessionStorage.setItem(key, '1');
+    } catch {
+      // storage blocked: still record once for this render
+    }
+    const date = /^\d{4}-\d{2}-\d{2}$/.test(reminderDate) ? reminderDate : undefined;
+    void recordEventAction({ event: 'reminder_opened', props: { channel, ...(date ? { reminder_date: date } : {}) } });
+  }, [fromReminder, channel, reminderDate]);
 
   return (
     <LearningDashboard

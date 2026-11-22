@@ -118,6 +118,10 @@ jobs:
           psql -v ON_ERROR_STOP=1 -h localhost -U postgres -d postgres -f backend/tests/sql/test_09_10_13_rls_isolation.sql
           echo "Reminders: candidates, idempotency, unsubscribe, RLS and worker role (migration 17)..."
           psql -v ON_ERROR_STOP=1 -h localhost -U postgres -d postgres -f backend/tests/sql/test_17_reminders.sql
+          echo "Push subscriptions, push candidates and product events (migration 18)..."
+          psql -v ON_ERROR_STOP=1 -h localhost -U postgres -d postgres -f backend/tests/sql/test_18_push_and_events.sql
+          psql -v ON_ERROR_STOP=1 -h localhost -U postgres -d postgres -f backend/scripts/rollbacks/18_push_and_events_rollback.sql
+          psql -v ON_ERROR_STOP=1 -h localhost -U postgres -d postgres -f backend/scripts/18_push_and_events.sql
 
       - name: Validate Hardening Scripts (Forward & Rollback)
         env:

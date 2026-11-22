@@ -3,7 +3,14 @@
 import { useEffect, useState } from 'react';
 import { Bell } from 'lucide-react';
 import { usePreferences } from '@/components/PreferencesProvider';
-import { getReminderPreferencesAction, saveReminderPreferencesAction } from '@/app/actions/reminders';
+import {
+  deletePushSubscriptionAction,
+  getPushPublicKeyAction,
+  getReminderPreferencesAction,
+  savePushSubscriptionAction,
+  saveReminderPreferencesAction,
+} from '@/app/actions/reminders';
+import { pushSupport, subscribeToPush, unsubscribeFromPush, type PushSupport } from '@/lib/push';
 import type { TranslationKey } from '@/lib/i18n';
 
 const WEEKDAYS: TranslationKey[] = ['day_sun', 'day_mon', 'day_tue', 'day_wed', 'day_thu', 'day_fri', 'day_sat'];
@@ -30,21 +37,29 @@ function browserTimeZone(): string {
 
 /**
  * Daily review reminder settings. Defaults (approved by the owner): e-mail, 09:00, the browser's
- * time zone, no quiet days. Nothing is sent until the reader saves; the e-mail goes to the
+ * time zone, no quiet days. Push appears once the server has a VAPID key; on iPhone/iPad it needs
+ * Libris on the Home Screen first, which the section explains. Nothing is sent until the reader saves; the e-mail goes to the
  * address of the signed-in account.
  */
 export function ReminderSettings() {
   const { t, preferences } = usePreferences();
-  const [channel, setChannel] = useState<'email' | 'off'>('email');
+  const [channel, setChannel] = useState<'email' | 'push' | 'off'>('email');
+  const [savedChannel, setSavedChannel] = useState<'email' | 'push' | 'off' | null>(null);
+  const [pushKey, setPushKey] = useState<string | null>(null);
+  const [support, setSupport] = useState<PushSupport>('unsupported');
   const [time, setTime] = useState('09:00');
   const [tz, setTz] = useState('UTC');
   const [quiet, setQuiet] = useState<number[]>([]);
   const [saved, setSaved] = useState<boolean | null>(null);
-  const [status, setStatus] = useState<'idle' | 'saving' | 'ok' | 'invalid' | 'unavailable'>('idle');
+  const [status, setStatus] = useState<'idle' | 'saving' | 'ok' | 'invalid' | 'unavailable' | 'push_denied'>('idle');
   const [zones, setZones] = useState<string[]>([]);
 
   useEffect(() => {
     // Browser-only values are set after loading, not during render (the server's zone differs).
+    getPushPublicKeyAction().then((key) => {
+      setPushKey(key);
+      setSupport(pushSupport());
+    });
     getReminderPreferencesAction().then((p) => {
       setZones(supportedZones());
       if (!p || !p.saved) {
@@ -53,7 +68,8 @@ export function ReminderSettings() {
         return;
       }
       setSaved(true);
-      setChannel(p.channel === 'off' ? 'off' : 'email');
+      setChannel(p.channel);
+      setSavedChannel(p.channel);
       setTime(p.local_time);
       setTz(p.timezone);
       setQuiet(p.quiet_days ?? []);
@@ -62,16 +78,35 @@ export function ReminderSettings() {
 
   const save = async () => {
     setStatus('saving');
+    if (channel === 'push') {
+      // Permission prompt must come straight from this click.
+      const sub = pushKey ? await subscribeToPush(pushKey) : null;
+      if (sub === 'denied') {
+        setSupport(pushSupport());
+        setStatus('push_denied');
+        return;
+      }
+      if (!sub || !(await savePushSubscriptionAction(sub))) {
+        setStatus('unavailable');
+        return;
+      }
+    } else if (savedChannel === 'push') {
+      const endpoint = await unsubscribeFromPush();
+      if (endpoint) await deletePushSubscriptionAction(endpoint);
+    }
     const res = await saveReminderPreferencesAction({
       channel, local_time: time, timezone: tz, quiet_days: quiet, language: preferences.language,
     });
     if (res.ok) {
       setSaved(true);
+      setSavedChannel(channel);
       setStatus('ok');
     } else {
       setStatus(res.reason ?? 'unavailable');
     }
   };
+
+  const pushReady = !!pushKey && support === 'supported';
 
   const toggleDay = (d: number) => setQuiet((q) => (q.includes(d) ? q.filter((x) => x !== d) : [...q, d].sort()));
 
@@ -91,8 +126,18 @@ export function ReminderSettings() {
         <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
           <label><input type="radio" name="reminder-channel" checked={channel === 'email'} onChange={() => setChannel('email')} /> {t('reminders_channel_email')}</label>
           <label><input type="radio" name="reminder-channel" checked={channel === 'off'} onChange={() => setChannel('off')} /> {t('reminders_channel_off')}</label>
-          <label className="text-muted"><input type="radio" name="reminder-channel" disabled /> {t('reminders_channel_push_soon')}</label>
+          {pushKey && (
+            <label className={pushReady ? undefined : 'text-muted'}>
+              <input type="radio" name="reminder-channel" checked={channel === 'push'} disabled={!pushReady}
+                onChange={() => setChannel('push')} data-testid="reminder-channel-push" /> {t('reminders_channel_push')}
+            </label>
+          )}
         </div>
+        {pushKey && support !== 'supported' && (
+          <p role="note" data-testid="push-hint" style={{ fontSize: '0.82rem', margin: '0.6rem 0 0', color: 'var(--text-muted-strong)', lineHeight: 1.5 }}>
+            {t(support === 'ios-needs-install' ? 'reminders_push_ios_hint' : support === 'denied' ? 'reminders_push_denied' : 'reminders_push_unsupported')}
+          </p>
+        )}
       </fieldset>
 
       <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
@@ -124,7 +169,8 @@ export function ReminderSettings() {
         {status === 'saving' ? t('loading') : t('reminders_save')}
       </button>
       <p role="status" aria-live="polite" style={{ fontSize: '0.875rem', marginTop: '0.75rem' }}>
-        {status === 'ok' && t(channel === 'off' ? 'reminders_saved_off' : 'reminders_saved_on', { time, tz })}
+        {status === 'ok' && t(channel === 'off' ? 'reminders_saved_off' : channel === 'push' ? 'reminders_saved_push' : 'reminders_saved_on', { time, tz })}
+        {status === 'push_denied' && <span style={{ color: 'var(--danger)' }}>{t('reminders_push_denied')}</span>}
         {status === 'invalid' && <span style={{ color: 'var(--danger)' }}>{t('reminders_invalid')}</span>}
         {status === 'unavailable' && <span style={{ color: 'var(--danger)' }}>{t('reminders_unavailable')}</span>}
       </p>

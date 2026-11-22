@@ -170,3 +170,87 @@ def test_resend_adapter_payload_and_errors():
         with pytest.raises(EmailSendError) as err:
             port.send(EmailMessage("a@b.co", "S", "h", "t"))
         assert err.value.retryable is retryable and "re_test_key" not in str(err.value)
+
+
+# ── Web Push and product events ──────────────────────────────────────────────
+
+from backend.application.use_cases.reminders import (  # noqa: E402
+    build_reminder_push,
+    validate_event,
+    validate_push_subscription,
+)
+from backend.infrastructure.push.webpush_adapter import FakePushAdapter  # noqa: E402
+
+SUB = {"endpoint": "https://fcm.googleapis.com/fcm/send/abc", "keys": {"p256dh": "B" + "x" * 86, "auth": "a" * 22}}
+
+
+def test_push_subscription_validation():
+    assert validate_push_subscription(SUB) == {"endpoint": SUB["endpoint"], "p256dh": "B" + "x" * 86, "auth": "a" * 22}
+    for bad in ({**SUB, "endpoint": "http://x"}, {**SUB, "keys": {"p256dh": "short", "auth": "a" * 22}},
+                {**SUB, "keys": {"p256dh": "B" + "x" * 86, "auth": "bad auth!"}}, {"endpoint": SUB["endpoint"]}, []):
+        with pytest.raises(ValueError):
+            validate_push_subscription(bad)
+
+
+def test_push_payload_has_count_and_link_but_never_the_question():
+    p = build_reminder_push(CAND, "https://libris.app")
+    assert p["title"] == "Seni bekleyen 3 soru var" and p["body"] == "Yaklaşık 2 dakika."
+    assert p["url"] == "https://libris.app/learning?utm_source=reminder&reminder_channel=push&reminder_date=2026-11-23"
+    assert "Orwell" not in str(p)
+
+
+def test_events_are_whitelisted_with_small_typed_props():
+    assert validate_event({"event": "reminder_opened", "props": {"channel": "push", "reminder_date": "2026-11-23"}}) == \
+        {"event": "reminder_opened", "props": {"channel": "push", "reminder_date": "2026-11-23"}}
+    assert validate_event({"event": "review_session_completed", "props": {"reviewed_count": 7, "extra": "x"}}) == \
+        {"event": "review_session_completed", "props": {"reviewed_count": 7}}
+    for bad in ({"event": "page_view"}, {"event": "reminder_opened", "props": {"channel": "sms"}},
+                {"event": "reminder_opened", "props": {"reminder_date": "<script>"}},
+                {"event": "review_session_completed", "props": {"reviewed_count": True}}):
+        with pytest.raises(ValueError):
+            validate_event(bad)
+
+
+class PushStore(Store):
+    def __init__(self, push, subs):
+        super().__init__([])
+        self.push, self.subs, self.deleted = push, subs, []
+
+    def push_candidates(self, now):
+        return [{**c, "channel": "push"} for c in self.push]
+
+    def subscriptions(self, user_id):
+        return list(self.subs.get(user_id, []))
+
+    def delete_subscription(self, endpoint):
+        self.deleted.append(endpoint)
+
+
+def _sub(ep):
+    return {"endpoint": ep, "p256dh": "k", "auth": "s"}
+
+
+def test_push_goes_to_every_device_once_and_gone_devices_are_deleted():
+    store = PushStore([CAND, {**CAND, "user_id": "u2"}, {**CAND, "user_id": "u3"}],
+                      {"u1": [_sub("https://p/1a"), _sub("https://p/1b")], "u2": [_sub("https://p/2")]})
+    port = FakePushAdapter(gone={"https://p/1b", "https://p/2"})
+    stats = run(store, None, "https://a", "https://b", push_port=port)
+    assert [ep for ep, _ in port.sent] == ["https://p/1a"]
+    assert store.deleted == ["https://p/1b", "https://p/2"]
+    assert stats["push_sent"] == 1 and stats["push_gone"] == 2 and stats["push_skipped"] == 1  # u3: no device
+    assert stats["push_failed"] == 1 and store.released == []  # u2: only device gone -> nothing to retry
+    assert stats["candidates"] == 0  # e-mail channel not configured -> skipped entirely
+
+
+def test_push_temporary_failure_releases_the_claim_for_the_next_hour():
+    store = PushStore([CAND], {"u1": [_sub("https://p/1")]})
+    stats = run(store, None, "https://a", "https://b", push_port=FakePushAdapter(fail={"https://p/1": True}))
+    assert store.released == ["u1"] and stats["push_failed"] == 1
+
+
+def test_push_endpoints_and_events_routes(app):
+    a, repo = app
+    c = a.test_client()
+    assert c.post("/api/reminders/push-subscription", json=SUB).status_code == 401
+    assert c.post("/api/events", json={"event": "reminder_opened"}).status_code == 401
+    assert c.get("/api/reminders/push-key").status_code == 401
