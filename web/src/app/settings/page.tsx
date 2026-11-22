@@ -29,6 +29,7 @@ import Link from 'next/link';
 import { AVAILABLE_GENRES } from '@/components/TasteProfileModal';
 import { getUserPreferencesAction, updateUserPreferencesAction } from '@/app/actions/user';
 import { DataExportSection } from '@/components/DataExportSection';
+import { LegalLinks } from '@/components/LegalLinks';
 import { DeleteAccountSection } from '@/components/DeleteAccountSection';
 import { translateGenre } from '@/lib/i18n';
 import { THEME_IDS, THEME_SWATCHES } from '@/lib/themes';
@@ -727,7 +728,8 @@ export default function SettingsPage() {
               </div>
             )}
           </div>
-          {user && <DataExportSection />}
+          <LegalLinks />
+        {user && <DataExportSection />}
           {user?.email && <DeleteAccountSection email={user.email} />}
         </section>
 

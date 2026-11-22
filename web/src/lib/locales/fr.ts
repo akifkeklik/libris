@@ -9,6 +9,7 @@ export const fr: Record<TranslationKey, string> = {
   loading: 'Chargement...',
   error: 'Erreur',
   retry: 'Réessayer',
+  signup_legal_notice: "En créant un compte, vous acceptez :",
   export_data_title: "Télécharger mes données",
   export_data_body: "Tout ce que Libris conserve sur vous : notes, cartes de révision, historique, bibliothèque, favoris et profil.",
   export_data_json: "Télécharger le JSON",

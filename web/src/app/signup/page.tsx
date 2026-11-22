@@ -7,6 +7,7 @@ import Link from 'next/link';
 import { sanitizeRedirect } from '@/lib/safeRedirect';
 import { usePreferences } from '@/components/PreferencesProvider';
 import { OAuthButtons } from '@/components/OAuthButtons';
+import { LegalLinks } from '@/components/LegalLinks';
 
 function SignUpForm() {
   const { t } = usePreferences();
@@ -121,6 +122,7 @@ function SignUpForm() {
           </button>
         </form>
         <OAuthButtons redirect={safeRedirect} />
+        <LegalLinks intro={t('signup_legal_notice')} />
         </>
       )}
       
