@@ -112,6 +112,8 @@ jobs:
           psql -v ON_ERROR_STOP=1 -h localhost -U postgres -d postgres -f backend/scripts/15_reader_catalog_contributions.sql
           echo "Runtime checks for add_catalog_book..."
           psql -v ON_ERROR_STOP=1 -h localhost -U postgres -d postgres -f backend/tests/sql/test_15_add_catalog_book.sql
+          echo "Runtime checks for delete_my_account (migration 16)..."
+          psql -v ON_ERROR_STOP=1 -h localhost -U postgres -d postgres -f backend/tests/sql/test_16_account_deletion.sql
 
       - name: Validate Hardening Scripts (Forward & Rollback)
         env:

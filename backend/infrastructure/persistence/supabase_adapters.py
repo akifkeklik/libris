@@ -1174,3 +1174,30 @@ class SupabaseLearningOutcomesRepository:
             "successful_recalls": successful,
             "struggled_recalls": struggled,
         }
+
+
+class SupabaseAccountAdapter:
+    """
+    Self-service account deletion through the delete_my_account() RPC (migration 16), called
+    with the reader's own JWT: the database deletes exactly the account that owns the token, and
+    ON DELETE CASCADE removes every user table row. No service-role key is involved.
+    """
+
+    def delete_current_account(self, user_token: str) -> None:
+        from ...domain.ports import AccountDeletionUnavailable
+
+        if not user_token:
+            raise ValueError("user token is required")
+        try:
+            from supabase import create_client
+
+            from ...config import Config
+
+            client = create_client(Config.SUPABASE_URL, Config.SUPABASE_ANON_KEY)
+            client.postgrest.auth(user_token)
+            client.rpc("delete_my_account", {}).execute()
+        except Exception as exc:
+            # PGRST202 = function not found: migration 16 is not applied yet.
+            missing = "PGRST202" in str(exc) or "delete_my_account" in str(exc)
+            logger.error("Account deletion failed (%s)", "rpc missing" if missing else type(exc).__name__)
+            raise AccountDeletionUnavailable("account deletion is not available") from exc

@@ -1418,6 +1418,27 @@ def update_review_settings(note_id: str):
 # ─────────────────────────────────────────────────────────────────────────────
 
 
+@activity_bp.route("/account", methods=["DELETE"])
+@require_auth
+def delete_account():
+    """Deletes the signed-in reader's account and all of their data. Body: {"confirm": true}."""
+    from ..domain.ports import AccountDeletionUnavailable
+
+    use_case = getattr(container, "delete_account_uc", None)
+    if use_case is None:
+        return jsonify({"error": "Account deletion is not available on this server"}), 503
+    data = request.get_json(silent=True) or {}
+    try:
+        use_case.execute(user_id=g.user_id, user_token=getattr(g, "jwt_token", None), confirm=data.get("confirm"))
+    except PermissionError:
+        return jsonify({"error": "Unauthorized"}), 401
+    except ValueError as val_err:
+        return jsonify({"error": str(val_err)}), 400
+    except AccountDeletionUnavailable:
+        return jsonify({"error": "Account deletion is temporarily unavailable"}), 503
+    return jsonify({"status": "deleted"}), 200
+
+
 @activity_bp.route("/notes/export", methods=["GET"])
 @require_auth
 def export_notes():

@@ -138,6 +138,16 @@ class AuthPort(Protocol):
     def verify_token(self, token: str) -> Any: ...
 
 
+class AccountDeletionUnavailable(RuntimeError):
+    """The database cannot delete accounts yet (migration 16 not applied) or is unreachable."""
+
+
+class AccountPort(Protocol):
+    def delete_current_account(self, user_token: str) -> None:
+        """Deletes the account that owns `user_token`, and with it all of that user's data."""
+        ...
+
+
 class LlmPort(Protocol):
     def generate_response(self, system_prompt: str, user_prompt: str) -> Optional[str]:
         """
