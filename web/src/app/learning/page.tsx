@@ -35,7 +35,7 @@ export default function LearningPage() {
   if (!user) {
     return (
       <div className="container mx-auto px-4 py-20 max-w-md text-center space-y-6">
-        <div className="w-16 h-16 rounded-full bg-[var(--accent)]/10 text-[var(--accent)] mx-auto flex items-center justify-center">
+        <div className="w-16 h-16 rounded-full bg-[var(--accent)]/10 text-[var(--primary-strong)] mx-auto flex items-center justify-center">
           <Lock className="w-8 h-8" />
         </div>
         <div className="space-y-2">
@@ -65,15 +65,15 @@ export default function LearningPage() {
   }
 
   return (
-    <main className="container mx-auto px-4 py-8 max-w-7xl">
+    <div className="container mx-auto px-4 py-8 max-w-7xl">
       <Suspense fallback={
         <div className="p-12 text-center flex flex-col items-center justify-center gap-3">
-          <Loader2 className="w-6 h-6 animate-spin text-[var(--accent)]" />
+          <Loader2 className="w-6 h-6 animate-spin text-[var(--primary-strong)]" />
           <p className="text-sm text-[var(--text-secondary)]">{t('learning_loading')}</p>
         </div>
       }>
         <LearningDashboardWithParams />
       </Suspense>
-    </main>
+    </div>
   );
 }

@@ -187,7 +187,7 @@ export default async function BookPage({ params }: { params: Promise<{ isbn: str
                 By {book.authors}
               </Link>
             ) : (
-              <span style={{ fontSize: '1.25rem', color: 'var(--muted)' }}>{t('unknown_author')}</span>
+              <span style={{ fontSize: '1.25rem', color: 'var(--text-muted-strong)' }}>{t('unknown_author')}</span>
             )}
           </div>
           
@@ -201,7 +201,7 @@ export default async function BookPage({ params }: { params: Promise<{ isbn: str
             
             {book.pageCount > 0 && (
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'var(--tint-2)', padding: '0.5rem 1rem', borderRadius: '10px' }}>
-                <FileText size={16} color="var(--muted)" />
+                <FileText size={16} color="var(--text-muted-strong)" />
                 <span className="text-muted">{t('book_pages_label')}</span>
                 <span style={{ fontWeight: 600 }}>{book.pageCount}</span>
               </div>
@@ -209,27 +209,27 @@ export default async function BookPage({ params }: { params: Promise<{ isbn: str
             
             {book.publishedDate && (
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'var(--tint-2)', padding: '0.5rem 1rem', borderRadius: '10px' }}>
-                <Calendar size={16} color="var(--muted)" />
+                <Calendar size={16} color="var(--text-muted-strong)" />
                 <span className="text-muted">{t('book_published_label')}</span>
                 <span style={{ fontWeight: 600 }}>{book.publishedDate}</span>
               </div>
             )}
 
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'var(--tint-2)', padding: '0.5rem 1rem', borderRadius: '10px' }}>
-              <Hash size={16} color="var(--muted)" />
+              <Hash size={16} color="var(--text-muted-strong)" />
               <span className="text-muted">ISBN:</span>
               <span style={{ fontWeight: 500, fontSize: '0.85rem' }}>{book.isbn13}</span>
             </div>
           </div>
           
-          <a href="#learning-notes-heading" className="btn btn-primary" data-testid="book-takeaway-cta" style={{ gap: '0.5rem', marginBottom: '2rem' }}>
+          <a href="#add-takeaway" className="btn btn-primary" data-testid="book-takeaway-cta" style={{ gap: '0.5rem', marginBottom: '2rem' }}>
             <PenTool size={16} aria-hidden="true" /> {t('book_add_takeaway_cta')}
           </a>
 
           {/* Categories */}
           {categoryList.length > 0 && (
             <div style={{ marginBottom: '2rem' }}>
-              <h3 style={{ fontSize: '0.95rem', color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.75rem' }}>
+              <h3 style={{ fontSize: '0.95rem', color: 'var(--text-muted-strong)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.75rem' }}>
                 {t('book_genres_label')}
               </h3>
               <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>

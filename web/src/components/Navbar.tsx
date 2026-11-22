@@ -51,11 +51,11 @@ export function Navbar() {
               fontSize: '0.8rem',
               borderRadius: '9999px',
               gap: '0.4rem',
-              color: 'var(--text-muted)',
+              color: 'var(--text-muted-strong)',
             }}
             title={t('nav_search_title')}
           >
-            <Search size={14} color="var(--text-muted)" aria-hidden="true" />
+            <Search size={14} color="var(--text-muted-strong)" aria-hidden="true" />
             <span className="nav-link-text">{t('search') || 'Search...'}</span>
             <kbd
               aria-hidden="true"
@@ -139,11 +139,12 @@ export function Navbar() {
               {user ? (
                 <button
                   onClick={signOut}
+                  aria-label={t('nav_signout')}
                   id="nav-signout-btn"
                   className="btn btn-outline"
                   style={{ padding: '0.5rem 1rem', fontSize: '0.875rem' }}
                 >
-                  <LogOut size={16} />
+                  <LogOut size={16} aria-hidden="true" />
                   <span>{t('nav_signout')}</span>
                 </button>
               ) : (

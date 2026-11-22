@@ -126,7 +126,7 @@ export function NotesExportModal({ isOpen, onClose, bookId }: NotesExportModalPr
         {/* Modal Header */}
         <div className="flex items-center justify-between p-5 border-b border-[var(--border)]">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-[var(--accent)]/10 text-[var(--accent)] flex items-center justify-center">
+            <div className="w-8 h-8 rounded-lg bg-[var(--accent)]/10 text-[var(--primary-strong)] flex items-center justify-center">
               <FileText className="w-4 h-4" />
             </div>
             <div>
@@ -149,7 +149,7 @@ export function NotesExportModal({ isOpen, onClose, bookId }: NotesExportModalPr
         <div className="p-5 flex-1 overflow-y-auto">
           {loading ? (
             <div className="h-60 flex flex-col items-center justify-center gap-3">
-              <Loader2 className="w-6 h-6 animate-spin text-[var(--accent)]" />
+              <Loader2 className="w-6 h-6 animate-spin text-[var(--primary-strong)]" />
               <p className="text-sm text-[var(--text-secondary)]">{t('loading')}</p>
             </div>
           ) : error ? (

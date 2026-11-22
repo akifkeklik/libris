@@ -33,7 +33,7 @@ export function OAuthButtons({ redirect }: { redirect: string }) {
 
   return (
     <div data-testid="oauth-buttons" style={{ marginTop: '1.5rem' }}>
-      <div aria-hidden="true" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', margin: '0 0 1rem', color: 'var(--text-muted)', fontSize: '0.8rem' }}>
+      <div aria-hidden="true" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', margin: '0 0 1rem', color: 'var(--text-muted-strong)', fontSize: '0.8rem' }}>
         <span style={{ flex: 1, height: 1, background: 'var(--card-border)' }} />
         {t('auth_or')}
         <span style={{ flex: 1, height: 1, background: 'var(--card-border)' }} />

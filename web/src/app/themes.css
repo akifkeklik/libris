@@ -12,7 +12,7 @@
 /* ── Derived tokens (shared by all 20 combinations) ─────────────────────── */
 html[data-palette] {
   --foreground: var(--text-primary);
-  --muted: var(--text-muted);
+  --muted: var(--text-muted-strong);
   --focus: var(--primary);
   --link: var(--primary);
   --accent-foreground: var(--on-primary);

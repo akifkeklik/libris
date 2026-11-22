@@ -196,7 +196,7 @@ export default async function Home({
 
         {/* Quick Genre Chips */}
         <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center', flexWrap: 'wrap', alignItems: 'center' }}>
-          <span style={{ fontSize: '0.85rem', color: 'var(--muted)', marginRight: '0.25rem' }}>{t('popular_genre_label')}</span>
+          <span style={{ fontSize: '0.85rem', color: 'var(--text-muted-strong)', marginRight: '0.25rem' }}>{t('popular_genre_label')}</span>
           {POPULAR_GENRES.map(genre => (
             <Link
               key={genre}

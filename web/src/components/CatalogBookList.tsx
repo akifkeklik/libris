@@ -160,7 +160,7 @@ export function CatalogBookList({
               display: 'flex',
               alignItems: 'center',
               gap: '0.5rem',
-              color: 'var(--muted)',
+              color: 'var(--text-muted-strong)',
               fontSize: '0.95rem',
               padding: '0.5rem 1rem',
               borderRadius: '9999px',
@@ -182,7 +182,7 @@ export function CatalogBookList({
               gap: '1rem',
               marginTop: '0.5rem',
               fontSize: '0.9rem',
-              color: 'var(--muted)',
+              color: 'var(--text-muted-strong)',
             }}
           >
             <Link

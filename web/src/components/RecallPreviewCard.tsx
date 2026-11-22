@@ -45,9 +45,9 @@ export function RecallPreviewCard({ item, onDismiss }: RecallPreviewCardProps) {
         background: 'color-mix(in srgb, var(--primary) 10%, transparent)',
       }}
     >
-      <Brain size={22} aria-hidden="true" style={{ color: 'var(--primary)', flexShrink: 0, marginTop: '0.15rem' }} />
+      <Brain size={22} aria-hidden="true" style={{ color: 'var(--primary-strong)', flexShrink: 0, marginTop: '0.15rem' }} />
       <div style={{ flex: 1, minWidth: 0 }}>
-        <p style={{ margin: 0, fontSize: '0.8rem', fontWeight: 700, color: 'var(--primary)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+        <p style={{ margin: 0, fontSize: '0.8rem', fontWeight: 700, color: 'var(--primary-strong)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
           {t('recall_card_title')}
         </p>
         <p style={{ margin: '0.35rem 0', fontSize: '1.02rem', fontWeight: 600, color: 'var(--text-primary)', overflowWrap: 'anywhere' }}>
@@ -55,7 +55,7 @@ export function RecallPreviewCard({ item, onDismiss }: RecallPreviewCardProps) {
         </p>
         <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
           {when ? t('recall_card_next', { when }) : null}{' '}
-          <Link href="/learning" style={{ color: 'var(--primary)', fontWeight: 600 }}>
+          <Link href="/learning" style={{ color: 'var(--primary-strong)', fontWeight: 600 }}>
             {t('recall_card_open')}
           </Link>
         </p>
@@ -65,7 +65,7 @@ export function RecallPreviewCard({ item, onDismiss }: RecallPreviewCardProps) {
         onClick={onDismiss}
         aria-label={t('recall_card_dismiss')}
         title={t('recall_card_dismiss')}
-        style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', padding: '0.15rem' }}
+        style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted-strong)', padding: '0.15rem' }}
       >
         <X size={18} aria-hidden="true" />
       </button>

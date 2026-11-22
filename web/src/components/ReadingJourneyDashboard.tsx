@@ -443,7 +443,7 @@ export function ReadingJourneyDashboard({
             gap: '1.5rem',
             marginTop: '0.85rem',
             fontSize: '0.8rem',
-            color: 'var(--text-muted)',
+            color: 'var(--text-muted-strong)',
             flexWrap: 'wrap',
           }}
         >
@@ -464,7 +464,7 @@ export function ReadingJourneyDashboard({
         {/* Weekly Reading Activity Visualizer */}
         <div style={{ marginTop: '1.25rem', paddingTop: '1.25rem', borderTop: '1px solid var(--card-border)' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.65rem' }}>
-            <span style={{ fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text-muted)' }}>
+            <span style={{ fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text-muted-strong)' }}>
               {t('rj_activity_title')}
             </span>
             <span style={{ fontSize: '0.75rem', color: 'var(--electric-blue)', fontWeight: 600 }}>

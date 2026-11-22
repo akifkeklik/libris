@@ -131,7 +131,7 @@ export function TasteProfileModal({
             alignItems: 'center',
             justifyContent: 'center',
             cursor: 'pointer',
-            color: 'var(--text-muted)',
+            color: 'var(--text-muted-strong)',
             transition: 'all 0.2s ease',
           }}
         >
@@ -230,7 +230,7 @@ export function TasteProfileModal({
         </div>
 
         {/* Selection Status indicator */}
-        <div style={{ textAlign: 'center', marginBottom: '1.5rem', fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+        <div style={{ textAlign: 'center', marginBottom: '1.5rem', fontSize: '0.85rem', color: 'var(--text-muted-strong)' }}>
           {selectedGenres.length > 0 ? (
             <span style={{ color: 'var(--primary)', fontWeight: 600 }}>
               {t('genres_selected_count', { count: selectedGenres.length })}

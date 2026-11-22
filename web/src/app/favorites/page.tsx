@@ -188,7 +188,7 @@ export default function FavoritesPage() {
   // 1. Deliberate Unauthenticated State
   if (!authLoading && !user) {
     return (
-      <main className="container" style={{ padding: '4rem 1rem', minHeight: '65vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <div className="container" style={{ padding: '4rem 1rem', minHeight: '65vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <div
           className="glass-panel text-center animate-fade-in"
           style={{ maxWidth: '520px', width: '100%', padding: '3rem 2rem' }}
@@ -220,12 +220,12 @@ export default function FavoritesPage() {
             </Link>
           </div>
         </div>
-      </main>
+      </div>
     );
   }
 
   return (
-    <main className="container" style={{ padding: '2rem 1rem 4rem' }}>
+    <div className="container" style={{ padding: '2rem 1rem 4rem' }}>
       {/* Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '1rem', marginBottom: '2rem' }}>
         <div>
@@ -303,7 +303,7 @@ export default function FavoritesPage() {
           >
             <BookOpen size={16} />
             <span>{t('tab_all')}</span>
-            <span style={{ fontSize: '0.75rem', opacity: 0.75 }}>({counts.total})</span>
+            <span style={{ fontSize: '0.75rem' }}>({counts.total})</span>
           </button>
 
           <button
@@ -315,7 +315,7 @@ export default function FavoritesPage() {
           >
             <Heart size={16} color="#f472b6" fill={activeTab === 'favorite' ? '#f472b6' : 'none'} />
             <span>{t('tab_favorites')}</span>
-            <span style={{ fontSize: '0.75rem', opacity: 0.75 }}>({counts.favorites})</span>
+            <span style={{ fontSize: '0.75rem' }}>({counts.favorites})</span>
           </button>
 
           <button
@@ -327,7 +327,7 @@ export default function FavoritesPage() {
           >
             <Bookmark size={16} color="var(--primary)" fill={activeTab === 'want_to_read' ? 'currentColor' : 'none'} />
             <span>{t('tab_want_to_read')}</span>
-            <span style={{ fontSize: '0.75rem', opacity: 0.75 }}>({counts.wantToRead})</span>
+            <span style={{ fontSize: '0.75rem' }}>({counts.wantToRead})</span>
           </button>
 
           <button
@@ -339,7 +339,7 @@ export default function FavoritesPage() {
           >
             <CheckCircle size={16} color="var(--success)" />
             <span>{t('tab_finished')}</span>
-            <span style={{ fontSize: '0.75rem', opacity: 0.75 }}>({counts.finished})</span>
+            <span style={{ fontSize: '0.75rem' }}>({counts.finished})</span>
           </button>
 
           {counts.reading > 0 && (
@@ -352,7 +352,7 @@ export default function FavoritesPage() {
             >
               <BookOpen size={16} color="#fbbf24" />
               <span>{t('tab_reading')}</span>
-              <span style={{ fontSize: '0.75rem', opacity: 0.75 }}>({counts.reading})</span>
+              <span style={{ fontSize: '0.75rem' }}>({counts.reading})</span>
             </button>
           )}
 
@@ -365,7 +365,7 @@ export default function FavoritesPage() {
           >
             <PenTool size={16} color="var(--accent, var(--accent))" />
             <span>{t('tab_notes')}</span>
-            <span style={{ fontSize: '0.75rem', opacity: 0.75 }}>({notes.length})</span>
+            <span style={{ fontSize: '0.75rem' }}>({notes.length})</span>
           </button>
         </div>
 
@@ -374,7 +374,7 @@ export default function FavoritesPage() {
           <div style={{ position: 'relative', flex: '1', minWidth: '220px' }}>
             <Search
               size={16}
-              style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--muted)' }}
+              style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted-strong)' }}
             />
             <input
               type="text"
@@ -388,7 +388,7 @@ export default function FavoritesPage() {
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <ArrowUpDown size={16} color="var(--muted)" />
+            <ArrowUpDown size={16} color="var(--text-muted-strong)" />
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value as SortOption)}
@@ -422,7 +422,7 @@ export default function FavoritesPage() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
           {/* Note Type Filter Bar */}
           <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', alignItems: 'center' }}>
-            <span style={{ fontSize: '0.85rem', color: 'var(--muted)', marginRight: '0.5rem' }}>
+            <span style={{ fontSize: '0.85rem', color: 'var(--text-muted-strong)', marginRight: '0.5rem' }}>
               {t('filters')}:
             </span>
             {(['all', 'personal_note', 'key_takeaway', 'question'] as const).map(ftype => {
@@ -446,7 +446,7 @@ export default function FavoritesPage() {
                     cursor: 'pointer',
                     background: isSel ? 'var(--primary)' : 'var(--tint-2)',
                     border: '1px solid ' + (isSel ? 'var(--primary)' : 'var(--tint-4)'),
-                    color: isSel ? 'var(--on-primary)' : 'var(--muted)',
+                    color: isSel ? 'var(--on-primary)' : 'var(--text-muted-strong)',
                     fontWeight: isSel ? 600 : 400,
                   }}
                 >
@@ -476,7 +476,7 @@ export default function FavoritesPage() {
                   className="glass-panel text-center animate-fade-in"
                   style={{ padding: '3.5rem 2rem', borderRadius: '16px' }}
                 >
-                  <PenTool size={36} color="var(--muted)" style={{ margin: '0 auto 1rem' }} />
+                  <PenTool size={36} color="var(--text-muted-strong)" style={{ margin: '0 auto 1rem' }} />
                   <h3 style={{ fontSize: '1.35rem', marginBottom: '0.5rem' }}>
                     {searchQuery ? t('library_no_notes_match', { query: searchQuery }) : t('empty_notes_library')}
                   </h3>
@@ -537,7 +537,7 @@ export default function FavoritesPage() {
                           )}
                         </div>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                          <span style={{ fontSize: '0.75rem', color: 'var(--muted)' }}>
+                          <span style={{ fontSize: '0.75rem', color: 'var(--text-muted-strong)' }}>
                             {new Date(n.createdAt).toLocaleDateString()}
                           </span>
                           <button
@@ -647,7 +647,7 @@ export default function FavoritesPage() {
             ) : activeTab === 'want_to_read' ? (
               <Bookmark size={28} color="var(--primary)" />
             ) : (
-              <BookOpen size={28} color="var(--muted)" />
+              <BookOpen size={28} color="var(--text-muted-strong)" />
             )}
           </div>
           <h2 style={{ fontSize: '1.5rem', marginBottom: '0.5rem' }}>
@@ -823,6 +823,6 @@ export default function FavoritesPage() {
           })}
         </div>
       )}
-    </main>
+    </div>
   );
 }

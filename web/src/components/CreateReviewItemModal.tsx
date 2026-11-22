@@ -76,7 +76,7 @@ export function CreateReviewItemModal({
         {/* Header */}
         <div className="flex items-center justify-between pb-3 border-b border-[var(--border)]">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-xl bg-[var(--accent)]/10 text-[var(--accent)] flex items-center justify-center">
+            <div className="w-8 h-8 rounded-xl bg-[var(--accent)]/10 text-[var(--primary-strong)] flex items-center justify-center">
               <Sparkles className="w-4 h-4" />
             </div>
             <h3 className="text-base font-bold text-[var(--text)]">

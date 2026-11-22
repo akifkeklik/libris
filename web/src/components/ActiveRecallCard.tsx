@@ -114,7 +114,7 @@ export function ActiveRecallCard({
       {/* Top Metadata */}
       <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
         <div className="flex items-center gap-2">
-          <span className="text-xs font-bold uppercase tracking-wider px-2.5 py-1 rounded-lg bg-[var(--surface-raised)] text-[var(--accent)] border border-[var(--border)]">
+          <span className="text-xs font-bold uppercase tracking-wider px-2.5 py-1 rounded-lg bg-[var(--surface-raised)] text-[var(--primary-strong)] border border-[var(--border)]">
             {item.concept}
           </span>
           <span className="text-[11px] text-[var(--text-secondary)]">
@@ -129,7 +129,7 @@ export function ActiveRecallCard({
         <div className="mb-4 p-2.5 rounded-xl bg-[var(--surface-raised)] border border-[var(--border)] flex items-center justify-between text-xs">
           <Link
             href={`/book/${encodeURIComponent(item.book.isbn13 || item.bookId || '')}`}
-            className="flex items-center gap-2 text-[var(--accent)] hover:underline font-medium"
+            className="flex items-center gap-2 text-[var(--primary-strong)] hover:underline font-medium"
           >
             <BookOpen className="w-4 h-4 flex-shrink-0" />
             <span className="line-clamp-1">{item.book.title}</span>

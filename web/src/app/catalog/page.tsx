@@ -99,11 +99,11 @@ export default async function CatalogPage({
                 className="input-field"
                 style={{ width: '100%', paddingLeft: '2.5rem', paddingRight: q ? '2.5rem' : '1rem' }}
               />
-              <Search size={18} style={{ position: 'absolute', left: '0.85rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--muted)' }} />
+              <Search size={18} style={{ position: 'absolute', left: '0.85rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted-strong)' }} />
               {q && (
                 <Link
                   href={createFilterUrl({ q: null })}
-                  style={{ position: 'absolute', right: '0.85rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--muted)' }}
+                  style={{ position: 'absolute', right: '0.85rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted-strong)' }}
                   aria-label={t('clear_search')}
                 >
                   <X size={16} />
@@ -132,8 +132,8 @@ export default async function CatalogPage({
           <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
             {/* Sort Control */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
-              <ArrowUpDown size={16} color="var(--muted)" />
-              <span style={{ fontSize: '0.875rem', color: 'var(--muted)' }}>{t('sort_label')}</span>
+              <ArrowUpDown size={16} color="var(--text-muted-strong)" />
+              <span style={{ fontSize: '0.875rem', color: 'var(--text-muted-strong)' }}>{t('sort_label')}</span>
               <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }}>
                 <Link
                   href={createFilterUrl({ sort: 'popularity', order: 'desc' })}
@@ -189,7 +189,7 @@ export default async function CatalogPage({
             {/* Min Rating Filter */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
               <Star size={16} color="#fbbf24" fill="#fbbf24" />
-              <span style={{ fontSize: '0.875rem', color: 'var(--muted)' }}>{t('min_rating_label')}</span>
+              <span style={{ fontSize: '0.875rem', color: 'var(--text-muted-strong)' }}>{t('min_rating_label')}</span>
               <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }}>
                 <Link
                   href={createFilterUrl({ min_rating: null })}

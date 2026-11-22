@@ -123,7 +123,7 @@ export function AddBookModal({ open, onClose, initialQuery = '' }: AddBookModalP
             <BookPlus size={20} aria-hidden="true" style={{ color: 'var(--primary)' }} />
             {t('add_book_title')}
           </h2>
-          <button type="button" onClick={onClose} aria-label={t('recall_card_dismiss')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)' }}>
+          <button type="button" onClick={onClose} aria-label={t('recall_card_dismiss')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted-strong)' }}>
             <X size={20} aria-hidden="true" />
           </button>
         </div>
@@ -132,7 +132,7 @@ export function AddBookModal({ open, onClose, initialQuery = '' }: AddBookModalP
         {!form ? (
           <>
             <div style={{ position: 'relative' }}>
-              <Search size={16} aria-hidden="true" style={{ position: 'absolute', left: '0.75rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
+              <Search size={16} aria-hidden="true" style={{ position: 'absolute', left: '0.75rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted-strong)' }} />
               <input
                 ref={inputRef}
                 value={query}

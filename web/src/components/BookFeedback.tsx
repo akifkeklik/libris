@@ -193,7 +193,7 @@ export default function BookFeedback({
             </span>
           )}
         </div>
-        <span style={{ fontSize: '0.8rem', color: 'var(--muted)' }}>
+        <span style={{ fontSize: '0.8rem', color: 'var(--text-muted-strong)' }}>
           {t('feedback_shapes_recs')}
         </span>
       </div>
@@ -227,6 +227,7 @@ export default function BookFeedback({
         <button
           type="button"
           onClick={() => handleFeedback('want_to_read')}
+          aria-pressed={activeFeedback === 'want_to_read'}
           disabled={status === 'loading'}
           title={t('feedback_want_label')}
           style={{
@@ -251,6 +252,7 @@ export default function BookFeedback({
         <button
           type="button"
           onClick={() => handleFeedback('reading')}
+          aria-pressed={activeFeedback === 'reading'}
           disabled={status === 'loading'}
           title={t('feedback_reading_label')}
           style={{
@@ -275,6 +277,7 @@ export default function BookFeedback({
         <button
           type="button"
           onClick={() => handleFeedback('finished')}
+          aria-pressed={activeFeedback === 'finished'}
           disabled={status === 'loading'}
           title={t('feedback_finished_label')}
           style={{
@@ -299,6 +302,7 @@ export default function BookFeedback({
         <button
           type="button"
           onClick={() => handleFeedback('like')}
+          aria-pressed={activeFeedback === 'like'}
           disabled={status === 'loading'}
           title={t('feedback_like_label')}
           style={{
@@ -323,6 +327,7 @@ export default function BookFeedback({
         <button
           type="button"
           onClick={() => handleFeedback('dislike')}
+          aria-pressed={activeFeedback === 'dislike'}
           disabled={status === 'loading'}
           title={t('feedback_dislike_label')}
           style={{
@@ -375,7 +380,7 @@ export default function BookFeedback({
 
       <div style={{ marginTop: '0.75rem', minHeight: '1.25rem' }}>
         {status === 'loading' && (
-          <span style={{ color: 'var(--muted)', fontSize: '0.85rem' }} className="animate-pulse">
+          <span style={{ color: 'var(--text-muted-strong)', fontSize: '0.85rem' }} className="animate-pulse">
             {t('feedback_updating')}
           </span>
         )}

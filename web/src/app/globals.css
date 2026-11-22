@@ -5,6 +5,17 @@
    hand-written design classes below (declared later) keep control of layout. */
 @import "tailwindcss/theme.css" layer(theme);
 @import "tailwindcss/utilities.css";
+/* dark: utilities follow the app theme (html[data-theme="dark"]), not the OS setting: a reader
+   with a light OS who picked dark mode in Libris got light-mode badge colours, and vice versa. */
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
+/* Tailwind's preflight is not loaded, so a button without its own background got the browser's
+   default: in dark mode Chrome paints it rgb(107,107,107), a grey slab (Learning tabs: 2.1:1).
+   :where() keeps this at zero specificity, so every class or inline style still wins. */
+:where(button) {
+  background-color: transparent;
+  color: inherit;
+}
 
 /* ==========================================================================
    LIBRIS DESIGN SYSTEM — CSS TOKENS & SEMANTIC ROLES
@@ -336,7 +347,7 @@ a:hover {
 .input-label {
   font-size: 0.875rem;
   font-weight: 600;
-  color: var(--text-muted);
+  color: var(--text-muted-strong, var(--text-muted));
 }
 
 .input-field {
@@ -429,7 +440,7 @@ a:hover {
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  color: var(--text-muted);
+  color: var(--text-muted-strong, var(--text-muted));
   text-decoration: none;
   transition: color 0.2s ease, opacity 0.2s ease;
   font-weight: 500;
@@ -704,7 +715,7 @@ body {
 
 .book-author {
   font-size: 0.875rem;
-  color: var(--text-muted);
+  color: var(--text-muted-strong, var(--text-muted));
   display: -webkit-box;
   -webkit-line-clamp: 1;
   -webkit-box-orient: vertical;
@@ -1167,7 +1178,7 @@ body {
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--text-muted);
+  color: var(--text-muted-strong, var(--text-muted));
 }
 
 .saas-metric-icon {
@@ -1196,7 +1207,7 @@ body {
   align-items: center;
   gap: 0.5rem;
   font-size: 0.8rem;
-  color: var(--text-muted);
+  color: var(--text-muted-strong, var(--text-muted));
 }
 
 /* Micro-Pulse Status Indicators */
@@ -1348,7 +1359,7 @@ body {
 .saas-chart-day-label {
   font-size: 0.7rem;
   font-weight: 600;
-  color: var(--text-muted);
+  color: var(--text-muted-strong, var(--text-muted));
   text-transform: uppercase;
   letter-spacing: 0.04em;
 }
@@ -1396,7 +1407,7 @@ body {
   border-radius: 12px 12px 0 0;
   font-size: 0.85rem;
   font-weight: 600;
-  color: var(--text-muted);
+  color: var(--text-muted-strong, var(--text-muted));
   background: transparent;
   border: none;
   border-bottom: 2px solid transparent;

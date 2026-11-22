@@ -76,7 +76,7 @@ export function SmartReviewWidget({
     return (
       <div className={`p-5 rounded-2xl border border-[var(--border)] bg-[var(--surface)] ${className}`}>
         <div className="flex items-center gap-3">
-          <Loader2 className="w-5 h-5 animate-spin text-[var(--accent)]" />
+          <Loader2 className="w-5 h-5 animate-spin text-[var(--primary-strong)]" />
           <span className="text-sm text-[var(--text-secondary)]">{t('loading')}</span>
         </div>
       </div>
@@ -136,7 +136,7 @@ export function SmartReviewWidget({
           {currentReview.note?.book && (
             <Link
               href={`/book/${encodeURIComponent(currentReview.note.book.isbn13 || currentReview.note.bookId)}`}
-              className="text-xs font-medium text-[var(--accent)] hover:underline flex items-center gap-1"
+              className="text-xs font-medium text-[var(--primary-strong)] hover:underline flex items-center gap-1"
             >
               <BookOpen className="w-3.5 h-3.5" />
               <span>{currentReview.note.book.title}</span>

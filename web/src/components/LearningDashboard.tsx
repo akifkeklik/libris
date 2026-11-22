@@ -252,7 +252,7 @@ export function LearningDashboard({
           </div>
           <div className="saas-metric-value flex items-center gap-1.5">
             <span>{progress?.activeStreakDays ?? 0}</span>
-            <span className="text-xs font-normal text-[var(--text-muted)] font-sans">{t('unit_days')}</span>
+            <span className="text-xs font-normal text-[var(--text-muted-strong)] font-sans">{t('unit_days')}</span>
           </div>
           <div className="saas-metric-footer">
             <span className="saas-pulse-dot amber" />
@@ -265,7 +265,7 @@ export function LearningDashboard({
       <div className="saas-glass-panel" style={{ padding: '1.25rem 1.5rem', marginBottom: '1.5rem' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', flexWrap: 'wrap', gap: '0.5rem' }}>
           <div>
-            <div style={{ fontSize: '0.85rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text-muted)' }}>
+            <div style={{ fontSize: '0.85rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text-muted-strong)' }}>
               {t('ld_chart_title')}
             </div>
             <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginTop: '2px' }}>
@@ -315,7 +315,7 @@ export function LearningDashboard({
 
       {/* Domain Integrity & Transparency Note */}
       <div className="p-3.5 rounded-xl bg-[var(--surface-raised)]/60 border border-[var(--border)] text-xs text-[var(--text-secondary)] flex items-center gap-2.5">
-        <Sparkles className="w-4 h-4 text-[var(--accent)] flex-shrink-0" />
+        <Sparkles className="w-4 h-4 text-[var(--primary-strong)] flex-shrink-0" />
         <p className="leading-relaxed">
           {t('domain_integrity_disclaimer')}
         </p>
@@ -331,8 +331,8 @@ export function LearningDashboard({
           }}
           className={`px-4 py-2 text-sm font-semibold rounded-t-xl transition-colors flex items-center gap-2 ${
             activeTab === 'queue'
-              ? 'border-b-2 border-[var(--accent)] text-[var(--accent)] bg-[var(--surface-raised)]'
-              : 'text-[var(--text-secondary)] hover:text-[var(--text)]'
+              ? 'border-b-2 border-[var(--accent)] text-[var(--primary-strong)] bg-[var(--surface-raised)]'
+              : 'text-[var(--text-muted-strong)] hover:text-[var(--text)]'
           }`}
         >
           <Layers className="w-4 h-4" />
@@ -349,8 +349,8 @@ export function LearningDashboard({
           onClick={() => setActiveTab('difficult')}
           className={`px-4 py-2 text-sm font-semibold rounded-t-xl transition-colors flex items-center gap-2 ${
             activeTab === 'difficult'
-              ? 'border-b-2 border-[var(--accent)] text-[var(--accent)] bg-[var(--surface-raised)]'
-              : 'text-[var(--text-secondary)] hover:text-[var(--text)]'
+              ? 'border-b-2 border-[var(--accent)] text-[var(--primary-strong)] bg-[var(--surface-raised)]'
+              : 'text-[var(--text-muted-strong)] hover:text-[var(--text)]'
           }`}
         >
           <AlertTriangle className="w-4 h-4" />
@@ -367,8 +367,8 @@ export function LearningDashboard({
           onClick={() => setActiveTab('history')}
           className={`px-4 py-2 text-sm font-semibold rounded-t-xl transition-colors flex items-center gap-2 ${
             activeTab === 'history'
-              ? 'border-b-2 border-[var(--accent)] text-[var(--accent)] bg-[var(--surface-raised)]'
-              : 'text-[var(--text-secondary)] hover:text-[var(--text)]'
+              ? 'border-b-2 border-[var(--accent)] text-[var(--primary-strong)] bg-[var(--surface-raised)]'
+              : 'text-[var(--text-muted-strong)] hover:text-[var(--text)]'
           }`}
         >
           <History className="w-4 h-4" />
@@ -380,7 +380,7 @@ export function LearningDashboard({
       {selectedConcept && (
         <div className="flex items-center gap-2 p-2.5 rounded-xl bg-[var(--surface-raised)] border border-[var(--border)] text-xs">
           <span className="text-[var(--text-secondary)]">{t('ld_filtered_concept')}</span>
-          <span className="font-bold text-[var(--accent)]">{selectedConcept}</span>
+          <span className="font-bold text-[var(--primary-strong)]">{selectedConcept}</span>
           <button
             type="button"
             onClick={() => setSelectedConcept(undefined)}
@@ -395,7 +395,7 @@ export function LearningDashboard({
       {/* Loading state */}
       {loading && (
         <div className="p-12 text-center flex flex-col items-center justify-center gap-3">
-          <Loader2 className="w-6 h-6 animate-spin text-[var(--accent)]" />
+          <Loader2 className="w-6 h-6 animate-spin text-[var(--primary-strong)]" />
           <p className="text-sm text-[var(--text-secondary)]">{t('ld_loading')}</p>
         </div>
       )}
@@ -469,7 +469,7 @@ export function LearningDashboard({
                     setSelectedConcept(c.concept);
                     setActiveTab('queue');
                   }}
-                  className="px-3.5 py-2 rounded-xl bg-[var(--surface-raised)] border border-[var(--border)] text-xs font-bold text-[var(--accent)] hover:bg-[var(--surface)] flex items-center justify-center gap-1.5 self-start sm:self-auto"
+                  className="px-3.5 py-2 rounded-xl bg-[var(--surface-raised)] border border-[var(--border)] text-xs font-bold text-[var(--primary-strong)] hover:bg-[var(--surface)] flex items-center justify-center gap-1.5 self-start sm:self-auto"
                 >
                   <span>{t('view_concept_reviews')}</span>
                   <ArrowRight className="w-3.5 h-3.5" />
@@ -499,7 +499,7 @@ export function LearningDashboard({
                         {a.itemTitle || a.concept || 'Review Attempt'}
                       </span>
                       {a.concept && (
-                        <span className="text-[10px] font-semibold px-2 py-0.5 rounded-md bg-[var(--surface-raised)] text-[var(--accent)]">
+                        <span className="text-[10px] font-semibold px-2 py-0.5 rounded-md bg-[var(--surface-raised)] text-[var(--primary-strong)]">
                           {a.concept}
                         </span>
                       )}
