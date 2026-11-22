@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { BookOpen, Sparkles, Compass, TrendingUp, ArrowRight, Bookmark, PenTool, RotateCcw } from 'lucide-react';
+import { BookOpen, Brain, Sparkles, Compass, TrendingUp, ArrowRight, Bookmark, PenTool, RotateCcw } from 'lucide-react';
 import { cookies } from 'next/headers';
 import { createClient } from '@/lib/supabase/server';
 import { ApiService } from '@/lib/api';
@@ -160,26 +160,27 @@ export default async function Home({
           }}
         >
           {session ? (
-            <Link
-              href="/discovery/personalized"
-              className="btn btn-primary"
-              style={{ padding: '0.875rem 2rem', fontSize: '1.05rem', minWidth: '180px' }}
-            >
-              <Sparkles size={20} /> {t('personalized_discovery_cta')}
-            </Link>
+            <>
+              {/* Signed in: the core loop first (save a takeaway -> answer it before forgetting). */}
+              <Link
+                href="/learning"
+                className="btn btn-primary"
+                style={{ padding: '0.875rem 2rem', fontSize: '1.05rem', minWidth: '180px' }}
+              >
+                <Brain size={20} aria-hidden="true" /> {t('home_review_cta')}
+              </Link>
+              <Link
+                href="/discovery/personalized"
+                className="btn btn-outline"
+                style={{ padding: '0.875rem 2rem', fontSize: '1.05rem', minWidth: '180px' }}
+              >
+                <Compass size={20} aria-hidden="true" /> {t('personalized_discovery_cta')}
+              </Link>
+            </>
           ) : (
             <Link
               href="/catalog"
               className="btn btn-primary"
-              style={{ padding: '0.875rem 2rem', fontSize: '1.05rem', minWidth: '180px' }}
-            >
-              <Compass size={20} /> {t('browse_catalog_cta')}
-            </Link>
-          )}
-          {session && (
-            <Link
-              href="/catalog"
-              className="btn btn-outline"
               style={{ padding: '0.875rem 2rem', fontSize: '1.05rem', minWidth: '180px' }}
             >
               <Compass size={20} /> {t('browse_catalog_cta')}
