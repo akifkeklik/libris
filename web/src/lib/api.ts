@@ -756,6 +756,19 @@ export class ApiService {
     return normalizeLearningNote(data?.note || {});
   }
 
+  /** DELETE /api/account with the reader's session; returns the HTTP status. Never cached. */
+  static async deleteAccount(options: { signal?: AbortSignal } = {}): Promise<number> {
+    const headers = await this.getHeaders();
+    const res = await this.fetchWithTimeout(`${API_URL}/api/account`, {
+      method: 'DELETE',
+      headers,
+      body: JSON.stringify({ confirm: true }),
+      cache: 'no-store',
+      signal: options.signal,
+    });
+    return res.status;
+  }
+
   static async deleteNote(
     noteId: string,
     options: { signal?: AbortSignal } = {}
