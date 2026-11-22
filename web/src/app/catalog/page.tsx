@@ -268,7 +268,7 @@ export default async function CatalogPage({
                   <Link 
                     href={createFilterUrl({ category: null })} 
                     style={{
-                      color: !category ? 'var(--primary)' : 'var(--foreground)',
+                      color: 'var(--foreground)',
                       display: 'flex',
                       justifyContent: 'space-between',
                       alignItems: 'center',
@@ -279,7 +279,7 @@ export default async function CatalogPage({
                     }}
                   >
                     <span>{t('tab_all')}</span>
-                    <span className="text-muted" style={{ fontSize: '0.8rem' }}>{!category && totalBooks > 0 ? totalBooks : ''}</span>
+                    <span className={!category ? undefined : 'text-muted'} style={{ fontSize: '0.8rem' }}>{!category && totalBooks > 0 ? totalBooks : ''}</span>
                   </Link>
                 </li>
                 {categories.map((c) => {
@@ -289,7 +289,7 @@ export default async function CatalogPage({
                       <Link 
                         href={createFilterUrl({ category: isSelected ? null : c.name })}
                         style={{
-                          color: isSelected ? 'var(--primary)' : 'var(--foreground)',
+                          color: 'var(--foreground)',
                           display: 'flex',
                           justifyContent: 'space-between',
                           alignItems: 'center',
@@ -315,7 +315,10 @@ export default async function CatalogPage({
           <div className="catalog-content">
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
               <p className="text-muted" style={{ fontSize: '0.9rem' }}>
-                Showing {displayedBooks.length} books {totalBooks ? `of ${totalBooks}` : ''} {page > 1 ? `(Page ${page})` : ''}
+                {totalBooks
+                  ? t('catalog_showing_of', { count: displayedBooks.length, total: totalBooks })
+                  : t('catalog_showing', { count: displayedBooks.length })}
+                {page > 1 ? ` · ${t('catalog_page_n', { page })}` : ''}
               </p>
             </div>
             

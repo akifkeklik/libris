@@ -196,7 +196,7 @@ export function NotesExportModal({ isOpen, onClose, bookId }: NotesExportModalPr
               type="button"
               disabled={loading || !content}
               onClick={handleDownload}
-              className="px-3.5 py-1.5 rounded-lg bg-[var(--accent)] text-white hover:opacity-90 text-xs font-semibold flex items-center gap-1.5 shadow-sm transition-opacity disabled:opacity-50"
+              className="px-3.5 py-1.5 rounded-lg bg-[var(--primary)] text-[var(--on-primary)] hover:opacity-90 text-xs font-semibold flex items-center gap-1.5 shadow-sm transition-opacity disabled:opacity-50"
             >
               <Download className="w-3.5 h-3.5" />
               <span>{t('download_markdown')}</span>

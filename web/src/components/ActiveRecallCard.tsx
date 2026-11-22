@@ -171,7 +171,7 @@ export function ActiveRecallCard({
         <button
           type="button"
           onClick={() => setRevealed(true)}
-          className="w-full py-3 rounded-xl bg-[var(--accent)] text-white text-sm font-semibold hover:opacity-90 flex items-center justify-center gap-2 transition-all shadow-sm"
+          className="w-full py-3 rounded-xl bg-[var(--primary)] text-[var(--on-primary)] text-sm font-semibold hover:opacity-90 flex items-center justify-center gap-2 transition-all shadow-sm"
         >
           <Eye className="w-4 h-4" />
           <span>{t('reveal_answer')}</span>

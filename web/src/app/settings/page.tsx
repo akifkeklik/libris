@@ -121,7 +121,7 @@ export default function SettingsPage() {
             marginBottom: '1rem',
             fontSize: '0.85rem',
             fontWeight: 600,
-            color: 'var(--primary)',
+            color: 'var(--primary-strong)',
           }}
         >
           <Sliders size={15} />
@@ -145,7 +145,7 @@ export default function SettingsPage() {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
             <Sparkles size={18} color="var(--primary)" />
-            <span style={{ fontSize: '0.85rem', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--primary)' }}>
+            <span style={{ fontSize: '0.85rem', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--primary-strong)' }}>
               {t('live_preview')}
             </span>
           </div>
@@ -188,7 +188,7 @@ export default function SettingsPage() {
                   <Star key={i} size={14} fill="var(--rating)" />
                 ))}
               </div>
-              <span style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-muted)' }}>{t('settings_preview_rating')}</span>
+              <span style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-muted-strong)' }}>{t('settings_preview_rating')}</span>
             </div>
 
             <h3 style={{ fontSize: '1.4rem', marginBottom: '0.25rem', color: 'var(--text-primary)' }}>
@@ -246,9 +246,9 @@ export default function SettingsPage() {
                     style={{
                       justifyContent: 'center',
                       padding: '0.85rem 1rem',
-                      borderColor: isSelected ? 'var(--primary)' : 'var(--card-border)',
+                      borderColor: isSelected ? 'var(--primary-strong)' : 'var(--card-border)',
                       background: isSelected ? 'color-mix(in srgb, var(--primary) 15%, transparent)' : 'var(--surface-subtle)',
-                      color: isSelected ? 'var(--primary)' : 'var(--text-muted)',
+                      color: isSelected ? 'var(--primary-strong)' : 'var(--text-muted-strong)',
                       fontWeight: isSelected ? 700 : 500,
                     }}
                   >
@@ -402,9 +402,9 @@ export default function SettingsPage() {
                     style={{
                       justifyContent: 'center',
                       padding: '0.85rem 1rem',
-                      borderColor: isSelected ? 'var(--primary)' : 'var(--card-border)',
+                      borderColor: isSelected ? 'var(--primary-strong)' : 'var(--card-border)',
                       background: isSelected ? 'color-mix(in srgb, var(--primary) 15%, transparent)' : 'var(--surface-subtle)',
-                      color: isSelected ? 'var(--primary)' : 'var(--text-muted)',
+                      color: isSelected ? 'var(--primary-strong)' : 'var(--text-muted-strong)',
                       fontWeight: isSelected ? 700 : 500,
                       ...item.style,
                     }}
@@ -438,9 +438,9 @@ export default function SettingsPage() {
                     style={{
                       justifyContent: 'center',
                       padding: '0.75rem 1rem',
-                      borderColor: isSelected ? 'var(--primary)' : 'var(--card-border)',
+                      borderColor: isSelected ? 'var(--primary-strong)' : 'var(--card-border)',
                       background: isSelected ? 'color-mix(in srgb, var(--primary) 15%, transparent)' : 'var(--surface-subtle)',
-                      color: isSelected ? 'var(--primary)' : 'var(--text-muted)',
+                      color: isSelected ? 'var(--primary-strong)' : 'var(--text-muted-strong)',
                       fontWeight: isSelected ? 700 : 500,
                     }}
                   >
@@ -471,9 +471,9 @@ export default function SettingsPage() {
                     style={{
                       justifyContent: 'center',
                       padding: '0.75rem 1rem',
-                      borderColor: isSelected ? 'var(--primary)' : 'var(--card-border)',
+                      borderColor: isSelected ? 'var(--primary-strong)' : 'var(--card-border)',
                       background: isSelected ? 'color-mix(in srgb, var(--primary) 15%, transparent)' : 'var(--surface-subtle)',
-                      color: isSelected ? 'var(--primary)' : 'var(--text-muted)',
+                      color: isSelected ? 'var(--primary-strong)' : 'var(--text-muted-strong)',
                       fontWeight: isSelected ? 700 : 500,
                     }}
                   >
@@ -510,15 +510,15 @@ export default function SettingsPage() {
                     padding: '1rem 1.25rem',
                     borderRadius: '12px',
                     background: isSelected ? 'color-mix(in srgb, var(--primary) 15%, transparent)' : 'var(--surface-subtle)',
-                    border: `1.5px solid ${isSelected ? 'var(--primary)' : 'var(--card-border)'}`,
+                    border: `1.5px solid ${isSelected ? 'var(--primary-strong)' : 'var(--card-border)'}`,
                     cursor: 'pointer',
-                    color: isSelected ? 'var(--primary)' : 'var(--text-primary)',
+                    color: isSelected ? 'var(--primary-strong)' : 'var(--text-primary)',
                     fontWeight: isSelected ? 700 : 500,
                   }}
                 >
                   <div style={{ textAlign: 'left' }}>
                     <div style={{ fontSize: '1rem', fontWeight: 600 }}>{lang.label}</div>
-                    <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{lang.native}</div>
+                    <div style={{ fontSize: '0.8rem', color: 'var(--text-muted-strong)' }}>{lang.native}</div>
                   </div>
                   {isSelected && <Check size={18} />}
                 </button>
@@ -574,7 +574,7 @@ export default function SettingsPage() {
                 justifyContent: 'space-between',
               }}
             >
-              <span style={{ fontSize: '0.875rem', color: 'var(--text-muted)' }}>
+              <span style={{ fontSize: '0.875rem', color: 'var(--text-muted-strong)' }}>
                 {t('not_signed_in')}
               </span>
               <div style={{ display: 'flex', gap: '0.5rem' }}>
@@ -635,7 +635,7 @@ export default function SettingsPage() {
           )}
 
           {isLoadingGenres ? (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '1.5rem', color: 'var(--text-muted)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '1.5rem', color: 'var(--text-muted-strong)' }}>
               <Loader2 size={18} className="animate-spin" />
               <span>{t('loading')}</span>
             </div>
@@ -667,9 +667,9 @@ export default function SettingsPage() {
                         fontSize: '0.85rem',
                         fontWeight: isSelected ? 700 : 500,
                         cursor: 'pointer',
-                        border: `1.5px solid ${isSelected ? 'var(--primary)' : 'var(--card-border)'}`,
+                        border: `1.5px solid ${isSelected ? 'var(--primary-strong)' : 'var(--card-border)'}`,
                         background: isSelected ? 'color-mix(in srgb, var(--primary) 18%, transparent)' : 'var(--surface-subtle)',
-                        color: isSelected ? 'var(--primary)' : 'var(--text-primary)',
+                        color: isSelected ? 'var(--primary-strong)' : 'var(--text-primary)',
                         transition: 'all 0.15s ease',
                       }}
                     >
@@ -743,7 +743,7 @@ export default function SettingsPage() {
               display: 'inline-flex',
               alignItems: 'center',
               gap: '0.5rem',
-              color: 'var(--text-muted)',
+              color: 'var(--text-muted-strong)',
               fontSize: '0.875rem',
             }}
           >

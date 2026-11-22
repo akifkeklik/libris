@@ -54,12 +54,13 @@ export function Navbar() {
               color: 'var(--text-muted)',
             }}
             title={t('nav_search_title')}
-            aria-label={t('nav_search_label')}
           >
-            <Search size={14} color="var(--text-muted)" />
+            <Search size={14} color="var(--text-muted)" aria-hidden="true" />
             <span className="nav-link-text">{t('search') || 'Search...'}</span>
             <kbd
+              aria-hidden="true"
               style={{
+                color: 'var(--foreground)',
                 fontSize: '0.65rem',
                 padding: '1px 5px',
                 borderRadius: '4px',
@@ -126,9 +127,10 @@ export function Navbar() {
               gap: '0.35rem',
             }}
             title={t('nav_language_title')}
-            aria-label={t('nav_language_title')}
           >
-            <Globe size={14} color="var(--primary)" />
+            <Globe size={14} color="var(--primary)" aria-hidden="true" />
+            {/* Name = "Change language tr": contains the visible code (WCAG 2.5.3, voice control). */}
+            <span className="sr-only">{t('nav_language_title')} </span>
             <span style={{ fontWeight: 700, textTransform: 'uppercase' }}>{preferences.language}</span>
           </button>
 

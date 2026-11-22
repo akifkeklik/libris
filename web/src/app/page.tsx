@@ -118,7 +118,7 @@ export default async function Home({
             marginBottom: '1.5rem',
             fontSize: '0.85rem',
             fontWeight: 600,
-            color: 'var(--primary)',
+            color: 'var(--primary-strong)',
           }}
         >
           <Sparkles size={14} color="var(--primary)" />

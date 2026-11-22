@@ -45,7 +45,6 @@ export function BookCard({ book, userInteraction, isFavorite }: BookCardProps) {
     <Link
       href={`/book/${book.isbn13}`}
       className="book-card animate-fade-in"
-      aria-label={`${book.title} by ${authorDisplay}`}
     >
       <div className="book-cover-container">
         {!thumbnailUrl || imageError ? (

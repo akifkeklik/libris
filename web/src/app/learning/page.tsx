@@ -49,7 +49,7 @@ export default function LearningPage() {
         <div className="flex items-center justify-center gap-3">
           <Link
             href="/login?redirect=/learning"
-            className="px-5 py-2.5 rounded-xl bg-[var(--accent)] text-white text-sm font-semibold hover:opacity-90 transition shadow-sm"
+            className="px-5 py-2.5 rounded-xl bg-[var(--primary)] text-[var(--on-primary)] text-sm font-semibold hover:opacity-90 transition shadow-sm"
           >
             {t('nav_login')}
           </Link>

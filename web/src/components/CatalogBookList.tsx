@@ -141,7 +141,6 @@ export function CatalogBookList({
               cursor: isPending ? 'not-allowed' : 'pointer',
               opacity: isPending ? 0.75 : 1,
             }}
-            aria-label={t('catalog_load_more_label', { page: currentPage + 1, pages: totalPages })}
           >
             {isPending ? (
               <>
@@ -151,7 +150,7 @@ export function CatalogBookList({
             ) : (
               <>
                 <ChevronDown size={18} />
-                <span>Load More Books ({currentPage} / {totalPages})</span>
+                <span>{t('catalog_load_more', { page: currentPage, pages: totalPages })}</span>
               </>
             )}
           </button>
@@ -195,11 +194,13 @@ export function CatalogBookList({
                 pointerEvents: currentPage <= 1 ? 'none' : 'auto',
                 opacity: currentPage <= 1 ? 0.4 : 1,
               }}
+              aria-disabled={currentPage <= 1 || undefined}
+              tabIndex={currentPage <= 1 ? -1 : undefined}
             >
               {t('previous')}
             </Link>
             <span>
-              Page <strong style={{ color: 'var(--foreground)' }}>{currentPage}</strong> of {totalPages}
+              {t('catalog_page_of', { page: currentPage, total: totalPages })}
             </span>
             <Link
               href={createFilterUrl({ page: Math.min(totalPages, currentPage + 1) })}
@@ -210,6 +211,8 @@ export function CatalogBookList({
                 pointerEvents: currentPage >= totalPages ? 'none' : 'auto',
                 opacity: currentPage >= totalPages ? 0.4 : 1,
               }}
+              aria-disabled={currentPage >= totalPages || undefined}
+              tabIndex={currentPage >= totalPages ? -1 : undefined}
             >
               {t('next')}
             </Link>

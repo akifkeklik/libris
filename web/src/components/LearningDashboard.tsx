@@ -166,7 +166,7 @@ export function LearningDashboard({
         <button
           type="button"
           onClick={() => setIsCreateModalOpen(true)}
-          className="px-4 py-2.5 rounded-xl bg-[var(--accent)] text-white text-sm font-semibold hover:opacity-90 flex items-center justify-center gap-2 shadow-sm transition-all"
+          className="px-4 py-2.5 rounded-xl bg-[var(--primary)] text-[var(--on-primary)] text-sm font-semibold hover:opacity-90 flex items-center justify-center gap-2 shadow-sm transition-all"
         >
           <Plus className="w-4 h-4" />
           <span>{t('create_question_button')}</span>

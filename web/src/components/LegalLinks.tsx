@@ -11,9 +11,9 @@ export function LegalLinks({ intro }: { intro?: string }) {
   return (
     <p data-testid="legal-links" className="text-muted" style={{ fontSize: '0.8rem', lineHeight: 1.6, textAlign: 'center', marginTop: '1.25rem' }}>
       {intro ? `${intro} ` : ''}
-      <Link href="/privacy" style={{ color: 'var(--primary)' }}>{LEGAL.privacy[language].title}</Link>
+      <Link href="/privacy" style={{ color: 'var(--primary)', textDecoration: 'underline' }}>{LEGAL.privacy[language].title}</Link>
       {' · '}
-      <Link href="/terms" style={{ color: 'var(--primary)' }}>{LEGAL.terms[language].title}</Link>
+      <Link href="/terms" style={{ color: 'var(--primary)', textDecoration: 'underline' }}>{LEGAL.terms[language].title}</Link>
     </p>
   );
 }
