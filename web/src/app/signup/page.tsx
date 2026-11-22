@@ -6,6 +6,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { sanitizeRedirect } from '@/lib/safeRedirect';
 import { usePreferences } from '@/components/PreferencesProvider';
+import { OAuthButtons } from '@/components/OAuthButtons';
 
 function SignUpForm() {
   const { t } = usePreferences();
@@ -77,10 +78,11 @@ function SignUpForm() {
             className="btn btn-primary"
             style={{ display: 'inline-block', width: '100%', padding: '0.75rem', textAlign: 'center' }}
           >
-            Go to Log in
+            {t('go_to_login')}
           </Link>
         </div>
       ) : (
+        <>
         <form onSubmit={handleSignUp}>
           <div className="input-group">
             <label className="input-label" htmlFor="email">{t('email_label')}</label>
@@ -115,9 +117,11 @@ function SignUpForm() {
             style={{ width: '100%', marginTop: '1rem', padding: '1rem' }}
             disabled={loading}
           >
-            {loading ? 'Creating account...' : 'Sign up'}
+            {loading ? t('signup_button_loading') : t('signup_button')}
           </button>
         </form>
+        <OAuthButtons redirect={safeRedirect} />
+        </>
       )}
       
       <p className="text-center" style={{ marginTop: '2rem', fontSize: '0.875rem' }}>

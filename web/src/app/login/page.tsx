@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/client';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { usePreferences } from '@/components/PreferencesProvider';
+import { OAuthButtons } from '@/components/OAuthButtons';
 
 import { sanitizeRedirect } from '@/lib/safeRedirect';
 
@@ -103,6 +104,7 @@ function LoginForm() {
           {loading ? t('login_button_loading') : t('login_button')}
         </button>
       </form>
+      <OAuthButtons redirect={sanitizeRedirect(searchParams.get('redirect'))} />
       
       <p className="text-center" style={{ marginTop: '2rem', fontSize: '0.875rem' }}>
         {t('login_no_account')}{' '}

@@ -28,3 +28,15 @@ test('login links to password reset and no longer hardcodes English button text'
   assert.match(src, /href="\/forgot-password"/);
   assert.doesNotMatch(src, /'Logging in\.\.\.'|'Log in'/);
 });
+
+test('Google sign-in is opt-in and returns through the callback', () => {
+  const src = readFileSync(join(__dirname, '..', 'components', 'OAuthButtons.tsx'), 'utf8');
+  assert.match(src, /NEXT_PUBLIC_AUTH_GOOGLE_ENABLED === 'true'/, 'must stay hidden until the provider is configured');
+  assert.match(src, /if \(!GOOGLE_AUTH_ENABLED\) return null;/);
+  assert.match(src, /\/auth\/callback\?next=\$\{encodeURIComponent\(redirect\)\}/);
+  for (const page of [['login', 'page.tsx'], ['signup', 'page.tsx']]) assert.match(read(...page), /<OAuthButtons redirect=/);
+});
+
+test('signup no longer hardcodes English button and link text', () => {
+  assert.doesNotMatch(read('signup', 'page.tsx'), /'Creating account\.\.\.'|'Sign up'|Go to Log in/);
+});
