@@ -1418,6 +1418,51 @@ def update_review_settings(note_id: str):
 # ─────────────────────────────────────────────────────────────────────────────
 
 
+@activity_bp.route("/reminders/preferences", methods=["GET", "PUT"])
+@require_auth
+def reminder_preferences():
+    use_case = getattr(container, "reminder_prefs_uc", None)
+    if use_case is None:
+        return jsonify({"error": "Reminders are not available on this server"}), 503
+    token = getattr(g, "jwt_token", None)
+    try:
+        if request.method == "GET":
+            return jsonify(use_case.get(g.user_id, token)), 200
+        email = getattr(getattr(g, "user", None), "email", None)
+        return jsonify(use_case.update(g.user_id, token, email, request.get_json(silent=True) or {})), 200
+    except ValueError as val_err:
+        return jsonify({"error": str(val_err)}), 400
+    except Exception as exc:
+        logger.error("Reminder preferences failed: %s", type(exc).__name__)
+        return jsonify({"error": "Reminder settings are temporarily unavailable"}), 503
+
+
+@activity_bp.route("/reminders/unsubscribe", methods=["GET", "POST"])
+def reminders_unsubscribe():
+    """One-click unsubscribe from the e-mail (no login). GET redirects to a page in the reader's
+    language; POST is the RFC 8058 List-Unsubscribe-Post request from mail clients."""
+    import uuid as _uuid
+
+    from ..config import Config
+
+    token = (request.args.get("token") or "").strip()
+    ok = False
+    try:
+        _uuid.UUID(token)
+        repo = getattr(container, "reminder_repo", None)
+        ok = bool(repo and repo.unsubscribe(token))
+    except ValueError:
+        ok = False
+    except Exception as exc:
+        logger.error("Unsubscribe failed: %s", type(exc).__name__)
+    if request.method == "POST":
+        return jsonify({"unsubscribed": ok}), 200
+    if Config.APP_URL:
+        from flask import redirect
+        return redirect(f"{Config.APP_URL}/reminders/unsubscribed?status={'ok' if ok else 'invalid'}", code=303)
+    return jsonify({"unsubscribed": ok}), 200
+
+
 @activity_bp.route("/account/export", methods=["GET"])
 @require_auth
 def export_account_data():

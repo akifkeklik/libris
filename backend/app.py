@@ -157,6 +157,7 @@ def create_app(config_class=Config) -> Flask:
             or request.path == "/api/health"
             or request.path == "/api/health/ready"
             or request.path == "/health/ready"
+            or request.path == "/api/reminders/unsubscribe"
             or request.path.startswith("/api/docs")
         ):
             return None

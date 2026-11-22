@@ -111,3 +111,5 @@ class Config:
     # Largest accepted request body. The biggest legitimate body (a learning item) is ~41 KB, so
     # 1 MiB leaves ample headroom; Flask/werkzeug answers 413 above it, before JSON is parsed.
     MAX_REQUEST_BYTES: int = int(os.getenv("MAX_REQUEST_BYTES", str(1024 * 1024)))
+    # Public web app address, used for links the API hands out (reminder unsubscribe redirect).
+    APP_URL: str = os.getenv("APP_URL", "").rstrip("/")

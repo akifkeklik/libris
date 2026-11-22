@@ -43,6 +43,7 @@ from backend.application.use_cases.recommendations import (
     GetPersonalizedRecommendationsUseCase,
     GetRecommendationsUseCase,
 )
+from backend.application.use_cases.reminders import ReminderPreferencesUseCase
 from backend.application.use_cases.spaced_repetition import (
     GetDueReviewsUseCase,
     GetReviewStatsUseCase,
@@ -69,6 +70,7 @@ from backend.infrastructure.persistence.supabase_adapters import (
     SupabaseLearningOutcomesRepository,
     SupabaseNoteRepository,
     SupabaseNoteReviewRepository,
+    SupabaseReminderRepository,
 )
 from backend.services.book_service import BookService
 from backend.services.embedding_service import EmbeddingService
@@ -280,6 +282,8 @@ class Container:
         # Account deletion needs the Supabase RPC (migration 16); unavailable on direct-Postgres stacks.
         self.account_port = SupabaseAccountAdapter() if self.supabase else None
         self.delete_account_uc = DeleteAccountUseCase(self.account_port) if self.account_port else None
+        self.reminder_repo = SupabaseReminderRepository(self.supabase) if self.supabase else None
+        self.reminder_prefs_uc = ReminderPreferencesUseCase(self.reminder_repo) if self.reminder_repo else None
         self.export_account_uc = ExportAccountDataUseCase(
             self.interaction_repo,
             note_repo=self.note_repo,

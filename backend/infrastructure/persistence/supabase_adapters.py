@@ -1201,3 +1201,37 @@ class SupabaseAccountAdapter:
             missing = "PGRST202" in str(exc) or "delete_my_account" in str(exc)
             logger.error("Account deletion failed (%s)", "rpc missing" if missing else type(exc).__name__)
             raise AccountDeletionUnavailable("account deletion is not available") from exc
+
+
+class SupabaseReminderRepository:
+    """reminder_preferences through the reader's own JWT (RLS: own row only); unsubscribe via RPC."""
+
+    FIELDS = "channel,local_time,timezone,quiet_days,language,email"
+
+    def __init__(self, supabase_client):
+        self._anon = supabase_client
+
+    def _user_client(self, user_token: str):
+        from supabase import create_client
+
+        from ...config import Config
+
+        client = create_client(Config.SUPABASE_URL, Config.SUPABASE_ANON_KEY)
+        client.postgrest.auth(user_token)
+        return client
+
+    def get(self, user_id: str, user_token: str):
+        rows = (self._user_client(user_token).table("reminder_preferences").select(self.FIELDS)
+                .eq("user_id", user_id).limit(1).execute().data) or []
+        if not rows:
+            return None
+        row = dict(rows[0])
+        row["local_time"] = str(row.get("local_time") or "09:00")[:5]
+        return row
+
+    def upsert(self, user_id: str, user_token: str, prefs) -> None:
+        self._user_client(user_token).table("reminder_preferences").upsert(
+            {"user_id": user_id, **prefs}, on_conflict="user_id", returning=ReturnMethod.minimal).execute()
+
+    def unsubscribe(self, token: str) -> bool:
+        return bool(self._anon.rpc("reminders_unsubscribe", {"p_token": token}).execute().data)

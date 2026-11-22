@@ -61,6 +61,10 @@ DROP POLICY IF EXISTS "Worker reads sends" ON public.reminder_sends;
 CREATE POLICY "Worker reads sends" ON public.reminder_sends FOR SELECT TO reminder_worker USING (true);
 DROP POLICY IF EXISTS "Worker records sends" ON public.reminder_sends;
 CREATE POLICY "Worker records sends" ON public.reminder_sends FOR INSERT TO reminder_worker WITH CHECK (true);
+-- The worker claims a row before sending and deletes it if the provider fails, so the next run
+-- retries instead of skipping the reader for the day.
+DROP POLICY IF EXISTS "Worker releases failed sends" ON public.reminder_sends;
+CREATE POLICY "Worker releases failed sends" ON public.reminder_sends FOR DELETE TO reminder_worker USING (true);
 
 DROP POLICY IF EXISTS "Users see their own reminder sends" ON public.reminder_sends;
 CREATE POLICY "Users see their own reminder sends" ON public.reminder_sends
@@ -124,7 +128,7 @@ DO $$
 BEGIN
     GRANT USAGE ON SCHEMA public TO reminder_worker;
     GRANT EXECUTE ON FUNCTION public.reminder_candidates(TIMESTAMPTZ) TO reminder_worker;
-    GRANT SELECT, INSERT ON public.reminder_sends TO reminder_worker;
+    GRANT SELECT, INSERT, DELETE ON public.reminder_sends TO reminder_worker;
     IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'anon') THEN
         GRANT EXECUTE ON FUNCTION public.reminders_unsubscribe(UUID) TO anon;
     END IF;
