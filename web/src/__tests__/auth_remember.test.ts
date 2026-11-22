@@ -46,3 +46,13 @@ test('sign-up hands the address to log-in through sessionStorage, not the URL', 
   assert.match(login, /sessionStorage\.removeItem\(LOGIN_EMAIL_HANDOFF\)/, 'read once');
   assert.match(login, /passwordRef\.current\?\.focus\(\)/);
 });
+
+test('the browser Supabase client can be created during server rendering (no document)', async () => {
+  const { createClient } = await import('../lib/supabase/client');
+  process.env.NEXT_PUBLIC_SUPABASE_URL ||= 'http://localhost:54321';
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||= 'anon';
+  assert.equal(typeof (globalThis as { document?: unknown }).document, 'undefined');
+  const client = createClient();
+  const { data } = await client.auth.getSession();
+  assert.equal(data.session, null);
+});
