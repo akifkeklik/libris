@@ -1540,3 +1540,56 @@ body {
 .nav-link.active svg {
   color: var(--primary);
 }
+
+/* ── "Remember me" (sign-in forms) ─────────────────────────────────────── */
+.remember-me {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.65rem;
+  margin: 0.25rem 0 0.5rem;
+  cursor: pointer;
+  font-size: 0.9rem;
+  color: var(--text-primary);
+  user-select: none;
+}
+.remember-me input {
+  position: absolute;
+  opacity: 0;
+  width: 1px;
+  height: 1px;
+}
+.remember-me__box {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.15rem;
+  height: 1.15rem;
+  margin-top: 0.1rem;
+  border-radius: 0.35rem;
+  border: 1.5px solid var(--text-muted-strong);
+  background: var(--card-bg, transparent);
+  color: transparent;
+  transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+.remember-me input:checked + .remember-me__box {
+  background: var(--primary-strong);
+  border-color: var(--primary-strong);
+  color: var(--on-primary, #fff);
+}
+.remember-me input:focus-visible + .remember-me__box {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+.remember-me__text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+.remember-me__hint {
+  font-size: 0.78rem;
+  color: var(--text-muted-strong);
+}
+@media (prefers-reduced-motion: reduce) {
+  .remember-me__box { transition: none; }
+}

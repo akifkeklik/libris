@@ -1,11 +1,13 @@
 'use client';
 
-import { Suspense, useState } from 'react';
+import { Suspense, useEffect, useRef, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { usePreferences } from '@/components/PreferencesProvider';
 import { OAuthButtons } from '@/components/OAuthButtons';
+import { RememberMe } from '@/components/RememberMe';
+import { LOGIN_EMAIL_HANDOFF, setRememberChoice } from '@/lib/supabase/remember';
 
 import { sanitizeRedirect } from '@/lib/safeRedirect';
 
@@ -18,9 +20,31 @@ function LoginForm() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [remember, setRemember] = useState(true);
+  const [prefilled, setPrefilled] = useState(false);
+  const passwordRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
   const searchParams = useSearchParams();
   const supabase = createClient();
+
+  useEffect(() => {
+    // Coming from sign-up with an address that already has an account: start with it filled in
+    // and the cursor in the password field. Handed over in sessionStorage, never in the URL.
+    let handed: string | null = null;
+    try {
+      handed = sessionStorage.getItem(LOGIN_EMAIL_HANDOFF);
+      sessionStorage.removeItem(LOGIN_EMAIL_HANDOFF);
+    } catch {
+      handed = null;
+    }
+    if (!handed) return;
+    const address = handed;
+    Promise.resolve().then(() => {
+      setEmail(address);
+      setPrefilled(true);
+      passwordRef.current?.focus();
+    });
+  }, []);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -28,6 +52,7 @@ function LoginForm() {
     setLoading(true);
 
     try {
+      setRememberChoice(remember);
       const { error: authError } = await supabase.auth.signInWithPassword({
         email,
         password,
@@ -57,8 +82,13 @@ function LoginForm() {
           {t('auth_link_invalid')}
         </div>
       )}
+      {prefilled && !error && (
+        <div role="status" data-testid="login-prefilled" style={{ padding: '0.75rem', background: 'var(--primary-soft, rgba(99, 102, 241, 0.08))', border: '1px solid var(--card-border)', borderRadius: '8px', marginBottom: '1.5rem', fontSize: '0.875rem' }}>
+          {t('login_prefilled_notice')}
+        </div>
+      )}
       {error && (
-        <div style={{ padding: '0.75rem', background: 'rgba(239, 68, 68, 0.1)', color: 'var(--danger)', borderRadius: '8px', marginBottom: '1.5rem', fontSize: '0.875rem' }}>
+        <div role="alert" style={{ padding: '0.75rem', background: 'rgba(239, 68, 68, 0.1)', color: 'var(--danger)', borderRadius: '8px', marginBottom: '1.5rem', fontSize: '0.875rem' }}>
           {error}
         </div>
       )}
@@ -68,7 +98,8 @@ function LoginForm() {
           <label className="input-label" htmlFor="email">{t('email_label')}</label>
           <input 
             id="email"
-            type="email" 
+            type="email"
+            autoComplete="email"
             required 
             value={email}
             onChange={(e) => setEmail(e.target.value)}
@@ -86,7 +117,9 @@ function LoginForm() {
           </div>
           <input 
             id="password"
-            type="password" 
+            ref={passwordRef}
+            type="password"
+            autoComplete="current-password"
             required 
             value={password}
             onChange={(e) => setPassword(e.target.value)}
@@ -94,7 +127,9 @@ function LoginForm() {
             placeholder="••••••••"
           />
         </div>
-        
+
+        <RememberMe checked={remember} onChange={setRemember} />
+
         <button 
           type="submit" 
           className="btn btn-primary" 
@@ -104,7 +139,7 @@ function LoginForm() {
           {loading ? t('login_button_loading') : t('login_button')}
         </button>
       </form>
-      <OAuthButtons redirect={sanitizeRedirect(searchParams.get('redirect'))} />
+      <OAuthButtons redirect={sanitizeRedirect(searchParams.get('redirect'))} remember={remember} />
       
       <p className="text-center" style={{ marginTop: '2rem', fontSize: '0.875rem' }}>
         {t('login_no_account')}{' '}

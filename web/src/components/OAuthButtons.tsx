@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { usePreferences } from '@/components/PreferencesProvider';
+import { setRememberChoice } from '@/lib/supabase/remember';
 
 /**
  * "Continue with Google". Hidden until NEXT_PUBLIC_AUTH_GOOGLE_ENABLED=true, because before the
@@ -11,7 +12,7 @@ import { usePreferences } from '@/components/PreferencesProvider';
  */
 export const GOOGLE_AUTH_ENABLED = process.env.NEXT_PUBLIC_AUTH_GOOGLE_ENABLED === 'true';
 
-export function OAuthButtons({ redirect }: { redirect: string }) {
+export function OAuthButtons({ redirect, remember = true }: { redirect: string; remember?: boolean }) {
   const { t } = usePreferences();
   const [error, setError] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -21,6 +22,7 @@ export function OAuthButtons({ redirect }: { redirect: string }) {
   const signIn = async () => {
     setError(false);
     setLoading(true);
+    setRememberChoice(remember);
     const redirectTo = `${window.location.origin}/auth/callback?next=${encodeURIComponent(redirect)}`;
     const { error: oauthError } = await createClient().auth.signInWithOAuth({ provider: 'google', options: { redirectTo } });
     if (oauthError) {
