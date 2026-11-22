@@ -1639,3 +1639,73 @@ body {
   .lb-select__list { animation: none; }
   .lb-select__chevron, .lb-select__trigger { transition: none; }
 }
+
+/* ── Navbar between phone and wide desktop: never wrap a label ─────────── */
+.nav-link,
+.nav-links .btn {
+  white-space: nowrap;
+}
+@media (min-width: 769px) {
+  .navbar .nav-container {
+    max-width: min(100%, 1440px);
+    gap: 1rem;
+  }
+}
+@media (min-width: 769px) and (max-width: 1480px) {
+  .nav-links,
+  .nav-primary {
+    gap: 0.35rem;
+  }
+  .navbar .nav-link {
+    padding: 0.25rem 0.45rem;
+  }
+  #nav-spotlight-btn .nav-link-text,
+  #nav-spotlight-btn kbd {
+    display: none;
+  }
+}
+/* Tablets and small laptops: primary links become icon-over-label, like the phone tab bar. */
+@media (min-width: 769px) and (max-width: 1240px) {
+  .nav-primary .nav-link {
+    flex-direction: column;
+    gap: 0.15rem;
+    padding: 0.2rem 0.35rem;
+    font-size: 0.7rem;
+    line-height: 1.1;
+  }
+  .nav-primary .nav-link-text {
+    max-width: 6.5rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .brand {
+    font-size: 1.3rem;
+  }
+  .nav-links .btn {
+    font-size: 0.8rem !important;
+    padding-left: 0.7rem !important;
+    padding-right: 0.7rem !important;
+  }
+}
+@media (min-width: 769px) and (max-width: 960px) {
+  .navbar .nav-container {
+    padding: 0 1rem;
+    gap: 0.5rem;
+  }
+  .nav-primary .nav-link-text {
+    max-width: 5rem;
+  }
+  .brand {
+    font-size: 1.15rem;
+    gap: 0.35rem;
+  }
+  .nav-links .btn svg.lucide-globe {
+    display: none;
+  }
+}
+@media (min-width: 769px) and (max-width: 880px) {
+  /* Narrow tablets: the logo mark stays, the word "Libris" makes room for the links. */
+  .brand > span {
+    display: none;
+  }
+}
