@@ -114,6 +114,8 @@ jobs:
           psql -v ON_ERROR_STOP=1 -h localhost -U postgres -d postgres -f backend/tests/sql/test_15_add_catalog_book.sql
           echo "Runtime checks for delete_my_account (migration 16)..."
           psql -v ON_ERROR_STOP=1 -h localhost -U postgres -d postgres -f backend/tests/sql/test_16_account_deletion.sql
+          echo "RLS isolation for notes and review tables (migrations 09, 10, 13)..."
+          psql -v ON_ERROR_STOP=1 -h localhost -U postgres -d postgres -f backend/tests/sql/test_09_10_13_rls_isolation.sql
 
       - name: Validate Hardening Scripts (Forward & Rollback)
         env:
