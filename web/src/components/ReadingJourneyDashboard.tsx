@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { Select } from '@/components/Select';
 import Link from 'next/link';
 import type { Book, LibraryCollectionStatus, LibraryItem } from '@/types';
 import {
@@ -196,22 +197,17 @@ export function ReadingJourneyDashboard({
                 border: '1px solid var(--primary)',
               }}
             >
-              <select
+              <Select<ReadingGoalType>
                 value={goalTypeInput}
-                onChange={(e) => setGoalTypeInput(e.target.value as ReadingGoalType)}
-                style={{
-                  padding: '0.35rem 0.5rem',
-                  borderRadius: '6px',
-                  background: 'var(--surface-subtle)',
-                  border: '1px solid var(--card-border)',
-                  color: 'var(--foreground)',
-                  fontSize: '0.8rem',
-                }}
-              >
-                <option value="annual">{t('rj_goal_annual')}</option>
-                <option value="weekly">{t('rj_goal_weekly')}</option>
-                <option value="category">{t('rj_goal_topic')}</option>
-              </select>
+                onChange={setGoalTypeInput}
+                ariaLabel={t('rj_goal_type_label')}
+                size="sm"
+                options={[
+                  { value: 'annual', label: t('rj_goal_annual') },
+                  { value: 'weekly', label: t('rj_goal_weekly') },
+                  { value: 'category', label: t('rj_goal_topic') },
+                ]}
+              />
 
               <input
                 type="number"

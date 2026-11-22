@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { Select } from '@/components/Select';
 import Link from 'next/link';
 import type { Book, LibraryCollectionStatus } from '@/types';
 import {
@@ -469,30 +470,19 @@ export function PersonalizedDiscoveryCard({
 
           {/* Shelf Selector Dropdown */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-            <select
-              value={readingStatus || 'clear'}
-              onChange={(e) => {
-                const val = e.target.value as LibraryCollectionStatus | 'clear';
-                onUpdateShelf(book.isbn13, val);
-              }}
+            <Select<LibraryCollectionStatus | 'clear'>
+              value={(readingStatus || 'clear') as LibraryCollectionStatus | 'clear'}
+              onChange={(val) => onUpdateShelf(book.isbn13, val)}
               disabled={isUpdating || isDismissing}
-              className="input-field"
-              style={{
-                height: '32px',
-                fontSize: '0.75rem',
-                padding: '0 0.5rem',
-                cursor: 'pointer',
-                borderRadius: '8px',
-                border: '1px solid var(--card-border)',
-                background: 'var(--tint-2)',
-              }}
-              aria-label={t('library_change_status_label', { title: book.title })}
-            >
-              <option value="clear">{t('reset')}</option>
-              <option value="want_to_read">{t('status_want_to_read')}</option>
-              <option value="reading">{t('status_reading')}</option>
-              <option value="finished">{t('status_finished')}</option>
-            </select>
+              ariaLabel={t('library_change_status_label', { title: book.title })}
+              size="sm"
+              options={[
+                { value: 'clear', label: t('reset') },
+                { value: 'want_to_read', label: t('status_want_to_read') },
+                { value: 'reading', label: t('status_reading') },
+                { value: 'finished', label: t('status_finished') },
+              ]}
+            />
 
             {/* "İlgilenmiyorum" / Dislike Button */}
             <button

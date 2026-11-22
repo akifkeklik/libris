@@ -12,6 +12,7 @@ import {
 import type { LibraryCollectionStatus, LibraryItem, LearningNote, NoteType } from '@/types';
 import { getAllUserNotes, deleteNote, updateNote } from '@/app/actions/notes';
 import { PenTool } from 'lucide-react';
+import { Select } from '@/components/Select';
 import {
   Heart,
   Bookmark,
@@ -389,17 +390,17 @@ export default function FavoritesPage() {
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
             <ArrowUpDown size={16} color="var(--text-muted-strong)" />
-            <select
+            <Select<SortOption>
               value={sortBy}
-              onChange={(e) => setSortBy(e.target.value as SortOption)}
-              className="input-field"
-              style={{ height: '40px', fontSize: '0.875rem', paddingRight: '2rem', cursor: 'pointer' }}
-              aria-label={t('library_sort_label')}
-            >
-              <option value="recent">{t('sort_recent')}</option>
-              <option value="title">{t('sort_title')}</option>
-              <option value="rating">{t('sort_rating')}</option>
-            </select>
+              onChange={setSortBy}
+              ariaLabel={t('library_sort_label')}
+              data-testid="library-sort"
+              options={[
+                { value: 'recent', label: t('sort_recent') },
+                { value: 'title', label: t('sort_title') },
+                { value: 'rating', label: t('sort_rating') },
+              ]}
+            />
           </div>
         </div>
       </div>
@@ -779,27 +780,20 @@ export default function FavoritesPage() {
                     marginTop: 'auto',
                   }}
                 >
-                  <select
+                  <Select<LibraryCollectionStatus>
                     value={item.status}
                     disabled={isProcessing}
-                    onChange={(e) =>
-                      handleStatusChange(item.bookId, e.target.value as LibraryCollectionStatus)
-                    }
-                    className="input-field"
-                    style={{
-                      fontSize: '0.8rem',
-                      padding: '0.35rem 0.5rem',
-                      borderRadius: '6px',
-                      flex: 1,
-                      cursor: isProcessing ? 'not-allowed' : 'pointer',
-                    }}
-                    aria-label={t('library_change_status_label', { title: book.title })}
-                  >
-                    <option value="favorite">{t('status_favorite')}</option>
-                    <option value="want_to_read">{t('status_want_to_read')}</option>
-                    <option value="reading">{t('status_reading')}</option>
-                    <option value="finished">{t('status_finished')}</option>
-                  </select>
+                    onChange={(v) => handleStatusChange(item.bookId, v)}
+                    ariaLabel={t('library_change_status_label', { title: book.title })}
+                    size="sm"
+                    block
+                    options={[
+                      { value: 'favorite', label: t('status_favorite') },
+                      { value: 'want_to_read', label: t('status_want_to_read') },
+                      { value: 'reading', label: t('status_reading') },
+                      { value: 'finished', label: t('status_finished') },
+                    ]}
+                  />
 
                   <button
                     type="button"
