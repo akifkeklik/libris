@@ -1,0 +1,57 @@
+# Hourly review reminders (Faz 3). Each run e-mails readers whose local reminder time has come and
+# who have due questions; the database guarantees at most one e-mail per reader per day.
+#
+# Why here and not a backend endpoint: no public trigger to protect, Render does not have to be
+# woken every hour, and the job runs as the least-privilege `reminder_worker` database role.
+# Until the secrets below are set, the script exits 0 with a notice ("not configured").
+#
+# Repository secrets (Settings → Secrets and variables → Actions):
+#   REMINDER_DB_URL  postgres URL for the reminder_worker role (see docs/engineering/PHASE_3_REPORT.md)
+#   RESEND_API_KEY   Resend API key
+#   REMINDER_FROM    e.g. "Libris <reminders@your-domain>" (domain verified in Resend)
+#   APP_URL          public web address, e.g. https://libris.example
+#   API_URL          public API address (for the unsubscribe link)
+name: Review Reminders
+
+on:
+  schedule:
+    - cron: "7 * * * *"   # every hour at :07 (GitHub may delay scheduled runs by a few minutes)
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Build the e-mails but send and record nothing"
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: review-reminders
+  cancel-in-progress: false
+
+jobs:
+  send:
+    name: Send due reminders
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+
+      - name: Install the worker's dependencies only
+        run: python -m pip install --quiet "psycopg2-binary~=2.9.13" "requests==2.34.2"
+
+      - name: Send reminders
+        env:
+          REMINDER_DB_URL: ${{ secrets.REMINDER_DB_URL }}
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          REMINDER_FROM: ${{ secrets.REMINDER_FROM }}
+          APP_URL: ${{ secrets.APP_URL }}
+          API_URL: ${{ secrets.API_URL }}
+          DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run && '--dry-run' || '' }}
+        run: python -m backend.scripts.send_reminders $DRY_RUN

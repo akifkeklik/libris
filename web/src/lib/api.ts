@@ -116,6 +116,15 @@ function normalizeNoteReview(raw: Record<string, unknown>): NoteReview {
   };
 }
 
+export interface ReminderPreferencesInput {
+  channel: 'email' | 'push' | 'off';
+  local_time: string;
+  timezone: string;
+  quiet_days: number[];
+  language: string;
+}
+export interface ReminderPreferences extends ReminderPreferencesInput { saved: boolean; email?: string | null }
+
 export class ApiService {
   private static async fetchWithTimeout(
     url: string,
@@ -754,6 +763,21 @@ export class ApiService {
 
     const data = await res.json();
     return normalizeLearningNote(data?.note || {});
+  }
+
+  /** Reminder preferences of the signed-in reader (never cached: personal data). */
+  static async getReminderPreferences(): Promise<ReminderPreferences | null> {
+    const headers = await this.getHeaders();
+    const res = await this.fetchWithTimeout(`${API_URL}/api/reminders/preferences`, { headers, cache: 'no-store' });
+    return res.ok ? ((await res.json()) as ReminderPreferences) : null;
+  }
+
+  static async saveReminderPreferences(prefs: ReminderPreferencesInput): Promise<{ ok: boolean; status: number }> {
+    const headers = await this.getHeaders();
+    const res = await this.fetchWithTimeout(`${API_URL}/api/reminders/preferences`, {
+      method: 'PUT', headers, body: JSON.stringify(prefs), cache: 'no-store',
+    });
+    return { ok: res.ok, status: res.status };
   }
 
   /** GET /api/account/export: everything stored about the reader, as a downloadable file. */
