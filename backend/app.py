@@ -15,11 +15,14 @@ from flask_cors import CORS
 from werkzeug.exceptions import HTTPException
 
 from .config import Config
+from .infrastructure.logging.error_tracking import init_error_tracking
 from .infrastructure.logging.structured_logger import log_event, setup_logger
 from .routes.routes import activity_bp, catalog_bp, discovery_bp, health_bp
 
 setup_logger()
 logger = logging.getLogger(__name__)
+# Off unless SENTRY_DSN is set; events are scrubbed of user data (see error_tracking.py).
+init_error_tracking()
 
 _REQUEST_ID_RE = re.compile(r"[A-Za-z0-9._:-]{1,128}")
 

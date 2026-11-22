@@ -49,7 +49,9 @@ export default async function CatalogPage({
     categories = cats;
     booksRes = bks;
   } catch (e) {
-    error = 'Failed to load catalog. Please check your connection and try again.';
+    // A sleeping backend times out on its first request; say so instead of blaming the network.
+    const isTimeout = (e as { isTimeout?: boolean })?.isTimeout === true;
+    error = t(isTimeout ? 'service_timeout' : 'service_unavailable');
     console.error(e);
   }
 
@@ -247,8 +249,9 @@ export default async function CatalogPage({
       {error ? (
         <div style={{ padding: '2rem', background: 'rgba(239, 68, 68, 0.1)', color: 'var(--danger)', borderRadius: '12px', textAlign: 'center' }}>
           <p style={{ fontWeight: 600, marginBottom: '0.5rem' }}>{error}</p>
-          <Link href="/catalog" className="btn btn-primary" style={{ marginTop: '1rem' }}>
-            {t('reload_catalog')}
+          {/* Retry the same search and filters: the server may simply have been waking up. */}
+          <Link href={createFilterUrl({ page })} className="btn btn-primary" style={{ marginTop: '1rem' }}>
+            {t('retry')}
           </Link>
         </div>
       ) : (
