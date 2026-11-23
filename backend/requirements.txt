@@ -7,7 +7,7 @@ scipy~=1.17.1
 python-dotenv==1.2.4
 requests==2.34.2
 gunicorn==23.0.0
-pytest==9.0.3
+pytest==9.2.0
 # 2.18 is the first line that accepts the new sb_publishable_/sb_secret_ API keys (2.15 rejects
 # them); it pins its own auth/postgrest/realtime versions, so no separate gotrue pin is needed.
 supabase==2.18.1

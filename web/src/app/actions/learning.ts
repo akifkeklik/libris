@@ -282,7 +282,7 @@ export async function regenerateLearningItemAction(itemId: string): Promise<{ ok
       safeRevalidatePath('/learning');
       return { ok: true, question: res.question };
     }
-    return { ok: false, reason: res.status === 429 ? 'limit' : res.status === 404 ? 'not_found' : 'unavailable' };
+    return { ok: false, reason: res.reason === 'limit' ? 'limit' : res.status === 404 ? 'not_found' : 'unavailable' };
   } catch {
     return { ok: false, reason: 'unavailable' };
   }

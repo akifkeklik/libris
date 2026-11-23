@@ -1850,6 +1850,7 @@ def _card_controls():
 
 @activity_bp.route("/learning/items/<item_id>/regenerate", methods=["POST"])
 @require_auth
+@rate_limit_ai
 def regenerate_learning_item(item_id: str):
     uc, err = _card_controls()
     if err:

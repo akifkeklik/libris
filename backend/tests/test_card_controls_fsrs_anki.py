@@ -227,3 +227,25 @@ def test_a_reported_card_is_not_recreated_from_its_note_on_the_next_queue_load()
     CardControlsUseCase(repo, queue).report(U, first[0]["id"], "wrong")
     assert queue.execute(U) == []  # the note stays, the reported card does not come back
     assert queue.create_item_for_note(U, notes.get_user_notes(U, limit=5)[0])["status"] == "archived"
+
+
+def test_regenerate_is_rate_limited_per_reader(monkeypatch):
+    from backend.app import create_app
+    from backend.routes import routes
+
+    uc, repo = _controls(None)
+    monkeypatch.setattr(routes.container, "card_controls_uc", uc, raising=False)
+    app = create_app()
+    app.config["TESTING"] = True
+
+    @app.before_request
+    def fake_auth():
+        from flask import g
+        g.user_id = "rate-limit-reader"
+
+    routes._ai_rate_limits.clear()
+    try:
+        codes = [app.test_client().post("/api/learning/items/none/regenerate").status_code for _ in range(11)]
+    finally:
+        routes._ai_rate_limits.clear()
+    assert codes[:10] == [404] * 10 and codes[10] == 429
