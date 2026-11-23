@@ -912,13 +912,9 @@ class ProcessRagQueryUseCase:
             df = self._recommender.df
             norm_q = _normalize_text(cleaned)
             if len(norm_q) >= 2:
-                # Precompute or cached normalized columns on df for fast word-boundary lookup
-                if "_norm_title" not in df.columns:
-                    df["_norm_title"] = df["title"].astype(str).map(_normalize_text)
-                if "_norm_authors" not in df.columns:
-                    df["_norm_authors"] = df["authors"].astype(str).map(_normalize_text)
+                norm_title, norm_authors = self._normalized_catalog_columns(df)
 
-                exact_title_mask = df["_norm_title"] == norm_q
+                exact_title_mask = norm_title == norm_q
                 isbn13_mask = (
                     df["isbn13"].astype(str).str.strip() == norm_q
                     if "isbn13" in df.columns
@@ -931,8 +927,8 @@ class ProcessRagQueryUseCase:
                 )
 
                 pattern = rf"\b{re.escape(norm_q)}\b"
-                wb_title_mask = df["_norm_title"].str.contains(pattern, regex=True, na=False)
-                wb_author_mask = df["_norm_authors"].str.contains(pattern, regex=True, na=False)
+                wb_title_mask = norm_title.str.contains(pattern, regex=True, na=False)
+                wb_author_mask = norm_authors.str.contains(pattern, regex=True, na=False)
 
                 exact_matches = df[exact_title_mask | isbn13_mask | isbn10_mask]
                 other_matches = df[~exact_title_mask & ~isbn13_mask & ~isbn10_mask & (wb_title_mask | wb_author_mask)]
@@ -941,6 +937,24 @@ class ProcessRagQueryUseCase:
                 if not sorted_matches.empty:
                     candidates = sorted_matches.head(5).to_dict(orient="records")
         return candidates
+
+    def _normalized_catalog_columns(self, df: pd.DataFrame):
+        """Normalised title/author columns, cached beside the catalog and never written into it.
+
+        The catalog frame is shared by every request thread and pandas is not thread-safe for
+        writes: adding the columns to it let two simultaneous first chats corrupt the frame
+        ("Length of values (17) does not match length of index (16)"), after which chat and every
+        recommendation failed until the process restarted. The cache is tied to the frame object,
+        so a catalog that grew (add_book builds a new frame) is normalised again and contributed
+        books are found. Two threads may compute it twice; the single assignment is atomic.
+        """
+        cached = getattr(self, "_norm_catalog_cache", None)
+        if cached is not None and cached[0] is df:
+            return cached[1], cached[2]
+        title = df["title"].astype(str).map(_normalize_text)
+        authors = df["authors"].astype(str).map(_normalize_text)
+        self._norm_catalog_cache = (df, title, authors)
+        return title, authors
 
     def execute(self, query: str, user_id: Optional[str] = None,
                 context_isbns: Optional[List[str]] = None) -> Dict[str, Any]:

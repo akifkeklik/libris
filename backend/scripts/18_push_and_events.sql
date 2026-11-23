@@ -95,9 +95,12 @@ DECLARE uid UUID := auth.uid();
 BEGIN
     IF uid IS NULL THEN RAISE EXCEPTION 'not signed in' USING ERRCODE = '42501'; END IF;
     DELETE FROM public.push_subscriptions WHERE endpoint = p_endpoint;
-    INSERT INTO public.push_subscriptions (user_id, endpoint, p256dh, auth) VALUES (uid, p_endpoint, p_p256dh, p_auth);
+    -- clock_timestamp(): now() is fixed for a whole transaction, which made "newest" a coin toss.
+    INSERT INTO public.push_subscriptions (user_id, endpoint, p256dh, auth, created_at)
+    VALUES (uid, p_endpoint, p_p256dh, p_auth, clock_timestamp());
     DELETE FROM public.push_subscriptions WHERE id IN (
-        SELECT id FROM public.push_subscriptions WHERE user_id = uid ORDER BY created_at DESC, id OFFSET 10);
+        SELECT id FROM public.push_subscriptions WHERE user_id = uid
+        ORDER BY (endpoint = p_endpoint) DESC, created_at DESC, id OFFSET 10);
 END $$;
 
 REVOKE ALL ON FUNCTION public.push_subscribe(TEXT, TEXT, TEXT) FROM PUBLIC;

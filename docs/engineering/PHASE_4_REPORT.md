@@ -40,3 +40,16 @@ Revert the PR; run the rollback script (approved notes/shelves are normal data a
 
 - Kindle PDFs/personal documents without a catalogue match need a manual book pick per book group (by design; no auto-creation of catalogue entries).
 - iOS Safari has no Web Share Target; iPhone readers upload the file on the page instead.
+
+## Correction (found after this report was first written)
+
+The CI e2e failure seen on #99, #101 and Dependabot branches was first noted as "flaky". It was a
+real bug on `main`: the AI catalog lookup added columns to the catalog frame shared by all request
+threads; two simultaneous first chats corrupted it, and chat plus every recommendation failed until
+restart. Reproduced (both CI messages), fixed in `ai_rag.py` with a side cache, regression test
+`test_shared_catalog_thread_safety.py` (fails 3/3 on the old code). The same change makes books
+contributed after the first chat findable in chat.
+
+`test_18_push_and_events.sql` also failed once: `now()` is constant inside a transaction, so the
+"newest device" was random. `push_subscribe` now uses `clock_timestamp()` and never drops the device
+just added (200/200 rounds locally).
