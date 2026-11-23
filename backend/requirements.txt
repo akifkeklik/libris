@@ -17,3 +17,6 @@ openai~=1.109.1
 PyJWT==2.15.1
 # Optional error tracking; inactive unless SENTRY_DSN is set.
 sentry-sdk[flask]==2.74.0
+# Faz 5: FSRS scheduling (behind FSRS_ENABLED) and Anki (.apkg) export.
+fsrs==6.3.0
+genanki==0.13.1

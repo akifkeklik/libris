@@ -31,6 +31,7 @@ import { getUserPreferencesAction, updateUserPreferencesAction } from '@/app/act
 import { DataExportSection } from '@/components/DataExportSection';
 import { LegalLinks } from '@/components/LegalLinks';
 import { ReminderSettings } from '@/components/ReminderSettings';
+import { ReviewSettings } from '@/components/ReviewSettings';
 import { DeleteAccountSection } from '@/components/DeleteAccountSection';
 import { translateGenre } from '@/lib/i18n';
 import { THEME_IDS, THEME_SWATCHES } from '@/lib/themes';
@@ -690,6 +691,8 @@ export default function SettingsPage() {
         </section>
 
         {user && <ReminderSettings />}
+
+        {user && <ReviewSettings />}
 
         {/* ── Section: Account & Privacy ──────────────────────────────────── */}
         <section className="glass-panel" style={{ padding: '2rem' }}>

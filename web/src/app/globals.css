@@ -1740,3 +1740,31 @@ body {
 .book-picker__option { display: flex; flex-direction: column; align-items: flex-start; gap: 0.1rem; width: 100%; padding: 0.5rem 0.6rem; border: 0; border-radius: 8px; text-align: left; cursor: pointer; font: inherit; }
 .book-picker__option:hover, .book-picker__option:focus-visible { background: var(--primary-soft); outline: none; }
 @media (max-width: 768px) { .import-toolbar { top: 64px; } }
+
+/* ── Card controls (Faz 5) ─────────────────────────────────────────────── */
+.card-controls { display: block; }
+.card-controls__anchor { position: absolute; top: 1.1rem; right: 1.1rem; }
+.card-controls__trigger {
+  display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px;
+  border-radius: 999px; border: 1px solid var(--card-border); color: var(--text-muted-strong); cursor: pointer;
+}
+.card-controls__trigger:hover, .card-controls__trigger[aria-expanded="true"] { color: var(--foreground); border-color: var(--primary); }
+.card-controls__trigger:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.card-controls__menu {
+  position: absolute; right: 0; top: calc(100% + 6px); z-index: 40; min-width: 13rem; padding: 0.35rem;
+  background: var(--surface-elevated); border: 1px solid var(--card-border); border-radius: 12px;
+  box-shadow: 0 2px 6px var(--shadow-color), 0 18px 40px -12px var(--shadow-color); font-family: var(--font-body);
+}
+.card-controls__menu [role=menuitem] {
+  display: flex; align-items: center; gap: 0.55rem; width: 100%; padding: 0.55rem 0.7rem; border-radius: 8px;
+  font-size: 0.875rem; text-align: left; cursor: pointer; border: 0;
+}
+.card-controls__menu [role=menuitem]:hover, .card-controls__menu [role=menuitem]:focus-visible { background: var(--primary-soft); outline: none; }
+.card-controls__menu [role=menuitem].is-danger { color: var(--danger); }
+.card-controls__panel {
+  display: flex; flex-direction: column; gap: 0.5rem; margin: 0 0 1rem;
+  padding: 1rem; border: 1px solid var(--card-border); border-radius: 12px; background: var(--surface-subtle);
+}
+.card-controls__actions { display: flex; gap: 0.6rem; flex-wrap: wrap; margin-top: 0.25rem; }
+.card-controls__status { margin: 0 0 0.75rem; font-size: 0.8rem; color: var(--text-muted-strong); }
+.card-controls__status:empty { display: none; }

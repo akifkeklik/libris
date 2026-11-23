@@ -261,7 +261,8 @@ class GetReviewQueueUseCase:
         note_id = str(note.get("id", "")).strip()
         if not clean_user_id or not note_id:
             return None
-        for item in self._learning_repo.list_review_items(clean_user_id, status="active", limit=500) or []:
+        # Any status: a paused or reported (archived) card must not be re-created for the same note.
+        for item in self._learning_repo.list_review_items(clean_user_id, status=None, limit=1000) or []:
             if str(item.get("source_id") or "") == note_id:
                 return item
         return self._build_item_for_note(clean_user_id, note, [1])
@@ -312,8 +313,13 @@ class GetReviewQueueUseCase:
                 elif hasattr(self._note_repo, "get_notes_by_user"):
                     user_notes = self._note_repo.get_notes_by_user(clean_user_id, limit=50)
 
+                # Cards of every status count: a card the reader paused or reported as a bad
+                # question must not come back as a new card for the same note.
+                all_items = self._learning_repo.list_review_items(
+                    user_id=clean_user_id, status=None, limit=1000
+                ) or []
                 existing_source_ids = {
-                    i.get("source_id") for i in items if i.get("source_id")
+                    i.get("source_id") for i in list(items) + list(all_items) if i.get("source_id")
                 }
                 llm_budget = [MAX_RECALL_QUESTIONS_PER_REQUEST]
                 for note in user_notes:
@@ -423,9 +429,31 @@ class SubmitReviewAttemptUseCase:
         self,
         learning_repo: LearningOutcomesRepository,
         note_review_repo: Optional[NoteReviewRepository] = None,
+        fsrs_enabled: bool = False,
+        retention_for=None,
     ):
         self._learning_repo = learning_repo
         self._note_review_repo = note_review_repo
+        self._fsrs_enabled = fsrs_enabled
+        self._retention_for = retention_for  # (user_id) -> desired retention
+
+    def _fsrs_schedule(self, user_id: str, item: Dict[str, Any], outcome: str, when: datetime.datetime):
+        """(metadata, next_review_at, interval_days) from FSRS, or None to use Policy v1."""
+        if not self._fsrs_enabled:
+            return None
+        try:
+            from .fsrs_scheduling import DEFAULT_RETENTION, FSRS_STATE_KEY, FsrsScheduler
+
+            retention = self._retention_for(user_id) if self._retention_for else DEFAULT_RETENTION
+            attempts = self._learning_repo.get_review_attempts(user_id, item_id=str(item.get("id")), limit=500) or []
+            state, due, days = FsrsScheduler(retention).review(item, attempts, outcome, when)
+            meta = dict(item.get("metadata") or {})
+            meta[FSRS_STATE_KEY] = state
+            meta["scheduler"] = "fsrs"
+            return meta, due, days
+        except Exception as e:  # never block a review on the optional scheduler
+            logger.warning("FSRS scheduling failed; using Policy v1: %s", type(e).__name__)
+            return None
 
     def execute(
         self,
@@ -463,6 +491,10 @@ class SubmitReviewAttemptUseCase:
             as_of=target_time,
         )
 
+        fsrs = self._fsrs_schedule(clean_user_id, item, clean_outcome, target_time)
+        if fsrs:
+            fsrs_meta, next_review_at, next_interval = fsrs
+
         # 3. Record immutable attempt record
         is_correct = clean_outcome == "remembered"
         attempt = self._learning_repo.record_review_attempt(
@@ -488,6 +520,8 @@ class SubmitReviewAttemptUseCase:
             "total_reviews": total_rev,
             "successful_reviews": success_rev,
         }
+        if fsrs:
+            updates["metadata"] = fsrs_meta
         updated_item = self._learning_repo.update_review_item(clean_item_id, clean_user_id, updates)
 
         # 5. If item originated from a note, synchronize note_review_repo
@@ -666,12 +700,16 @@ class UpdateReviewItemUseCase:
         clean_user_id = user_id.strip()
         clean_item_id = item_id.strip()
 
+        from .card_controls import clean_item_updates
+
+        clean_updates = clean_item_updates(updates)  # only card content and status; never the schedule
+
         # Check existence and ownership
         existing = self._learning_repo.get_review_item_by_id(clean_item_id, clean_user_id)
         if not existing:
             return None
 
-        return self._learning_repo.update_review_item(clean_item_id, clean_user_id, updates)
+        return self._learning_repo.update_review_item(clean_item_id, clean_user_id, clean_updates)
 
 
 class DeleteReviewItemUseCase:

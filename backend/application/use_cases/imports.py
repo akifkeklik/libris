@@ -314,6 +314,9 @@ class ImportUseCase:
                 note_type = highlight_as if item["kind"] == "highlight" else "personal_note"
                 note = self._create_note.execute(user_id=user_id, book_id=book_id, note_type=note_type,
                                                  content=item["content"], client_id=f"import:{item['content_hash'][:48]}")
+                if not (note.get("book") or {}).get("title"):
+                    # The card names its book even where the catalogue lookup is unavailable.
+                    note = {**note, "book": {"title": item.get("book_title") or ""}}
                 notes.append(note)
                 approved.append((item["id"], note.get("id"), book_id))
             except Exception:

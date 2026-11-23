@@ -245,3 +245,13 @@ def test_import_body_may_exceed_the_general_limit_but_stays_bounded(monkeypatch)
     assert c.post("/api/imports", data=body, content_type="application/json").status_code != 413
     huge = json.dumps({"source": "kindle", "text": "x" * (7 * 1024 * 1024)})
     assert c.post("/api/imports", data=huge, content_type="application/json").status_code == 413
+
+
+def test_imported_cards_name_their_book_even_without_a_catalogue_lookup():
+    uc, repo, _, _, notes = _uc(None)
+    review = uc._review_queue
+    uc.import_text("u1", "t", "kindle", KINDLE)
+    atomic = [r["id"] for r in repo.list_pending("u1", "t", 100) if r["book_id"] and r["kind"] == "highlight"]
+    uc.approve("u1", "t", atomic)
+    items = review._learning_repo.list_review_items("u1", status=None, limit=10)
+    assert items and all("Atomic Habits" in i["question"] and i["concept"] == "Atomic Habits" for i in items)

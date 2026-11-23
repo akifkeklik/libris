@@ -1838,6 +1838,86 @@ def submit_learning_attempt(item_id: str):
         return jsonify({"error": "Failed to record review attempt"}), 500
 
 
+# ── Faz 5: card controls, review settings, Anki export ───────────────────────
+
+
+def _card_controls():
+    uc = getattr(container, "card_controls_uc", None)
+    if uc is None:
+        return None, (jsonify({"error": "Card controls are not available on this server"}), 503)
+    return uc, None
+
+
+@activity_bp.route("/learning/items/<item_id>/regenerate", methods=["POST"])
+@require_auth
+def regenerate_learning_item(item_id: str):
+    uc, err = _card_controls()
+    if err:
+        return err
+    try:
+        return jsonify({"status": "success", "item": uc.regenerate(g.user_id, item_id)}), 200
+    except LookupError:
+        return jsonify({"error": "Review item not found or access denied"}), 404
+    except PermissionError as exc:
+        return jsonify({"error": str(exc), "reason": "limit"}), 429
+    except RuntimeError as exc:
+        return jsonify({"error": str(exc), "reason": "unavailable"}), 503
+
+
+@activity_bp.route("/learning/items/<item_id>/report", methods=["POST"])
+@require_auth
+def report_learning_item(item_id: str):
+    uc, err = _card_controls()
+    if err:
+        return err
+    data = request.get_json(silent=True) or {}
+    try:
+        uc.report(g.user_id, item_id, str(data.get("reason") or ""), str(data.get("comment") or ""))
+        return jsonify({"status": "success"}), 200
+    except LookupError:
+        return jsonify({"error": "Review item not found or access denied"}), 404
+    except ValueError as exc:
+        return jsonify({"error": str(exc)}), 400
+
+
+@activity_bp.route("/learning/settings", methods=["GET", "PUT"])
+@require_auth
+def learning_settings():
+    uc, err = _card_controls()
+    if err:
+        return err
+    token = getattr(g, "jwt_token", None)
+    try:
+        if request.method == "GET":
+            return jsonify(uc.get_settings(g.user_id, token)), 200
+        return jsonify(uc.save_settings(g.user_id, token, request.get_json(silent=True) or {})), 200
+    except ValueError as exc:
+        return jsonify({"error": str(exc)}), 400
+    except Exception as exc:
+        logger.error("Learning settings failed: %s", type(exc).__name__)
+        return jsonify({"error": "Review settings are temporarily unavailable"}), 503
+
+
+@activity_bp.route("/learning/export/anki", methods=["GET"])
+@require_auth
+def export_learning_anki():
+    """All active and paused review cards as an Anki package (.apkg)."""
+    from flask import Response
+
+    uc, err = _card_controls()
+    if err:
+        return err
+    try:
+        data = uc.export_anki(g.user_id)
+    except Exception as exc:
+        logger.error("Anki export failed: %s", type(exc).__name__)
+        return jsonify({"error": "The export could not be created right now"}), 503
+    return Response(data, mimetype="application/octet-stream", headers={
+        "Content-Disposition": 'attachment; filename="libris-cards.apkg"',
+        "Cache-Control": "no-store, private",
+    })
+
+
 @activity_bp.route("/learning/history", methods=["GET"])
 @require_auth
 def get_learning_history():

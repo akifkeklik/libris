@@ -1295,3 +1295,25 @@ class SupabaseImportRepository:
                                          "decided_at": datetime.datetime.now(datetime.timezone.utc).isoformat()},
                                         returning=ReturnMethod.minimal)
          .eq("user_id", user_id).eq("id", item_id).execute())
+
+
+class SupabaseLearningSettingsRepository:
+    """learning_settings (migration 20) through the reader's own JWT."""
+
+    def _table(self, user_token: str):
+        from supabase import create_client
+
+        from ...config import Config
+
+        client = create_client(Config.SUPABASE_URL, Config.SUPABASE_ANON_KEY)
+        client.postgrest.auth(user_token)
+        return client.table("learning_settings")
+
+    def get(self, user_id: str, user_token: str):
+        rows = (self._table(user_token).select("desired_retention").eq("user_id", user_id).limit(1).execute().data) or []
+        return rows[0] if rows else None
+
+    def upsert(self, user_id: str, user_token: str, settings) -> None:
+        self._table(user_token).upsert(
+            {"user_id": user_id, **settings, "updated_at": datetime.datetime.now(datetime.timezone.utc).isoformat()},
+            on_conflict="user_id", returning=ReturnMethod.minimal).execute()

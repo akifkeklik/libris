@@ -51,3 +51,14 @@ class InMemoryImportRepository:
         row = self._rows.get(item_id)
         if row and row["user_id"] == user_id:
             row.update(status="approved", note_id=note_id, book_id=book_id)
+
+
+class InMemoryLearningSettingsRepository:
+    def __init__(self):
+        self._rows: Dict[str, Dict[str, Any]] = {}
+
+    def get(self, user_id: str, user_token: Optional[str]):
+        return self._rows.get(user_id)
+
+    def upsert(self, user_id: str, user_token: Optional[str], settings: Dict[str, Any]) -> None:
+        self._rows[user_id] = dict(settings)

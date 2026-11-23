@@ -3,6 +3,7 @@ import logging
 from backend.application.use_cases.account import DeleteAccountUseCase
 from backend.application.use_cases.account_export import ExportAccountDataUseCase
 from backend.application.use_cases.ai_rag import ProcessRagQueryUseCase
+from backend.application.use_cases.card_controls import CardControlsUseCase
 from backend.application.use_cases.catalog import (
     GetBookDetailsUseCase,
     GetBooksUseCase,
@@ -56,7 +57,10 @@ from backend.infrastructure.adapters.book_lookup_adapter import BookLookupAdapte
 from backend.infrastructure.adapters.enrichment_adapter import GoogleBooksEnrichmentAdapter
 from backend.infrastructure.llm.adapters import GenericLlmAdapter
 from backend.infrastructure.ml.recommender import BookRecommender
-from backend.infrastructure.persistence.in_memory_import_repository import InMemoryImportRepository
+from backend.infrastructure.persistence.in_memory_import_repository import (
+    InMemoryImportRepository,
+    InMemoryLearningSettingsRepository,
+)
 from backend.infrastructure.persistence.in_memory_learning_repository import (
     InMemoryLearningOutcomesRepository,
 )
@@ -71,6 +75,7 @@ from backend.infrastructure.persistence.supabase_adapters import (
     SupabaseImportRepository,
     SupabaseInteractionRepository,
     SupabaseLearningOutcomesRepository,
+    SupabaseLearningSettingsRepository,
     SupabaseNoteRepository,
     SupabaseNoteReviewRepository,
     SupabaseReminderRepository,
@@ -80,6 +85,16 @@ from backend.services.embedding_service import EmbeddingService
 
 logger = logging.getLogger(__name__)
 
+
+
+def _request_token():
+    """The signed-in reader's JWT inside a request (repositories act as the reader), else None."""
+    try:
+        from flask import g, has_request_context
+
+        return getattr(g, "jwt_token", None) if has_request_context() else None
+    except ImportError:
+        return None
 
 class Container:
     """Dependency Injection Container (Composition Root)."""
@@ -257,9 +272,19 @@ class Container:
             book_data_port=self.book_data_port,
             llm_port=self.llm_port,
         )
+        # Faz 5: card controls, retention setting (migration 20), Anki export, FSRS behind a flag.
+        self.learning_settings_repo = (
+            SupabaseLearningSettingsRepository() if self.supabase else InMemoryLearningSettingsRepository()
+        )
+        self.card_controls_uc = CardControlsUseCase(
+            self.learning_outcomes_repo, review_queue_uc=self.get_review_queue_uc,
+            settings_repo=self.learning_settings_repo, fsrs_enabled=Config.FSRS_ENABLED,
+        )
         self.submit_review_attempt_uc = SubmitReviewAttemptUseCase(
             learning_repo=self.learning_outcomes_repo,
             note_review_repo=getattr(self, "note_review_repo", None),
+            fsrs_enabled=Config.FSRS_ENABLED,
+            retention_for=lambda uid: self.card_controls_uc.retention_for(uid, _request_token()),
         )
         self.get_learning_overview_uc = GetLearningOverviewUseCase(
             learning_repo=self.learning_outcomes_repo

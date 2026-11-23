@@ -126,6 +126,10 @@ jobs:
           psql -v ON_ERROR_STOP=1 -h localhost -U postgres -d postgres -f backend/tests/sql/test_19_import_queue.sql
           psql -v ON_ERROR_STOP=1 -h localhost -U postgres -d postgres -f backend/scripts/rollbacks/19_import_queue_rollback.sql
           psql -v ON_ERROR_STOP=1 -h localhost -U postgres -d postgres -f backend/scripts/19_import_queue.sql
+          echo "Learning settings: retention bounds, RLS, cascade (migration 20)..."
+          psql -v ON_ERROR_STOP=1 -h localhost -U postgres -d postgres -f backend/tests/sql/test_20_learning_settings.sql
+          psql -v ON_ERROR_STOP=1 -h localhost -U postgres -d postgres -f backend/scripts/rollbacks/20_learning_settings_rollback.sql
+          psql -v ON_ERROR_STOP=1 -h localhost -U postgres -d postgres -f backend/scripts/20_learning_settings.sql
 
       - name: Validate Hardening Scripts (Forward & Rollback)
         env:

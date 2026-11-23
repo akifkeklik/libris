@@ -125,6 +125,7 @@ export interface ReminderPreferencesInput {
 }
 export interface ReminderPreferences extends ReminderPreferencesInput { saved: boolean; email?: string | null }
 export interface PushSubscriptionInput { endpoint: string; keys: { p256dh: string; auth: string } }
+export interface LearningSettings { fsrs_enabled: boolean; desired_retention: number }
 export interface ImportSummary { parsed: number; new: number; duplicates: number; skipped: number; truncated: number; books: number; books_matched: number }
 export interface ImportItem {
   id: string; source: string; kind: 'highlight' | 'note' | 'shelf'; book_title: string; book_author: string | null;
@@ -792,6 +793,46 @@ export class ApiService {
       method: 'PUT', headers, body: JSON.stringify(prefs), cache: 'no-store',
     });
     return { ok: res.ok, status: res.status };
+  }
+
+  /** Faz 5 card controls. */
+  static async regenerateLearningItem(itemId: string): Promise<{ ok: boolean; status: number; question?: string; reason?: string }> {
+    const headers = await this.getHeaders();
+    const res = await this.fetchWithTimeout(`${API_URL}/api/learning/items/${encodeURIComponent(itemId)}/regenerate`, {
+      method: 'POST', headers, cache: 'no-store',
+    }, 30000);
+    const body = await res.json().catch(() => ({}));
+    return { ok: res.ok, status: res.status, question: body?.item?.question, reason: body?.reason };
+  }
+
+  static async reportLearningItem(itemId: string, reason: string, comment: string): Promise<{ ok: boolean; status: number }> {
+    const headers = await this.getHeaders();
+    const res = await this.fetchWithTimeout(`${API_URL}/api/learning/items/${encodeURIComponent(itemId)}/report`, {
+      method: 'POST', headers, body: JSON.stringify({ reason, comment }), cache: 'no-store',
+    });
+    return { ok: res.ok, status: res.status };
+  }
+
+  static async getLearningSettings(): Promise<LearningSettings | null> {
+    const headers = await this.getHeaders();
+    const res = await this.fetchWithTimeout(`${API_URL}/api/learning/settings`, { headers, cache: 'no-store' });
+    return res.ok ? ((await res.json()) as LearningSettings) : null;
+  }
+
+  static async saveLearningSettings(desiredRetention: number): Promise<{ ok: boolean; status: number }> {
+    const headers = await this.getHeaders();
+    const res = await this.fetchWithTimeout(`${API_URL}/api/learning/settings`, {
+      method: 'PUT', headers, body: JSON.stringify({ desired_retention: desiredRetention }), cache: 'no-store',
+    });
+    return { ok: res.ok, status: res.status };
+  }
+
+  /** GET /api/learning/export/anki -> .apkg bytes (base64, for a server action to hand to the browser). */
+  static async exportAnki(): Promise<string | null> {
+    const headers = await this.getHeaders();
+    const res = await this.fetchWithTimeout(`${API_URL}/api/learning/export/anki`, { headers, cache: 'no-store' }, 60000);
+    if (!res.ok) return null;
+    return Buffer.from(await res.arrayBuffer()).toString('base64');
   }
 
   /** POST /api/imports: one piece of an import file -> approval queue. */

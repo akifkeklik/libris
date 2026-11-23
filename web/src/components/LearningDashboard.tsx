@@ -330,14 +330,16 @@ export function LearningDashboard({
       </div>
 
       {/* Tabs */}
-      <div className="flex items-center gap-2 border-b border-[var(--border)] pb-1">
+      <div role="tablist" aria-label={t('learning_title')} className="flex items-center gap-2 border-b border-[var(--border)] pb-1 overflow-x-auto">
         <button
           type="button"
           onClick={() => {
             setActiveTab('queue');
             setSelectedConcept(undefined);
           }}
-          className={`px-4 py-2 text-sm font-semibold rounded-t-xl transition-colors flex items-center gap-2 ${
+          role="tab"
+          aria-selected={activeTab === 'queue'}
+          className={`shrink-0 whitespace-nowrap px-4 py-2 text-sm font-semibold rounded-t-xl transition-colors flex items-center gap-2 ${
             activeTab === 'queue'
               ? 'border-b-2 border-[var(--accent)] text-[var(--primary-strong)] bg-[var(--surface-raised)]'
               : 'text-[var(--text-muted-strong)] hover:text-[var(--text)]'
@@ -355,7 +357,9 @@ export function LearningDashboard({
         <button
           type="button"
           onClick={() => setActiveTab('difficult')}
-          className={`px-4 py-2 text-sm font-semibold rounded-t-xl transition-colors flex items-center gap-2 ${
+          role="tab"
+          aria-selected={activeTab === 'difficult'}
+          className={`shrink-0 whitespace-nowrap px-4 py-2 text-sm font-semibold rounded-t-xl transition-colors flex items-center gap-2 ${
             activeTab === 'difficult'
               ? 'border-b-2 border-[var(--accent)] text-[var(--primary-strong)] bg-[var(--surface-raised)]'
               : 'text-[var(--text-muted-strong)] hover:text-[var(--text)]'
@@ -373,7 +377,9 @@ export function LearningDashboard({
         <button
           type="button"
           onClick={() => setActiveTab('history')}
-          className={`px-4 py-2 text-sm font-semibold rounded-t-xl transition-colors flex items-center gap-2 ${
+          role="tab"
+          aria-selected={activeTab === 'history'}
+          className={`shrink-0 whitespace-nowrap px-4 py-2 text-sm font-semibold rounded-t-xl transition-colors flex items-center gap-2 ${
             activeTab === 'history'
               ? 'border-b-2 border-[var(--accent)] text-[var(--primary-strong)] bg-[var(--surface-raised)]'
               : 'text-[var(--text-muted-strong)] hover:text-[var(--text)]'
@@ -437,6 +443,7 @@ export function LearningDashboard({
                   key={item.id}
                   item={item}
                   onAttemptSubmitted={() => handleAttemptSubmitted(item.id)}
+                  onRemoved={() => setQueue((prev) => prev.filter((i) => i.id !== item.id))}
                 />
               ))}
             </div>
