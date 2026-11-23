@@ -62,7 +62,7 @@ export function DiscoveryFilters({
         >
           <Sparkles size={16} />
           <span>{t('filter_all_recommendations')}</span>
-          <span style={{ fontSize: '0.75rem', opacity: 0.75 }}>({filterCounts.total})</span>
+          <span style={{ fontSize: '0.75rem' }}>({filterCounts.total})</span>
         </button>
 
         <button
@@ -74,7 +74,7 @@ export function DiscoveryFilters({
         >
           <Heart size={16} color="#f472b6" fill={activeFilter === 'favorites' ? '#f472b6' : 'none'} />
           <span>{t('filter_favorites_derived')}</span>
-          <span style={{ fontSize: '0.75rem', opacity: 0.75 }}>({filterCounts.favorites})</span>
+          <span style={{ fontSize: '0.75rem' }}>({filterCounts.favorites})</span>
         </button>
 
         <button
@@ -90,7 +90,7 @@ export function DiscoveryFilters({
             fill={activeFilter === 'reading' ? 'currentColor' : 'none'}
           />
           <span>{t('filter_reading_journey')}</span>
-          <span style={{ fontSize: '0.75rem', opacity: 0.75 }}>({filterCounts.reading})</span>
+          <span style={{ fontSize: '0.75rem' }}>({filterCounts.reading})</span>
         </button>
 
         <button
@@ -102,7 +102,7 @@ export function DiscoveryFilters({
         >
           <BookOpen size={16} color="var(--accent-ink)" />
           <span>{t('filter_genre_category')}</span>
-          <span style={{ fontSize: '0.75rem', opacity: 0.75 }}>
+          <span style={{ fontSize: '0.75rem' }}>
             ({selectedCategory !== 'all' ? displayedCount : filterCounts.categoryCount})
           </span>
         </button>
@@ -121,7 +121,7 @@ export function DiscoveryFilters({
             borderTop: '1px solid var(--card-border)',
           }}
         >
-          <span style={{ fontSize: '0.8rem', color: 'var(--muted)', fontWeight: 600 }}>
+          <span style={{ fontSize: '0.8rem', color: 'var(--text-muted-strong)', fontWeight: 600 }}>
             {t('select_category_prompt')}
           </span>
 
@@ -179,7 +179,7 @@ export function DiscoveryFilters({
             left: '12px',
             top: '50%',
             transform: 'translateY(-50%)',
-            color: 'var(--muted)',
+            color: 'var(--text-muted-strong)',
           }}
         />
         <input

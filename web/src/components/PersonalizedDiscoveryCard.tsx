@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { Select } from '@/components/Select';
 import Link from 'next/link';
 import type { Book, LibraryCollectionStatus } from '@/types';
 import {
@@ -81,7 +82,6 @@ export function PersonalizedDiscoveryCard({
       <Link
         href={`/book/${book.isbn13}`}
         style={{ textDecoration: 'none', color: 'inherit', display: 'block' }}
-        aria-label={`${book.title} by ${authorDisplay}`}
       >
         <div className="book-cover-container" style={{ position: 'relative', height: '260px' }}>
           {!thumbnailUrl || imageError ? (
@@ -243,7 +243,7 @@ export function PersonalizedDiscoveryCard({
         <p
           className="book-author"
           title={authorDisplay}
-          style={{ fontSize: '0.875rem', color: 'var(--muted)', margin: 0 }}
+          style={{ fontSize: '0.875rem', color: 'var(--text-muted-strong)', margin: 0 }}
         >
           {authorDisplay}
         </p>
@@ -251,7 +251,7 @@ export function PersonalizedDiscoveryCard({
         {/* Rating Row */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
           <Star size={14} color="var(--rating)" fill="var(--rating)" aria-hidden="true" />
-          <span style={{ fontSize: '0.85rem', color: 'var(--muted)' }}>
+          <span style={{ fontSize: '0.85rem', color: 'var(--text-muted-strong)' }}>
             {book.averageRating > 0 ? formatRating(book.averageRating, preferences.language) : t('no_rating')}
             {book.ratingsCount > 0 && ` (${formatCount(book.ratingsCount, preferences.language, true)})`}
           </span>
@@ -324,11 +324,10 @@ export function PersonalizedDiscoveryCard({
                   gap: '4px',
                 }}
                 title={t('mark_as_want_to_read')}
-                aria-label={`${t('mark_as_want_to_read')} - ${book.title}`}
               >
                 <Bookmark size={13} />
                 <span>{t('status_want_to_read')}</span>
-              </button>
+              <span className="sr-only"> – {book.title}</span></button>
               <button
                 type="button"
                 onClick={(e) => {
@@ -347,11 +346,10 @@ export function PersonalizedDiscoveryCard({
                   gap: '4px',
                 }}
                 title={t('mark_as_reading')}
-                aria-label={`${t('mark_as_reading')} - ${book.title}`}
               >
                 <BookOpen size={13} />
                 <span>{t('status_reading')}</span>
-              </button>
+              <span className="sr-only"> – {book.title}</span></button>
             </>
           )}
 
@@ -374,11 +372,10 @@ export function PersonalizedDiscoveryCard({
                 gap: '4px',
               }}
               title={t('mark_as_reading')}
-              aria-label={`${t('mark_as_reading')} - ${book.title}`}
             >
               <BookOpen size={13} />
               <span>{t('mark_as_reading')}</span>
-            </button>
+            <span className="sr-only"> – {book.title}</span></button>
           )}
 
           {readingStatus === 'reading' && (
@@ -402,11 +399,10 @@ export function PersonalizedDiscoveryCard({
                 borderColor: 'rgba(16, 185, 129, 0.4)',
               }}
               title={t('mark_as_finished')}
-              aria-label={`${t('mark_as_finished')} - ${book.title}`}
             >
               <CheckCircle size={13} />
               <span>{t('mark_as_finished')}</span>
-            </button>
+            <span className="sr-only"> – {book.title}</span></button>
           )}
 
           {readingStatus === 'finished' && (
@@ -428,11 +424,10 @@ export function PersonalizedDiscoveryCard({
                 gap: '4px',
               }}
               title={t('mark_as_reading')}
-              aria-label={`${t('mark_as_reading')} - ${book.title}`}
             >
               <BookOpen size={13} />
               <span>{t('status_reading')}</span>
-            </button>
+            <span className="sr-only"> – {book.title}</span></button>
           )}
         </div>
 
@@ -475,30 +470,19 @@ export function PersonalizedDiscoveryCard({
 
           {/* Shelf Selector Dropdown */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-            <select
-              value={readingStatus || 'clear'}
-              onChange={(e) => {
-                const val = e.target.value as LibraryCollectionStatus | 'clear';
-                onUpdateShelf(book.isbn13, val);
-              }}
+            <Select<LibraryCollectionStatus | 'clear'>
+              value={(readingStatus || 'clear') as LibraryCollectionStatus | 'clear'}
+              onChange={(val) => onUpdateShelf(book.isbn13, val)}
               disabled={isUpdating || isDismissing}
-              className="input-field"
-              style={{
-                height: '32px',
-                fontSize: '0.75rem',
-                padding: '0 0.5rem',
-                cursor: 'pointer',
-                borderRadius: '8px',
-                border: '1px solid var(--card-border)',
-                background: 'var(--tint-2)',
-              }}
-              aria-label={t('library_change_status_label', { title: book.title })}
-            >
-              <option value="clear">{t('reset')}</option>
-              <option value="want_to_read">{t('status_want_to_read')}</option>
-              <option value="reading">{t('status_reading')}</option>
-              <option value="finished">{t('status_finished')}</option>
-            </select>
+              ariaLabel={t('library_change_status_label', { title: book.title })}
+              size="sm"
+              options={[
+                { value: 'clear', label: t('reset') },
+                { value: 'want_to_read', label: t('status_want_to_read') },
+                { value: 'reading', label: t('status_reading') },
+                { value: 'finished', label: t('status_finished') },
+              ]}
+            />
 
             {/* "İlgilenmiyorum" / Dislike Button */}
             <button
@@ -512,7 +496,7 @@ export function PersonalizedDiscoveryCard({
               style={{
                 padding: '0.35rem 0.5rem',
                 height: '32px',
-                color: 'var(--muted)',
+                color: 'var(--text-muted-strong)',
                 display: 'inline-flex',
                 alignItems: 'center',
                 justifyContent: 'center',

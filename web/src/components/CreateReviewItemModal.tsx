@@ -76,7 +76,7 @@ export function CreateReviewItemModal({
         {/* Header */}
         <div className="flex items-center justify-between pb-3 border-b border-[var(--border)]">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-xl bg-[var(--accent)]/10 text-[var(--accent)] flex items-center justify-center">
+            <div className="w-8 h-8 rounded-xl bg-[var(--accent)]/10 text-[var(--primary-strong)] flex items-center justify-center">
               <Sparkles className="w-4 h-4" />
             </div>
             <h3 className="text-base font-bold text-[var(--text)]">
@@ -179,7 +179,7 @@ export function CreateReviewItemModal({
             <button
               type="submit"
               disabled={submitting}
-              className="px-5 py-2 rounded-xl bg-[var(--accent)] text-white text-xs font-bold hover:opacity-90 flex items-center gap-1.5 disabled:opacity-50"
+              className="px-5 py-2 rounded-xl bg-[var(--primary)] text-[var(--on-primary)] text-xs font-bold hover:opacity-90 flex items-center gap-1.5 disabled:opacity-50"
             >
               {submitting ? (
                 <Loader2 className="w-3.5 h-3.5 animate-spin" />

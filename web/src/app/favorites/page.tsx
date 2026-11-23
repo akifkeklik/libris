@@ -12,6 +12,7 @@ import {
 import type { LibraryCollectionStatus, LibraryItem, LearningNote, NoteType } from '@/types';
 import { getAllUserNotes, deleteNote, updateNote } from '@/app/actions/notes';
 import { PenTool } from 'lucide-react';
+import { Select } from '@/components/Select';
 import {
   Heart,
   Bookmark,
@@ -25,6 +26,7 @@ import {
   Lock,
   ArrowUpDown,
   RefreshCw,
+  FileUp,
 } from 'lucide-react';
 import { BookCoverFallback } from '@/components/BookCoverFallback';
 import { ReadingJourneyDashboard } from '@/components/ReadingJourneyDashboard';
@@ -188,7 +190,7 @@ export default function FavoritesPage() {
   // 1. Deliberate Unauthenticated State
   if (!authLoading && !user) {
     return (
-      <main className="container" style={{ padding: '4rem 1rem', minHeight: '65vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <div className="container" style={{ padding: '4rem 1rem', minHeight: '65vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <div
           className="glass-panel text-center animate-fade-in"
           style={{ maxWidth: '520px', width: '100%', padding: '3rem 2rem' }}
@@ -220,12 +222,12 @@ export default function FavoritesPage() {
             </Link>
           </div>
         </div>
-      </main>
+      </div>
     );
   }
 
   return (
-    <main className="container" style={{ padding: '2rem 1rem 4rem' }}>
+    <div className="container" style={{ padding: '2rem 1rem 4rem' }}>
       {/* Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '1rem', marginBottom: '2rem' }}>
         <div>
@@ -234,6 +236,11 @@ export default function FavoritesPage() {
             {t('library_subtitle')}
           </p>
         </div>
+        <div style={{ display: 'flex', gap: '0.6rem', flexWrap: 'wrap' }}>
+        <Link href="/import" className="btn btn-outline" style={{ padding: '0.5rem 1rem', fontSize: '0.85rem' }} data-testid="library-import-link">
+          <FileUp size={15} aria-hidden="true" />
+          <span>{t('import_cta')}</span>
+        </Link>
         <button
           onClick={handleRefresh}
           disabled={loading}
@@ -245,6 +252,7 @@ export default function FavoritesPage() {
           <RefreshCw size={15} className={loading ? 'animate-spin' : ''} />
           <span>{t('refresh')}</span>
         </button>
+        </div>
       </div>
 
       {/* Error Banner with Retry */}
@@ -303,7 +311,7 @@ export default function FavoritesPage() {
           >
             <BookOpen size={16} />
             <span>{t('tab_all')}</span>
-            <span style={{ fontSize: '0.75rem', opacity: 0.75 }}>({counts.total})</span>
+            <span style={{ fontSize: '0.75rem' }}>({counts.total})</span>
           </button>
 
           <button
@@ -315,7 +323,7 @@ export default function FavoritesPage() {
           >
             <Heart size={16} color="#f472b6" fill={activeTab === 'favorite' ? '#f472b6' : 'none'} />
             <span>{t('tab_favorites')}</span>
-            <span style={{ fontSize: '0.75rem', opacity: 0.75 }}>({counts.favorites})</span>
+            <span style={{ fontSize: '0.75rem' }}>({counts.favorites})</span>
           </button>
 
           <button
@@ -327,7 +335,7 @@ export default function FavoritesPage() {
           >
             <Bookmark size={16} color="var(--primary)" fill={activeTab === 'want_to_read' ? 'currentColor' : 'none'} />
             <span>{t('tab_want_to_read')}</span>
-            <span style={{ fontSize: '0.75rem', opacity: 0.75 }}>({counts.wantToRead})</span>
+            <span style={{ fontSize: '0.75rem' }}>({counts.wantToRead})</span>
           </button>
 
           <button
@@ -339,7 +347,7 @@ export default function FavoritesPage() {
           >
             <CheckCircle size={16} color="var(--success)" />
             <span>{t('tab_finished')}</span>
-            <span style={{ fontSize: '0.75rem', opacity: 0.75 }}>({counts.finished})</span>
+            <span style={{ fontSize: '0.75rem' }}>({counts.finished})</span>
           </button>
 
           {counts.reading > 0 && (
@@ -352,7 +360,7 @@ export default function FavoritesPage() {
             >
               <BookOpen size={16} color="#fbbf24" />
               <span>{t('tab_reading')}</span>
-              <span style={{ fontSize: '0.75rem', opacity: 0.75 }}>({counts.reading})</span>
+              <span style={{ fontSize: '0.75rem' }}>({counts.reading})</span>
             </button>
           )}
 
@@ -365,7 +373,7 @@ export default function FavoritesPage() {
           >
             <PenTool size={16} color="var(--accent, var(--accent))" />
             <span>{t('tab_notes')}</span>
-            <span style={{ fontSize: '0.75rem', opacity: 0.75 }}>({notes.length})</span>
+            <span style={{ fontSize: '0.75rem' }}>({notes.length})</span>
           </button>
         </div>
 
@@ -374,7 +382,7 @@ export default function FavoritesPage() {
           <div style={{ position: 'relative', flex: '1', minWidth: '220px' }}>
             <Search
               size={16}
-              style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--muted)' }}
+              style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted-strong)' }}
             />
             <input
               type="text"
@@ -388,18 +396,18 @@ export default function FavoritesPage() {
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <ArrowUpDown size={16} color="var(--muted)" />
-            <select
+            <ArrowUpDown size={16} color="var(--text-muted-strong)" />
+            <Select<SortOption>
               value={sortBy}
-              onChange={(e) => setSortBy(e.target.value as SortOption)}
-              className="input-field"
-              style={{ height: '40px', fontSize: '0.875rem', paddingRight: '2rem', cursor: 'pointer' }}
-              aria-label={t('library_sort_label')}
-            >
-              <option value="recent">{t('sort_recent')}</option>
-              <option value="title">{t('sort_title')}</option>
-              <option value="rating">{t('sort_rating')}</option>
-            </select>
+              onChange={setSortBy}
+              ariaLabel={t('library_sort_label')}
+              data-testid="library-sort"
+              options={[
+                { value: 'recent', label: t('sort_recent') },
+                { value: 'title', label: t('sort_title') },
+                { value: 'rating', label: t('sort_rating') },
+              ]}
+            />
           </div>
         </div>
       </div>
@@ -422,7 +430,7 @@ export default function FavoritesPage() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
           {/* Note Type Filter Bar */}
           <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', alignItems: 'center' }}>
-            <span style={{ fontSize: '0.85rem', color: 'var(--muted)', marginRight: '0.5rem' }}>
+            <span style={{ fontSize: '0.85rem', color: 'var(--text-muted-strong)', marginRight: '0.5rem' }}>
               {t('filters')}:
             </span>
             {(['all', 'personal_note', 'key_takeaway', 'question'] as const).map(ftype => {
@@ -446,7 +454,7 @@ export default function FavoritesPage() {
                     cursor: 'pointer',
                     background: isSel ? 'var(--primary)' : 'var(--tint-2)',
                     border: '1px solid ' + (isSel ? 'var(--primary)' : 'var(--tint-4)'),
-                    color: isSel ? 'var(--on-primary)' : 'var(--muted)',
+                    color: isSel ? 'var(--on-primary)' : 'var(--text-muted-strong)',
                     fontWeight: isSel ? 600 : 400,
                   }}
                 >
@@ -476,7 +484,7 @@ export default function FavoritesPage() {
                   className="glass-panel text-center animate-fade-in"
                   style={{ padding: '3.5rem 2rem', borderRadius: '16px' }}
                 >
-                  <PenTool size={36} color="var(--muted)" style={{ margin: '0 auto 1rem' }} />
+                  <PenTool size={36} color="var(--text-muted-strong)" style={{ margin: '0 auto 1rem' }} />
                   <h3 style={{ fontSize: '1.35rem', marginBottom: '0.5rem' }}>
                     {searchQuery ? t('library_no_notes_match', { query: searchQuery }) : t('empty_notes_library')}
                   </h3>
@@ -537,7 +545,7 @@ export default function FavoritesPage() {
                           )}
                         </div>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                          <span style={{ fontSize: '0.75rem', color: 'var(--muted)' }}>
+                          <span style={{ fontSize: '0.75rem', color: 'var(--text-muted-strong)' }}>
                             {new Date(n.createdAt).toLocaleDateString()}
                           </span>
                           <button
@@ -647,7 +655,7 @@ export default function FavoritesPage() {
             ) : activeTab === 'want_to_read' ? (
               <Bookmark size={28} color="var(--primary)" />
             ) : (
-              <BookOpen size={28} color="var(--muted)" />
+              <BookOpen size={28} color="var(--text-muted-strong)" />
             )}
           </div>
           <h2 style={{ fontSize: '1.5rem', marginBottom: '0.5rem' }}>
@@ -657,7 +665,7 @@ export default function FavoritesPage() {
           </h2>
           <p className="text-muted" style={{ maxWidth: '440px', margin: '0 auto 2rem', fontSize: '0.95rem' }}>
             {searchQuery
-              ? 'Try adjusting your search terms or clearing the filter.'
+              ? t('library_search_hint')
               : t('empty_library_desc')}
           </p>
           <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center', flexWrap: 'wrap' }}>
@@ -669,6 +677,12 @@ export default function FavoritesPage() {
               <Sparkles size={16} color="var(--accent-ink)" />
               <span>{t('ai_discovery_cta')}</span>
             </Link>
+            {!searchQuery && (
+              <Link href="/import" className="btn btn-outline">
+                <FileUp size={16} aria-hidden="true" />
+                <span>{t('import_cta')}</span>
+              </Link>
+            )}
           </div>
         </div>
       )}
@@ -779,27 +793,20 @@ export default function FavoritesPage() {
                     marginTop: 'auto',
                   }}
                 >
-                  <select
+                  <Select<LibraryCollectionStatus>
                     value={item.status}
                     disabled={isProcessing}
-                    onChange={(e) =>
-                      handleStatusChange(item.bookId, e.target.value as LibraryCollectionStatus)
-                    }
-                    className="input-field"
-                    style={{
-                      fontSize: '0.8rem',
-                      padding: '0.35rem 0.5rem',
-                      borderRadius: '6px',
-                      flex: 1,
-                      cursor: isProcessing ? 'not-allowed' : 'pointer',
-                    }}
-                    aria-label={t('library_change_status_label', { title: book.title })}
-                  >
-                    <option value="favorite">{t('status_favorite')}</option>
-                    <option value="want_to_read">{t('status_want_to_read')}</option>
-                    <option value="reading">{t('status_reading')}</option>
-                    <option value="finished">{t('status_finished')}</option>
-                  </select>
+                    onChange={(v) => handleStatusChange(item.bookId, v)}
+                    ariaLabel={t('library_change_status_label', { title: book.title })}
+                    size="sm"
+                    block
+                    options={[
+                      { value: 'favorite', label: t('status_favorite') },
+                      { value: 'want_to_read', label: t('status_want_to_read') },
+                      { value: 'reading', label: t('status_reading') },
+                      { value: 'finished', label: t('status_finished') },
+                    ]}
+                  />
 
                   <button
                     type="button"
@@ -823,6 +830,6 @@ export default function FavoritesPage() {
           })}
         </div>
       )}
-    </main>
+    </div>
   );
 }

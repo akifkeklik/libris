@@ -15,20 +15,25 @@ import {
 } from 'lucide-react';
 import { usePreferences } from '@/components/PreferencesProvider';
 import { submitLearningAttemptAction } from '@/app/actions/learning';
+import { CardControls } from '@/components/CardControls';
 import type { ReviewItem } from '@/types';
 
 export interface ActiveRecallCardProps {
   item: ReviewItem;
   onAttemptSubmitted?: (newStage: number, intervalDays: number, nextReviewAt: string) => void;
+  /** The card was reported as a bad question and left the queue. */
+  onRemoved?: () => void;
   className?: string;
 }
 
 export function ActiveRecallCard({
   item,
   onAttemptSubmitted,
+  onRemoved,
   className = '',
 }: ActiveRecallCardProps) {
   const { t } = usePreferences();
+  const [content, setContent] = useState({ question: item.question, answer: item.answer });
   const [revealed, setRevealed] = useState<boolean>(false);
   const [userResponse, setUserResponse] = useState<string>('');
   const [submitting, setSubmitting] = useState<boolean>(false);
@@ -109,12 +114,12 @@ export function ActiveRecallCard({
   return (
     <div
       data-testid={`active-recall-card-${item.id}`}
-      className={`p-6 rounded-2xl border border-[var(--border)] bg-[var(--surface)] shadow-md transition-all ${className}`}
+      className={`relative p-6 rounded-2xl border border-[var(--border)] bg-[var(--surface)] shadow-md transition-all ${className}`}
     >
-      {/* Top Metadata */}
-      <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
+      {/* Top Metadata (right padding leaves room for the card menu) */}
+      <div className="flex flex-wrap items-center justify-between gap-2 mb-4 pr-10">
         <div className="flex items-center gap-2">
-          <span className="text-xs font-bold uppercase tracking-wider px-2.5 py-1 rounded-lg bg-[var(--surface-raised)] text-[var(--accent)] border border-[var(--border)]">
+          <span className="text-xs font-bold uppercase tracking-wider px-2.5 py-1 rounded-lg bg-[var(--surface-raised)] text-[var(--primary-strong)] border border-[var(--border)]">
             {item.concept}
           </span>
           <span className="text-[11px] text-[var(--text-secondary)]">
@@ -123,13 +128,17 @@ export function ActiveRecallCard({
         </div>
         {getReasonBadge()}
       </div>
+      {!lastFeedback && (
+        <CardControls itemId={item.id} question={content.question} answer={content.answer}
+          onChanged={setContent} onRemoved={() => onRemoved?.()} />
+      )}
 
       {/* Book Reference if Present */}
       {item.book && (
         <div className="mb-4 p-2.5 rounded-xl bg-[var(--surface-raised)] border border-[var(--border)] flex items-center justify-between text-xs">
           <Link
             href={`/book/${encodeURIComponent(item.book.isbn13 || item.bookId || '')}`}
-            className="flex items-center gap-2 text-[var(--accent)] hover:underline font-medium"
+            className="flex items-center gap-2 text-[var(--primary-strong)] hover:underline font-medium"
           >
             <BookOpen className="w-4 h-4 flex-shrink-0" />
             <span className="line-clamp-1">{item.book.title}</span>
@@ -149,7 +158,7 @@ export function ActiveRecallCard({
           {t('question_prompt_label')}
         </h4>
         <p className="text-lg font-semibold text-[var(--text)] leading-relaxed font-serif">
-          {item.question}
+          {content.question}
         </p>
       </div>
 
@@ -171,7 +180,7 @@ export function ActiveRecallCard({
         <button
           type="button"
           onClick={() => setRevealed(true)}
-          className="w-full py-3 rounded-xl bg-[var(--accent)] text-white text-sm font-semibold hover:opacity-90 flex items-center justify-center gap-2 transition-all shadow-sm"
+          className="w-full py-3 rounded-xl bg-[var(--primary)] text-[var(--on-primary)] text-sm font-semibold hover:opacity-90 flex items-center justify-center gap-2 transition-all shadow-sm"
         >
           <Eye className="w-4 h-4" />
           <span>{t('reveal_answer')}</span>
@@ -187,7 +196,7 @@ export function ActiveRecallCard({
               {t('question_answer_label')}
             </h5>
             <div className="p-3.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-sm text-[var(--text)] leading-relaxed">
-              {item.answer}
+              {content.answer}
             </div>
           </div>
 

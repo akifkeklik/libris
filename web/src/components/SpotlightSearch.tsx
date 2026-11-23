@@ -284,7 +284,7 @@ export function SpotlightSearch() {
               style={{
                 background: 'transparent',
                 border: 'none',
-                color: 'var(--text-muted)',
+                color: 'var(--text-muted-strong)',
                 cursor: 'pointer',
                 display: 'flex',
                 padding: '2px',
@@ -301,7 +301,7 @@ export function SpotlightSearch() {
               background: 'var(--tint-3)',
               border: '1px solid var(--card-border)',
               borderRadius: '6px',
-              color: 'var(--text-muted)',
+              color: 'var(--text-muted-strong)',
               fontSize: '0.75rem',
               padding: '2px 6px',
               cursor: 'pointer',
@@ -344,7 +344,7 @@ export function SpotlightSearch() {
               style={{
                 textAlign: 'center',
                 padding: '2.5rem 1.5rem',
-                color: 'var(--text-muted)',
+                color: 'var(--text-muted-strong)',
               }}
             >
               <BookOpen size={36} style={{ margin: '0 auto 0.75rem', opacity: 0.4 }} />
@@ -361,7 +361,7 @@ export function SpotlightSearch() {
             <div
               style={{
                 padding: '1.75rem 1.25rem',
-                color: 'var(--text-muted)',
+                color: 'var(--text-muted-strong)',
                 fontSize: '0.85rem',
                 lineHeight: '1.6',
               }}
@@ -445,7 +445,7 @@ export function SpotlightSearch() {
                   <div
                     style={{
                       fontSize: '0.8rem',
-                      color: 'var(--text-muted)',
+                      color: 'var(--text-muted-strong)',
                       overflow: 'hidden',
                       textOverflow: 'ellipsis',
                       whiteSpace: 'nowrap',
@@ -484,7 +484,7 @@ export function SpotlightSearch() {
                   )}
                   <ArrowRight
                     size={16}
-                    color={isSelected ? 'var(--primary)' : 'var(--text-muted)'}
+                    color={isSelected ? 'var(--primary)' : 'var(--text-muted-strong)'}
                     style={{
                       transform: isSelected ? 'translateX(2px)' : 'none',
                       transition: 'transform 0.15s ease, color 0.15s ease',
@@ -506,7 +506,7 @@ export function SpotlightSearch() {
               justifyContent: 'space-between',
               alignItems: 'center',
               fontSize: '0.75rem',
-              color: 'var(--text-muted)',
+              color: 'var(--text-muted-strong)',
               background: 'var(--surface-subtle)',
             }}
           >

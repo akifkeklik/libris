@@ -51,15 +51,16 @@ export function Navbar() {
               fontSize: '0.8rem',
               borderRadius: '9999px',
               gap: '0.4rem',
-              color: 'var(--text-muted)',
+              color: 'var(--text-muted-strong)',
             }}
             title={t('nav_search_title')}
-            aria-label={t('nav_search_label')}
           >
-            <Search size={14} color="var(--text-muted)" />
+            <Search size={14} color="var(--text-muted-strong)" aria-hidden="true" />
             <span className="nav-link-text">{t('search') || 'Search...'}</span>
             <kbd
+              aria-hidden="true"
               style={{
+                color: 'var(--foreground)',
                 fontSize: '0.65rem',
                 padding: '1px 5px',
                 borderRadius: '4px',
@@ -126,9 +127,10 @@ export function Navbar() {
               gap: '0.35rem',
             }}
             title={t('nav_language_title')}
-            aria-label={t('nav_language_title')}
           >
-            <Globe size={14} color="var(--primary)" />
+            <Globe size={14} color="var(--primary)" aria-hidden="true" />
+            {/* Name = "Change language tr": contains the visible code (WCAG 2.5.3, voice control). */}
+            <span className="sr-only">{t('nav_language_title')} </span>
             <span style={{ fontWeight: 700, textTransform: 'uppercase' }}>{preferences.language}</span>
           </button>
 
@@ -137,11 +139,12 @@ export function Navbar() {
               {user ? (
                 <button
                   onClick={signOut}
+                  aria-label={t('nav_signout')}
                   id="nav-signout-btn"
                   className="btn btn-outline"
                   style={{ padding: '0.5rem 1rem', fontSize: '0.875rem' }}
                 >
-                  <LogOut size={16} />
+                  <LogOut size={16} aria-hidden="true" />
                   <span>{t('nav_signout')}</span>
                 </button>
               ) : (

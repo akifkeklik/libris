@@ -271,3 +271,55 @@ export async function getLearningConceptsAction(): Promise<{
   }
 }
 
+
+// ── Faz 5: card controls, review settings, Anki export ─────────────────────────
+
+export async function regenerateLearningItemAction(itemId: string): Promise<{ ok: boolean; question?: string; reason?: 'limit' | 'unavailable' | 'not_found' }> {
+  if (!itemId) return { ok: false, reason: 'not_found' };
+  try {
+    const res = await ApiService.regenerateLearningItem(itemId);
+    if (res.ok && res.question) {
+      safeRevalidatePath('/learning');
+      return { ok: true, question: res.question };
+    }
+    return { ok: false, reason: res.status === 429 ? 'limit' : res.status === 404 ? 'not_found' : 'unavailable' };
+  } catch {
+    return { ok: false, reason: 'unavailable' };
+  }
+}
+
+export async function reportLearningItemAction(itemId: string, reason: string, comment: string): Promise<boolean> {
+  try {
+    const res = await ApiService.reportLearningItem(itemId, reason, comment.slice(0, 300));
+    if (res.ok) safeRevalidatePath('/learning');
+    return res.ok;
+  } catch {
+    return false;
+  }
+}
+
+export async function getLearningSettingsAction(): Promise<{ fsrs_enabled: boolean; desired_retention: number } | null> {
+  try {
+    return await ApiService.getLearningSettings();
+  } catch {
+    return null;
+  }
+}
+
+export async function saveLearningSettingsAction(desiredRetention: number): Promise<boolean> {
+  if (!(desiredRetention >= 0.8 && desiredRetention <= 0.95)) return false;
+  try {
+    return (await ApiService.saveLearningSettings(Math.round(desiredRetention * 100) / 100)).ok;
+  } catch {
+    return false;
+  }
+}
+
+export async function exportAnkiAction(): Promise<{ ok: boolean; base64?: string }> {
+  try {
+    const base64 = await ApiService.exportAnki();
+    return base64 ? { ok: true, base64 } : { ok: false };
+  } catch {
+    return { ok: false };
+  }
+}

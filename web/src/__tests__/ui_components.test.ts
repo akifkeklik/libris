@@ -66,7 +66,13 @@ describe('UI Acceleration & Skeleton Components', () => {
     assert.ok(html.includes('Pride and Prejudice'), 'Should include book title');
     assert.ok(html.includes('Jane Austen'), 'Should include author');
     assert.ok(html.includes('var(--rating)'), 'Should use var(--rating) token');
-    assert.ok(html.includes('aria-label="Pride and Prejudice by Jane Austen"'), 'Should have accessible label');
+    // The card's accessible name comes from its visible content (title, author, ...). An aria-label
+    // replacing it failed WCAG 2.5.3 (label in name) and hardcoded the English word "by".
+    const link = html.match(/<a [^>]*class="book-card[^"]*"[^>]*>/)?.[0] ?? '';
+    assert.ok(link, 'BookCard should render a link');
+    assert.ok(!/aria-label=/.test(link), 'BookCard link must not override its visible text with aria-label');
+    const linkText = html.replace(/<[^>]+>/g, ' ');
+    assert.ok(linkText.includes('Pride and Prejudice') && linkText.includes('Jane Austen'), 'Accessible name has title and author');
     assert.ok(html.includes('94% Match'), 'Should display similarity score');
     assert.ok(html.includes('Because you love Regency classics'), 'Should display recommendation reason');
   });

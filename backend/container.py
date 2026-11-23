@@ -1,6 +1,9 @@
 import logging
 
+from backend.application.use_cases.account import DeleteAccountUseCase
+from backend.application.use_cases.account_export import ExportAccountDataUseCase
 from backend.application.use_cases.ai_rag import ProcessRagQueryUseCase
+from backend.application.use_cases.card_controls import CardControlsUseCase
 from backend.application.use_cases.catalog import (
     GetBookDetailsUseCase,
     GetBooksUseCase,
@@ -12,6 +15,7 @@ from backend.application.use_cases.catalog_contributions import (
     LookupBooksUseCase,
 )
 from backend.application.use_cases.export_notes import ExportNotesUseCase
+from backend.application.use_cases.imports import ImportUseCase
 from backend.application.use_cases.interactions import (
     GetUserPreferencesUseCase,
     ResetPreferencesUseCase,
@@ -41,6 +45,7 @@ from backend.application.use_cases.recommendations import (
     GetPersonalizedRecommendationsUseCase,
     GetRecommendationsUseCase,
 )
+from backend.application.use_cases.reminders import ReminderPreferencesUseCase
 from backend.application.use_cases.spaced_repetition import (
     GetDueReviewsUseCase,
     GetReviewStatsUseCase,
@@ -52,6 +57,10 @@ from backend.infrastructure.adapters.book_lookup_adapter import BookLookupAdapte
 from backend.infrastructure.adapters.enrichment_adapter import GoogleBooksEnrichmentAdapter
 from backend.infrastructure.llm.adapters import GenericLlmAdapter
 from backend.infrastructure.ml.recommender import BookRecommender
+from backend.infrastructure.persistence.in_memory_import_repository import (
+    InMemoryImportRepository,
+    InMemoryLearningSettingsRepository,
+)
 from backend.infrastructure.persistence.in_memory_learning_repository import (
     InMemoryLearningOutcomesRepository,
 )
@@ -60,18 +69,32 @@ from backend.infrastructure.persistence.in_memory_note_repository import (
     InMemoryNoteReviewRepository,
 )
 from backend.infrastructure.persistence.supabase_adapters import (
+    SupabaseAccountAdapter,
     SupabaseAuthPort,
     SupabaseBookDataPort,
+    SupabaseImportRepository,
     SupabaseInteractionRepository,
     SupabaseLearningOutcomesRepository,
+    SupabaseLearningSettingsRepository,
     SupabaseNoteRepository,
     SupabaseNoteReviewRepository,
+    SupabaseReminderRepository,
 )
 from backend.services.book_service import BookService
 from backend.services.embedding_service import EmbeddingService
 
 logger = logging.getLogger(__name__)
 
+
+
+def _request_token():
+    """The signed-in reader's JWT inside a request (repositories act as the reader), else None."""
+    try:
+        from flask import g, has_request_context
+
+        return getattr(g, "jwt_token", None) if has_request_context() else None
+    except ImportError:
+        return None
 
 class Container:
     """Dependency Injection Container (Composition Root)."""
@@ -249,9 +272,19 @@ class Container:
             book_data_port=self.book_data_port,
             llm_port=self.llm_port,
         )
+        # Faz 5: card controls, retention setting (migration 20), Anki export, FSRS behind a flag.
+        self.learning_settings_repo = (
+            SupabaseLearningSettingsRepository() if self.supabase else InMemoryLearningSettingsRepository()
+        )
+        self.card_controls_uc = CardControlsUseCase(
+            self.learning_outcomes_repo, review_queue_uc=self.get_review_queue_uc,
+            settings_repo=self.learning_settings_repo, fsrs_enabled=Config.FSRS_ENABLED,
+        )
         self.submit_review_attempt_uc = SubmitReviewAttemptUseCase(
             learning_repo=self.learning_outcomes_repo,
             note_review_repo=getattr(self, "note_review_repo", None),
+            fsrs_enabled=Config.FSRS_ENABLED,
+            retention_for=lambda uid: self.card_controls_uc.retention_for(uid, _request_token()),
         )
         self.get_learning_overview_uc = GetLearningOverviewUseCase(
             learning_repo=self.learning_outcomes_repo
@@ -274,6 +307,24 @@ class Container:
 
         # Notes Export Use Case
         self.export_notes_uc = ExportNotesUseCase(self.note_repo, self.book_data_port)
+        # Account deletion needs the Supabase RPC (migration 16); unavailable on direct-Postgres stacks.
+        self.account_port = SupabaseAccountAdapter() if self.supabase else None
+        self.delete_account_uc = DeleteAccountUseCase(self.account_port) if self.account_port else None
+        self.reminder_repo = SupabaseReminderRepository(self.supabase) if self.supabase else None
+        self.reminder_prefs_uc = ReminderPreferencesUseCase(self.reminder_repo) if self.reminder_repo else None
+        # Faz 4 imports: the approval queue lives in Supabase (migration 19, reader's JWT).
+        self.import_repo = SupabaseImportRepository() if self.supabase else InMemoryImportRepository()
+        self.import_uc = ImportUseCase(
+            self.import_repo, self.recommender, self.create_note_uc,
+            review_queue_uc=getattr(self, "get_review_queue_uc", None),
+            feedback_uc=self.submit_feedback_uc, book_data_port=self.book_data_port,
+        ) if self.import_repo else None
+        self.export_account_uc = ExportAccountDataUseCase(
+            self.interaction_repo,
+            note_repo=self.note_repo,
+            note_review_repo=getattr(self, "note_review_repo", None),
+            learning_repo=getattr(self, "learning_outcomes_repo", None),
+        )
 
         self.process_rag_query_uc = ProcessRagQueryUseCase(
             embedding_port=self.embedding_service,

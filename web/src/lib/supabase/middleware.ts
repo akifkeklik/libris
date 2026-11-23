@@ -1,5 +1,6 @@
 import { createServerClient } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
+import { REMEMBER_COOKIE, applyRemember, isSessionOnly } from './remember';
 
 /**
  * Refreshes the user's Supabase session and synchronizes auth cookies between
@@ -29,8 +30,9 @@ export async function updateSession(request: NextRequest): Promise<NextResponse>
         supabaseResponse = NextResponse.next({
           request,
         });
+        const sessionOnly = isSessionOnly(request.cookies.get(REMEMBER_COOKIE)?.value);
         cookiesToSet.forEach(({ name, value, options }) =>
-          supabaseResponse.cookies.set(name, value, options)
+          supabaseResponse.cookies.set(name, value, applyRemember(options, sessionOnly))
         );
       },
     },

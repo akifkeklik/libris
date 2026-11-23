@@ -45,7 +45,6 @@ export function BookCard({ book, userInteraction, isFavorite }: BookCardProps) {
     <Link
       href={`/book/${book.isbn13}`}
       className="book-card animate-fade-in"
-      aria-label={`${book.title} by ${authorDisplay}`}
     >
       <div className="book-cover-container">
         {!thumbnailUrl || imageError ? (
@@ -152,7 +151,7 @@ export function BookCard({ book, userInteraction, isFavorite }: BookCardProps) {
         
         <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginTop: '4px' }}>
           <Star size={14} color="var(--rating)" fill="var(--rating)" aria-hidden="true" />
-          <span style={{ fontSize: '0.875rem', color: 'var(--muted)' }}>
+          <span style={{ fontSize: '0.875rem', color: 'var(--text-muted-strong)' }}>
             {book.averageRating > 0 ? formatRating(book.averageRating, preferences.language) : t('no_rating')} 
             {book.ratingsCount > 0 && ` (${formatCount(book.ratingsCount, preferences.language, true)})`}
           </span>

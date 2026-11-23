@@ -134,3 +134,36 @@ test('the pre-paint init script knows the themes and the legacy map (no flash of
   assert.match(layout, /JSON\.stringify\(LEGACY_THEME_MAP\)/);
   assert.match(layout, /import "\.\/themes\.css"/);
 });
+
+
+/** color-mix(in srgb, a p, b): per-channel interpolation of gamma-encoded sRGB. */
+function mix(a: string, b: string, p: number): string {
+  const ch = (h: string) => [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16));
+  const [x, y] = [ch(a), ch(b)];
+  return '#' + x.map((v, i) => Math.round(v * p + y[i] * (1 - p)).toString(16).padStart(2, '0')).join('');
+}
+
+test('text on tinted and card surfaces meets AA in all 20 themes (--primary-strong, --text-muted-strong)', () => {
+  // Same formulas as themes.css; the tint is the strongest one the UI uses (15% primary).
+  assert.match(css, /--primary-strong: color-mix\(in srgb, var\(--primary\) 80%, var\(--text-primary\)\)/);
+  assert.match(css, /--text-muted-strong: color-mix\(in srgb, var\(--text-muted\) 70%, var\(--text-primary\)\)/);
+  const failures: string[] = [];
+  for (const id of THEME_IDS) {
+    for (const mode of ['light', 'dark'] as const) {
+      const v = block(id, mode);
+      const primaryStrong = mix(v.primary, v['text-primary'], 0.8);
+      const mutedStrong = mix(v['text-muted'], v['text-primary'], 0.7);
+      for (const surface of ['background', 'surface', 'surface-elevated', 'surface-subtle']) {
+        const tint = mix(v.primary, v[surface], 0.15);
+        for (const [name, fg, bg] of [
+          ['primary-strong/tint', primaryStrong, tint], ['muted-strong/tint', mutedStrong, tint],
+          ['muted-strong/surface', mutedStrong, v[surface]],
+        ] as const) {
+          const r = contrast(fg, bg);
+          if (r < 4.5) failures.push(`${id}/${mode} ${name} on ${surface}: ${r.toFixed(2)}`);
+        }
+      }
+    }
+  }
+  assert.deepEqual(failures, []);
+});
