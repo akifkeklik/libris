@@ -13,6 +13,7 @@
    default: in dark mode Chrome paints it rgb(107,107,107), a grey slab (Learning tabs: 2.1:1).
    :where() keeps this at zero specificity, so every class or inline style still wins. */
 :where(button) {
+  border: 0 solid; /* no preflight: without this the browser draws a bevelled 2px outset border */
   background-color: transparent;
   color: inherit;
 }
@@ -1768,3 +1769,6 @@ body {
 .card-controls__actions { display: flex; gap: 0.6rem; flex-wrap: wrap; margin-top: 0.25rem; }
 .card-controls__status { margin: 0 0 0.75rem; font-size: 0.8rem; color: var(--text-muted-strong); }
 .card-controls__status:empty { display: none; }
+
+/* The hidden skip link must not cast its shadow into the top-left corner of every page. */
+.skip-link:not(:focus) { box-shadow: none; }
