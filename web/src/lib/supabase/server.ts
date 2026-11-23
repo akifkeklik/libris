@@ -1,6 +1,7 @@
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 import { assertSafeSupabaseTarget } from './isolation'
+import { REMEMBER_COOKIE, applyRemember, isSessionOnly } from './remember'
 
 let testClientOverride: ReturnType<typeof createServerClient> | null = null;
 
@@ -44,8 +45,9 @@ export async function createClient() {
         },
         setAll(cookiesToSet) {
           try {
+            const sessionOnly = isSessionOnly(cookieStore.getAll().find((c) => c.name === REMEMBER_COOKIE)?.value);
             cookiesToSet.forEach(({ name, value, options }) =>
-              cookieStore.set(name, value, options)
+              cookieStore.set(name, value, applyRemember(options, sessionOnly))
             );
           } catch {
             // Ignored outside request lifecycle

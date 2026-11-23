@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { BookPlus, Loader2, PenLine, Search, X } from 'lucide-react';
+import { Select } from '@/components/Select';
 import { usePreferences } from '@/components/PreferencesProvider';
 import { addCatalogBookAction, lookupBooksAction } from '@/app/actions/catalog';
 import { translateGenre } from '@/lib/i18n';
@@ -123,7 +124,7 @@ export function AddBookModal({ open, onClose, initialQuery = '' }: AddBookModalP
             <BookPlus size={20} aria-hidden="true" style={{ color: 'var(--primary)' }} />
             {t('add_book_title')}
           </h2>
-          <button type="button" onClick={onClose} aria-label={t('recall_card_dismiss')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)' }}>
+          <button type="button" onClick={onClose} aria-label={t('recall_card_dismiss')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted-strong)' }}>
             <X size={20} aria-hidden="true" />
           </button>
         </div>
@@ -132,7 +133,7 @@ export function AddBookModal({ open, onClose, initialQuery = '' }: AddBookModalP
         {!form ? (
           <>
             <div style={{ position: 'relative' }}>
-              <Search size={16} aria-hidden="true" style={{ position: 'absolute', left: '0.75rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
+              <Search size={16} aria-hidden="true" style={{ position: 'absolute', left: '0.75rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted-strong)' }} />
               <input
                 ref={inputRef}
                 value={query}
@@ -193,13 +194,15 @@ export function AddBookModal({ open, onClose, initialQuery = '' }: AddBookModalP
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '0.8rem' }}>
               <div>
-                <label style={labelStyle} htmlFor="ab-genre">{t('add_book_field_genre')}</label>
-                <select id="ab-genre" value={form.categories} onChange={(e) => field('categories', e.target.value)} style={inputStyle}>
-                  <option value="">—</option>
-                  {CANONICAL_GENRES.map((g) => (
-                    <option key={g} value={g}>{translateGenre(preferences.language, g)}</option>
-                  ))}
-                </select>
+                <label style={labelStyle} id="ab-genre-label" htmlFor="ab-genre">{t('add_book_field_genre')}</label>
+                <Select<string>
+                  id="ab-genre"
+                  labelledBy="ab-genre-label"
+                  value={form.categories ?? ''}
+                  onChange={(v) => field('categories', v)}
+                  block
+                  options={[{ value: '', label: '—' }, ...CANONICAL_GENRES.map((g) => ({ value: g, label: translateGenre(preferences.language, g) }))]}
+                />
               </div>
               <div>
                 <label style={labelStyle} htmlFor="ab-year">{t('add_book_field_year')}</label>

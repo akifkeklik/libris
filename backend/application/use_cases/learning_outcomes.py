@@ -186,16 +186,20 @@ class GetReviewQueueUseCase:
         self._book_data_port = book_data_port
         self._llm_port = llm_port
 
-    def _recall_question(self, takeaway: str, book_title: str, budget: List[int]) -> str:
+    def _recall_question(self, takeaway: str, book_title: str, budget: List[int]) -> Optional[str]:
         """
         Turns a key takeaway into an active-recall question whose answer is the takeaway.
-        Falls back to a deterministic prompt when no LLM is available, the per-request
-        budget is exhausted, or the model output is unusable.
+        Falls back to a deterministic prompt when no LLM is available or the model output is
+        unusable. When the LLM is available but this request's budget is spent, returns None:
+        the note waits for the next request instead of getting a generic question for good
+        (an import of 200 highlights would otherwise turn 195 of them into the same card).
         """
         fallback = f"What is the key takeaway from {book_title}?"
         text = (takeaway or "").strip()
-        if not self._llm_port or not text or budget[0] <= 0:
+        if not self._llm_port or not text:
             return fallback
+        if budget[0] <= 0:
+            return None
         budget[0] -= 1
         try:
             raw = self._llm_port.generate_response(
@@ -233,6 +237,8 @@ class GetReviewQueueUseCase:
         concept_name = self._book_title_for_note(note)
         content = note.get("content", "")
         question = content if note_type == "question" else self._recall_question(content, concept_name, budget)
+        if question is None:
+            return None  # deferred: no LLM budget left in this request
         return self._learning_repo.create_review_item(
             user_id=user_id,
             title="Takeaway Review" if note_type == "key_takeaway" else "Reading Question",
@@ -255,10 +261,26 @@ class GetReviewQueueUseCase:
         note_id = str(note.get("id", "")).strip()
         if not clean_user_id or not note_id:
             return None
-        for item in self._learning_repo.list_review_items(clean_user_id, status="active", limit=500) or []:
+        # Any status: a paused or reported (archived) card must not be re-created for the same note.
+        for item in self._learning_repo.list_review_items(clean_user_id, status=None, limit=1000) or []:
             if str(item.get("source_id") or "") == note_id:
                 return item
         return self._build_item_for_note(clean_user_id, note, [1])
+
+    def create_items_for_notes(
+        self, user_id: str, notes: List[Dict[str, Any]], max_llm_calls: int = MAX_RECALL_QUESTIONS_PER_REQUEST
+    ) -> Tuple[List[Dict[str, Any]], int]:
+        """Batch version for imports: at most `max_llm_calls` model calls for the whole batch.
+        Returns (created items, number of notes deferred to later requests)."""
+        budget = [max(0, min(max_llm_calls, MAX_RECALL_QUESTIONS_PER_REQUEST))]
+        created, deferred = [], 0
+        for note in notes:
+            item = self._build_item_for_note(user_id, note, budget)
+            if item:
+                created.append(item)
+            elif note.get("note_type") in {"key_takeaway", "question"}:
+                deferred += 1
+        return created, deferred
 
     def execute(
         self,
@@ -291,8 +313,13 @@ class GetReviewQueueUseCase:
                 elif hasattr(self._note_repo, "get_notes_by_user"):
                     user_notes = self._note_repo.get_notes_by_user(clean_user_id, limit=50)
 
+                # Cards of every status count: a card the reader paused or reported as a bad
+                # question must not come back as a new card for the same note.
+                all_items = self._learning_repo.list_review_items(
+                    user_id=clean_user_id, status=None, limit=1000
+                ) or []
                 existing_source_ids = {
-                    i.get("source_id") for i in items if i.get("source_id")
+                    i.get("source_id") for i in list(items) + list(all_items) if i.get("source_id")
                 }
                 llm_budget = [MAX_RECALL_QUESTIONS_PER_REQUEST]
                 for note in user_notes:
@@ -402,9 +429,31 @@ class SubmitReviewAttemptUseCase:
         self,
         learning_repo: LearningOutcomesRepository,
         note_review_repo: Optional[NoteReviewRepository] = None,
+        fsrs_enabled: bool = False,
+        retention_for=None,
     ):
         self._learning_repo = learning_repo
         self._note_review_repo = note_review_repo
+        self._fsrs_enabled = fsrs_enabled
+        self._retention_for = retention_for  # (user_id) -> desired retention
+
+    def _fsrs_schedule(self, user_id: str, item: Dict[str, Any], outcome: str, when: datetime.datetime):
+        """(metadata, next_review_at, interval_days) from FSRS, or None to use Policy v1."""
+        if not self._fsrs_enabled:
+            return None
+        try:
+            from .fsrs_scheduling import DEFAULT_RETENTION, FSRS_STATE_KEY, FsrsScheduler
+
+            retention = self._retention_for(user_id) if self._retention_for else DEFAULT_RETENTION
+            attempts = self._learning_repo.get_review_attempts(user_id, item_id=str(item.get("id")), limit=500) or []
+            state, due, days = FsrsScheduler(retention).review(item, attempts, outcome, when)
+            meta = dict(item.get("metadata") or {})
+            meta[FSRS_STATE_KEY] = state
+            meta["scheduler"] = "fsrs"
+            return meta, due, days
+        except Exception as e:  # never block a review on the optional scheduler
+            logger.warning("FSRS scheduling failed; using Policy v1: %s", type(e).__name__)
+            return None
 
     def execute(
         self,
@@ -442,6 +491,10 @@ class SubmitReviewAttemptUseCase:
             as_of=target_time,
         )
 
+        fsrs = self._fsrs_schedule(clean_user_id, item, clean_outcome, target_time)
+        if fsrs:
+            fsrs_meta, next_review_at, next_interval = fsrs
+
         # 3. Record immutable attempt record
         is_correct = clean_outcome == "remembered"
         attempt = self._learning_repo.record_review_attempt(
@@ -467,6 +520,8 @@ class SubmitReviewAttemptUseCase:
             "total_reviews": total_rev,
             "successful_reviews": success_rev,
         }
+        if fsrs:
+            updates["metadata"] = fsrs_meta
         updated_item = self._learning_repo.update_review_item(clean_item_id, clean_user_id, updates)
 
         # 5. If item originated from a note, synchronize note_review_repo
@@ -645,12 +700,16 @@ class UpdateReviewItemUseCase:
         clean_user_id = user_id.strip()
         clean_item_id = item_id.strip()
 
+        from .card_controls import clean_item_updates
+
+        clean_updates = clean_item_updates(updates)  # only card content and status; never the schedule
+
         # Check existence and ownership
         existing = self._learning_repo.get_review_item_by_id(clean_item_id, clean_user_id)
         if not existing:
             return None
 
-        return self._learning_repo.update_review_item(clean_item_id, clean_user_id, updates)
+        return self._learning_repo.update_review_item(clean_item_id, clean_user_id, clean_updates)
 
 
 class DeleteReviewItemUseCase:

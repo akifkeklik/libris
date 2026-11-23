@@ -49,7 +49,9 @@ export default async function CatalogPage({
     categories = cats;
     booksRes = bks;
   } catch (e) {
-    error = 'Failed to load catalog. Please check your connection and try again.';
+    // A sleeping backend times out on its first request; say so instead of blaming the network.
+    const isTimeout = (e as { isTimeout?: boolean })?.isTimeout === true;
+    error = t(isTimeout ? 'service_timeout' : 'service_unavailable');
     console.error(e);
   }
 
@@ -97,11 +99,11 @@ export default async function CatalogPage({
                 className="input-field"
                 style={{ width: '100%', paddingLeft: '2.5rem', paddingRight: q ? '2.5rem' : '1rem' }}
               />
-              <Search size={18} style={{ position: 'absolute', left: '0.85rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--muted)' }} />
+              <Search size={18} style={{ position: 'absolute', left: '0.85rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted-strong)' }} />
               {q && (
                 <Link
                   href={createFilterUrl({ q: null })}
-                  style={{ position: 'absolute', right: '0.85rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--muted)' }}
+                  style={{ position: 'absolute', right: '0.85rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted-strong)' }}
                   aria-label={t('clear_search')}
                 >
                   <X size={16} />
@@ -130,8 +132,8 @@ export default async function CatalogPage({
           <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
             {/* Sort Control */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
-              <ArrowUpDown size={16} color="var(--muted)" />
-              <span style={{ fontSize: '0.875rem', color: 'var(--muted)' }}>{t('sort_label')}</span>
+              <ArrowUpDown size={16} color="var(--text-muted-strong)" />
+              <span style={{ fontSize: '0.875rem', color: 'var(--text-muted-strong)' }}>{t('sort_label')}</span>
               <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }}>
                 <Link
                   href={createFilterUrl({ sort: 'popularity', order: 'desc' })}
@@ -187,7 +189,7 @@ export default async function CatalogPage({
             {/* Min Rating Filter */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
               <Star size={16} color="#fbbf24" fill="#fbbf24" />
-              <span style={{ fontSize: '0.875rem', color: 'var(--muted)' }}>{t('min_rating_label')}</span>
+              <span style={{ fontSize: '0.875rem', color: 'var(--text-muted-strong)' }}>{t('min_rating_label')}</span>
               <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }}>
                 <Link
                   href={createFilterUrl({ min_rating: null })}
@@ -247,8 +249,9 @@ export default async function CatalogPage({
       {error ? (
         <div style={{ padding: '2rem', background: 'rgba(239, 68, 68, 0.1)', color: 'var(--danger)', borderRadius: '12px', textAlign: 'center' }}>
           <p style={{ fontWeight: 600, marginBottom: '0.5rem' }}>{error}</p>
-          <Link href="/catalog" className="btn btn-primary" style={{ marginTop: '1rem' }}>
-            {t('reload_catalog')}
+          {/* Retry the same search and filters: the server may simply have been waking up. */}
+          <Link href={createFilterUrl({ page })} className="btn btn-primary" style={{ marginTop: '1rem' }}>
+            {t('retry')}
           </Link>
         </div>
       ) : (
@@ -265,7 +268,7 @@ export default async function CatalogPage({
                   <Link 
                     href={createFilterUrl({ category: null })} 
                     style={{
-                      color: !category ? 'var(--primary)' : 'var(--foreground)',
+                      color: 'var(--foreground)',
                       display: 'flex',
                       justifyContent: 'space-between',
                       alignItems: 'center',
@@ -276,7 +279,7 @@ export default async function CatalogPage({
                     }}
                   >
                     <span>{t('tab_all')}</span>
-                    <span className="text-muted" style={{ fontSize: '0.8rem' }}>{!category && totalBooks > 0 ? totalBooks : ''}</span>
+                    <span className={!category ? undefined : 'text-muted'} style={{ fontSize: '0.8rem' }}>{!category && totalBooks > 0 ? totalBooks : ''}</span>
                   </Link>
                 </li>
                 {categories.map((c) => {
@@ -286,7 +289,7 @@ export default async function CatalogPage({
                       <Link 
                         href={createFilterUrl({ category: isSelected ? null : c.name })}
                         style={{
-                          color: isSelected ? 'var(--primary)' : 'var(--foreground)',
+                          color: 'var(--foreground)',
                           display: 'flex',
                           justifyContent: 'space-between',
                           alignItems: 'center',
@@ -312,7 +315,10 @@ export default async function CatalogPage({
           <div className="catalog-content">
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
               <p className="text-muted" style={{ fontSize: '0.9rem' }}>
-                Showing {displayedBooks.length} books {totalBooks ? `of ${totalBooks}` : ''} {page > 1 ? `(Page ${page})` : ''}
+                {totalBooks
+                  ? t('catalog_showing_of', { count: displayedBooks.length, total: totalBooks })
+                  : t('catalog_showing', { count: displayedBooks.length })}
+                {page > 1 ? ` · ${t('catalog_page_n', { page })}` : ''}
               </p>
             </div>
             

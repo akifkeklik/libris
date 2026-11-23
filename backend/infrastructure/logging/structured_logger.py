@@ -28,6 +28,16 @@ class JSONFormatter(logging.Formatter):
             # But usually we log tracebacks safely if we redact.
             # We will just log the error type and a safe string.
             log_record["error_details"] = str(record.exc_info[1])
+            # Where it happened: the innermost frames as file:line:function only. No variable
+            # values and no source lines, so nothing a user typed can end up here.
+            tb = record.exc_info[2]
+            if tb is not None:
+                import os
+                import traceback
+
+                log_record["error_location"] = [
+                    f"{os.path.basename(f.filename)}:{f.lineno}:{f.name}" for f in traceback.extract_tb(tb)[-6:]
+                ]
 
         # Add any extra arguments passed via extra={...}
         if hasattr(record, "extra_data"):

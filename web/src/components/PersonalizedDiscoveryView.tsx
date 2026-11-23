@@ -471,7 +471,7 @@ export function PersonalizedDiscoveryView() {
   // 4. Session Expired or Unauthenticated Screen
   if (showSessionExpired) {
     return (
-      <main
+      <div
         className="container"
         style={{
           padding: '4rem 1rem',
@@ -521,12 +521,12 @@ export function PersonalizedDiscoveryView() {
             </Link>
           </div>
         </div>
-      </main>
+      </div>
     );
   }
 
   return (
-    <main className="container animate-fade-in" style={{ padding: '2.5rem 1rem 5rem' }}>
+    <div className="container animate-fade-in" style={{ padding: '2.5rem 1rem 5rem' }}>
       {/* Header Banner */}
       <div
         style={{
@@ -607,7 +607,7 @@ export function PersonalizedDiscoveryView() {
             onClick={handleResetPersonalization}
             disabled={loading}
             className="btn btn-outline"
-            style={{ padding: '0.55rem 1rem', fontSize: '0.875rem', color: 'var(--muted)' }}
+            style={{ padding: '0.55rem 1rem', fontSize: '0.875rem', color: 'var(--text-muted-strong)' }}
             title={t('reset_personalization')}
             aria-label={t('reset_personalization')}
           >
@@ -732,7 +732,7 @@ export function PersonalizedDiscoveryView() {
                 style={{
                   margin: '0.25rem 0 0',
                   fontSize: '0.85rem',
-                  color: 'var(--muted)',
+                  color: 'var(--text-muted-strong)',
                   maxWidth: '700px',
                 }}
               >
@@ -890,6 +890,6 @@ export function PersonalizedDiscoveryView() {
           loadData();
         }}
       />
-    </main>
+    </div>
   );
 }

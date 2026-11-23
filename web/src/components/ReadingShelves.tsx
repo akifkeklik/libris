@@ -124,7 +124,7 @@ export function ReadingShelves({
                 background: 'var(--tint-1)',
                 border: '1px dashed var(--card-border)',
                 textAlign: 'center',
-                color: 'var(--text-muted)',
+                color: 'var(--text-muted-strong)',
                 fontSize: '0.9rem',
               }}
             >
@@ -256,7 +256,7 @@ export function ReadingShelves({
                           alignItems: 'center',
                           gap: '6px',
                           fontSize: '0.75rem',
-                          color: 'var(--text-muted)',
+                          color: 'var(--text-muted-strong)',
                         }}
                       >
                         <BookMarked size={12} color="var(--reading, #f59e0b)" />
@@ -349,7 +349,7 @@ export function ReadingShelves({
                           padding: '0.25rem 0.5rem',
                           fontSize: '0.72rem',
                           marginLeft: 'auto',
-                          color: 'var(--muted)',
+                          color: 'var(--text-muted-strong)',
                         }}
                         title={t('rj_remove_label')}
                         aria-label={t('rj_remove_title_label', { title: book.title })}

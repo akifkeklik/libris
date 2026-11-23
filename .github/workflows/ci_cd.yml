@@ -112,6 +112,24 @@ jobs:
           psql -v ON_ERROR_STOP=1 -h localhost -U postgres -d postgres -f backend/scripts/15_reader_catalog_contributions.sql
           echo "Runtime checks for add_catalog_book..."
           psql -v ON_ERROR_STOP=1 -h localhost -U postgres -d postgres -f backend/tests/sql/test_15_add_catalog_book.sql
+          echo "Runtime checks for delete_my_account (migration 16)..."
+          psql -v ON_ERROR_STOP=1 -h localhost -U postgres -d postgres -f backend/tests/sql/test_16_account_deletion.sql
+          echo "RLS isolation for notes and review tables (migrations 09, 10, 13)..."
+          psql -v ON_ERROR_STOP=1 -h localhost -U postgres -d postgres -f backend/tests/sql/test_09_10_13_rls_isolation.sql
+          echo "Reminders: candidates, idempotency, unsubscribe, RLS and worker role (migration 17)..."
+          psql -v ON_ERROR_STOP=1 -h localhost -U postgres -d postgres -f backend/tests/sql/test_17_reminders.sql
+          echo "Push subscriptions, push candidates and product events (migration 18)..."
+          psql -v ON_ERROR_STOP=1 -h localhost -U postgres -d postgres -f backend/tests/sql/test_18_push_and_events.sql
+          psql -v ON_ERROR_STOP=1 -h localhost -U postgres -d postgres -f backend/scripts/rollbacks/18_push_and_events_rollback.sql
+          psql -v ON_ERROR_STOP=1 -h localhost -U postgres -d postgres -f backend/scripts/18_push_and_events.sql
+          echo "Import approval queue: dedup, shape, RLS, cap, cascade (migration 19)..."
+          psql -v ON_ERROR_STOP=1 -h localhost -U postgres -d postgres -f backend/tests/sql/test_19_import_queue.sql
+          psql -v ON_ERROR_STOP=1 -h localhost -U postgres -d postgres -f backend/scripts/rollbacks/19_import_queue_rollback.sql
+          psql -v ON_ERROR_STOP=1 -h localhost -U postgres -d postgres -f backend/scripts/19_import_queue.sql
+          echo "Learning settings: retention bounds, RLS, cascade (migration 20)..."
+          psql -v ON_ERROR_STOP=1 -h localhost -U postgres -d postgres -f backend/tests/sql/test_20_learning_settings.sql
+          psql -v ON_ERROR_STOP=1 -h localhost -U postgres -d postgres -f backend/scripts/rollbacks/20_learning_settings_rollback.sql
+          psql -v ON_ERROR_STOP=1 -h localhost -U postgres -d postgres -f backend/scripts/20_learning_settings.sql
 
       - name: Validate Hardening Scripts (Forward & Rollback)
         env:
