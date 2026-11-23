@@ -12,7 +12,7 @@
 /* ── Derived tokens (shared by all 20 combinations) ─────────────────────── */
 html[data-palette] {
   --foreground: var(--text-primary);
-  --muted: var(--text-muted);
+  --muted: var(--text-muted-strong);
   --focus: var(--primary);
   --link: var(--primary);
   --accent-foreground: var(--on-primary);
@@ -30,6 +30,11 @@ html[data-palette] {
   --tint-4: color-mix(in srgb, var(--ink) 12%, transparent);
 
   --primary-soft: color-mix(in srgb, var(--primary) 12%, transparent);
+  /* Text on tinted / card surfaces. --primary and --text-muted pass AA on the page background
+     but not on a 15% primary tint (4.1-4.3:1). Mixing toward the body text keeps the hue and
+     reaches >= 4.6:1 in every theme and mode (themes.test.ts checks all 20). */
+  --primary-strong: color-mix(in srgb, var(--primary) 80%, var(--text-primary));
+  --text-muted-strong: color-mix(in srgb, var(--text-muted) 70%, var(--text-primary));
   --primary-softer: color-mix(in srgb, var(--primary) 7%, transparent);
   --primary-ring: color-mix(in srgb, var(--primary) 30%, transparent);
   --accent-soft: color-mix(in srgb, var(--accent) 16%, transparent);

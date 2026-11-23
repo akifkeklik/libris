@@ -111,3 +111,10 @@ class Config:
     # Largest accepted request body. The biggest legitimate body (a learning item) is ~41 KB, so
     # 1 MiB leaves ample headroom; Flask/werkzeug answers 413 above it, before JSON is parsed.
     MAX_REQUEST_BYTES: int = int(os.getenv("MAX_REQUEST_BYTES", str(1024 * 1024)))
+    # Public web app address, used for links the API hands out (reminder unsubscribe redirect).
+    APP_URL: str = os.getenv("APP_URL", "").rstrip("/")
+    # Web Push (Faz 3): public half of the VAPID key pair; the private half lives only in the
+    # reminder worker's secrets (VAPID_PRIVATE_KEY). Empty -> the push option stays hidden.
+    VAPID_PUBLIC_KEY: str = os.getenv("VAPID_PUBLIC_KEY", "").strip()
+    # Faz 5: FSRS scheduling instead of the fixed 1/3/7/14/30-day stages. Off until enabled.
+    FSRS_ENABLED: bool = os.getenv("FSRS_ENABLED", "false").strip().lower() in ("1", "true", "yes")

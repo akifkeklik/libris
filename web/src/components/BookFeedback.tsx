@@ -193,7 +193,7 @@ export default function BookFeedback({
             </span>
           )}
         </div>
-        <span style={{ fontSize: '0.8rem', color: 'var(--muted)' }}>
+        <span style={{ fontSize: '0.8rem', color: 'var(--text-muted-strong)' }}>
           {t('feedback_shapes_recs')}
         </span>
       </div>
@@ -203,7 +203,7 @@ export default function BookFeedback({
           type="button"
           onClick={handleFavoriteToggle}
           disabled={status === 'loading'}
-          aria-label={isFavorite ? t('fb_fav_remove_label') : t('fb_fav_add_label')}
+          aria-pressed={isFavorite}
           title={isFavorite ? t('fb_fav_remove_label') : t('fb_fav_add_label')}
           style={{
             display: 'inline-flex',
@@ -227,8 +227,9 @@ export default function BookFeedback({
         <button
           type="button"
           onClick={() => handleFeedback('want_to_read')}
+          aria-pressed={activeFeedback === 'want_to_read'}
           disabled={status === 'loading'}
-          aria-label={t('feedback_want_label')}
+          title={t('feedback_want_label')}
           style={{
             display: 'inline-flex',
             alignItems: 'center',
@@ -251,8 +252,9 @@ export default function BookFeedback({
         <button
           type="button"
           onClick={() => handleFeedback('reading')}
+          aria-pressed={activeFeedback === 'reading'}
           disabled={status === 'loading'}
-          aria-label={t('feedback_reading_label')}
+          title={t('feedback_reading_label')}
           style={{
             display: 'inline-flex',
             alignItems: 'center',
@@ -275,8 +277,9 @@ export default function BookFeedback({
         <button
           type="button"
           onClick={() => handleFeedback('finished')}
+          aria-pressed={activeFeedback === 'finished'}
           disabled={status === 'loading'}
-          aria-label={t('feedback_finished_label')}
+          title={t('feedback_finished_label')}
           style={{
             display: 'inline-flex',
             alignItems: 'center',
@@ -299,8 +302,9 @@ export default function BookFeedback({
         <button
           type="button"
           onClick={() => handleFeedback('like')}
+          aria-pressed={activeFeedback === 'like'}
           disabled={status === 'loading'}
-          aria-label={t('feedback_like_label')}
+          title={t('feedback_like_label')}
           style={{
             display: 'inline-flex',
             alignItems: 'center',
@@ -323,8 +327,9 @@ export default function BookFeedback({
         <button
           type="button"
           onClick={() => handleFeedback('dislike')}
+          aria-pressed={activeFeedback === 'dislike'}
           disabled={status === 'loading'}
-          aria-label={t('feedback_dislike_label')}
+          title={t('feedback_dislike_label')}
           style={{
             display: 'inline-flex',
             alignItems: 'center',
@@ -349,7 +354,7 @@ export default function BookFeedback({
             type="button"
             onClick={handleRemoveFromLibrary}
             disabled={status === 'loading'}
-            aria-label={t('feedback_remove_title')}
+            
             title={t('feedback_remove_label')}
             style={{
               display: 'inline-flex',
@@ -375,7 +380,7 @@ export default function BookFeedback({
 
       <div style={{ marginTop: '0.75rem', minHeight: '1.25rem' }}>
         {status === 'loading' && (
-          <span style={{ color: 'var(--muted)', fontSize: '0.85rem' }} className="animate-pulse">
+          <span style={{ color: 'var(--text-muted-strong)', fontSize: '0.85rem' }} className="animate-pulse">
             {t('feedback_updating')}
           </span>
         )}

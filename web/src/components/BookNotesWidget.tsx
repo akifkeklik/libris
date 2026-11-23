@@ -57,6 +57,25 @@ export default function BookNotesWidget({
 
   const isUserAuthenticated = initialAuth || (!!user && !authLoading);
 
+  // "Add a takeaway" on the book page links to #add-takeaway: open the form ready for a key
+  // takeaway (the note type that becomes a review question) instead of making the reader
+  // press "Add Note" a second time.
+  useEffect(() => {
+    const openFromHash = () => {
+      if (window.location.hash !== '#add-takeaway') return;
+      setNewType('key_takeaway');
+      setIsAdding(true);
+      window.setTimeout(() => {
+        const box = document.getElementById('new-note-content');
+        box?.scrollIntoView({ block: 'center' });
+        box?.focus();
+      }, 50);
+    };
+    openFromHash();
+    window.addEventListener('hashchange', openFromHash);
+    return () => window.removeEventListener('hashchange', openFromHash);
+  }, []);
+
   // Fetch verified notes on mount or auth change
   useEffect(() => {
     let ignore = false;
@@ -213,7 +232,7 @@ export default function BookNotesWidget({
           label: t('note_type_takeaway'),
           bg: 'rgba(245, 158, 11, 0.15)',
           border: 'rgba(245, 158, 11, 0.3)',
-          color: '#fbbf24',
+          color: 'var(--warning)',
         };
       case 'question':
         return {
@@ -221,7 +240,7 @@ export default function BookNotesWidget({
           label: t('note_type_question'),
           bg: 'rgba(16, 185, 129, 0.15)',
           border: 'rgba(16, 185, 129, 0.3)',
-          color: '#34d399',
+          color: 'var(--success)',
         };
       case 'personal_note':
       default:
@@ -230,7 +249,7 @@ export default function BookNotesWidget({
           label: t('note_type_personal'),
           bg: 'color-mix(in srgb, var(--accent) 15%, transparent)',
           border: 'color-mix(in srgb, var(--accent) 30%, transparent)',
-          color: 'var(--accent, var(--accent))',
+          color: 'var(--primary-strong)',
         };
     }
   };
@@ -266,7 +285,7 @@ export default function BookNotesWidget({
               height: '36px',
               borderRadius: '10px',
               background: 'color-mix(in srgb, var(--accent) 18%, transparent)',
-              color: 'var(--accent, var(--accent))',
+              color: 'var(--primary-strong)',
             }}
           >
             <PenTool size={18} />
@@ -374,7 +393,7 @@ export default function BookNotesWidget({
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-            <Lock size={18} color="var(--muted)" />
+            <Lock size={18} color="var(--text-muted-strong)" />
             <span style={{ fontSize: '0.95rem', color: 'var(--text-secondary)' }}>
               {t('sign_in_to_add_notes')}
             </span>
@@ -429,7 +448,7 @@ export default function BookNotesWidget({
                     transition: 'all 0.15s ease',
                     background: isSelected ? badge.bg : 'var(--tint-2)',
                     border: `1px solid ${isSelected ? badge.border : 'var(--tint-4)'}`,
-                    color: isSelected ? badge.color : 'var(--muted)',
+                    color: isSelected ? badge.color : 'var(--text-muted-strong)',
                   }}
                 >
                   {badge.icon}
@@ -441,6 +460,8 @@ export default function BookNotesWidget({
 
           {/* Text Area */}
           <textarea
+            id="new-note-content"
+            aria-label={t('add_note')}
             value={newContent}
             onChange={(e) => setNewContent(e.target.value)}
             placeholder={t('note_placeholder')}
@@ -472,7 +493,7 @@ export default function BookNotesWidget({
               gap: '0.5rem',
             }}
           >
-            <span style={{ fontSize: '0.8rem', color: 'var(--muted)' }}>
+            <span style={{ fontSize: '0.8rem', color: 'var(--text-muted-strong)' }}>
               {newContent.length} / 5000
             </span>
             <div style={{ display: 'flex', gap: '0.5rem' }}>
@@ -511,7 +532,7 @@ export default function BookNotesWidget({
 
       {/* Loading Skeleton */}
       {loading && notes.length === 0 && (
-        <div style={{ padding: '2rem 0', textAlign: 'center', color: 'var(--muted)' }}>
+        <div style={{ padding: '2rem 0', textAlign: 'center', color: 'var(--text-muted-strong)' }}>
           {t('loading')}
         </div>
       )}
@@ -527,8 +548,8 @@ export default function BookNotesWidget({
             border: '1px dashed var(--tint-4)',
           }}
         >
-          <FileText size={32} color="var(--muted)" style={{ margin: '0 auto 0.75rem' }} />
-          <p style={{ color: 'var(--muted)', fontSize: '0.95rem', margin: 0, marginBottom: '1rem' }}>
+          <FileText size={32} color="var(--text-muted-strong)" style={{ margin: '0 auto 0.75rem' }} />
+          <p style={{ color: 'var(--text-muted-strong)', fontSize: '0.95rem', margin: 0, marginBottom: '1rem' }}>
             {t('empty_notes_book')}
           </p>
           <button
@@ -588,7 +609,7 @@ export default function BookNotesWidget({
                             cursor: 'pointer',
                             background: isSel ? b.bg : 'var(--tint-2)',
                             border: `1px solid ${isSel ? b.border : 'var(--tint-4)'}`,
-                            color: isSel ? b.color : 'var(--muted)',
+                            color: isSel ? b.color : 'var(--text-muted-strong)',
                           }}
                         >
                           {b.icon}
@@ -693,7 +714,7 @@ export default function BookNotesWidget({
                   </span>
 
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <span style={{ fontSize: '0.78rem', color: 'var(--muted)' }}>
+                    <span style={{ fontSize: '0.78rem', color: 'var(--text-muted-strong)' }}>
                       {new Date(note.createdAt).toLocaleDateString(undefined, {
                         month: 'short',
                         day: 'numeric',
@@ -706,7 +727,7 @@ export default function BookNotesWidget({
                       style={{
                         background: 'none',
                         border: 'none',
-                        color: 'var(--muted)',
+                        color: 'var(--text-muted-strong)',
                         cursor: 'pointer',
                         padding: '4px',
                         display: 'inline-flex',

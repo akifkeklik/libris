@@ -2,7 +2,7 @@ import datetime
 import logging
 from typing import Any, Dict, List, Optional
 
-from postgrest.types import ReturnMethod
+from postgrest.types import CountMethod, ReturnMethod
 from supabase import Client
 
 try:
@@ -1174,3 +1174,146 @@ class SupabaseLearningOutcomesRepository:
             "successful_recalls": successful,
             "struggled_recalls": struggled,
         }
+
+
+class SupabaseAccountAdapter:
+    """
+    Self-service account deletion through the delete_my_account() RPC (migration 16), called
+    with the reader's own JWT: the database deletes exactly the account that owns the token, and
+    ON DELETE CASCADE removes every user table row. No service-role key is involved.
+    """
+
+    def delete_current_account(self, user_token: str) -> None:
+        from ...domain.ports import AccountDeletionUnavailable
+
+        if not user_token:
+            raise ValueError("user token is required")
+        try:
+            from supabase import create_client
+
+            from ...config import Config
+
+            client = create_client(Config.SUPABASE_URL, Config.SUPABASE_ANON_KEY)
+            client.postgrest.auth(user_token)
+            client.rpc("delete_my_account", {}).execute()
+        except Exception as exc:
+            # PGRST202 = function not found: migration 16 is not applied yet.
+            missing = "PGRST202" in str(exc) or "delete_my_account" in str(exc)
+            logger.error("Account deletion failed (%s)", "rpc missing" if missing else type(exc).__name__)
+            raise AccountDeletionUnavailable("account deletion is not available") from exc
+
+
+class SupabaseReminderRepository:
+    """reminder_preferences through the reader's own JWT (RLS: own row only); unsubscribe via RPC."""
+
+    FIELDS = "channel,local_time,timezone,quiet_days,language,email"
+
+    def __init__(self, supabase_client):
+        self._anon = supabase_client
+
+    def _user_client(self, user_token: str):
+        from supabase import create_client
+
+        from ...config import Config
+
+        client = create_client(Config.SUPABASE_URL, Config.SUPABASE_ANON_KEY)
+        client.postgrest.auth(user_token)
+        return client
+
+    def get(self, user_id: str, user_token: str):
+        rows = (self._user_client(user_token).table("reminder_preferences").select(self.FIELDS)
+                .eq("user_id", user_id).limit(1).execute().data) or []
+        if not rows:
+            return None
+        row = dict(rows[0])
+        row["local_time"] = str(row.get("local_time") or "09:00")[:5]
+        return row
+
+    def upsert(self, user_id: str, user_token: str, prefs) -> None:
+        self._user_client(user_token).table("reminder_preferences").upsert(
+            {"user_id": user_id, **prefs}, on_conflict="user_id", returning=ReturnMethod.minimal).execute()
+
+    def unsubscribe(self, token: str) -> bool:
+        return bool(self._anon.rpc("reminders_unsubscribe", {"p_token": token}).execute().data)
+
+    def save_push_subscription(self, user_token: str, sub) -> None:
+        self._user_client(user_token).rpc(
+            "push_subscribe", {"p_endpoint": sub["endpoint"], "p_p256dh": sub["p256dh"], "p_auth": sub["auth"]}).execute()
+
+    def delete_push_subscription(self, user_id: str, user_token: str, endpoint: str) -> None:
+        (self._user_client(user_token).table("push_subscriptions").delete(returning=ReturnMethod.minimal)
+         .eq("user_id", user_id).eq("endpoint", endpoint).execute())
+
+    def record_event(self, user_id: str, user_token: str, event) -> None:
+        self._user_client(user_token).table("product_events").insert(
+            {"user_id": user_id, **event}, returning=ReturnMethod.minimal).execute()
+
+
+class SupabaseImportRepository:
+    """import_items (migration 19) through the reader's own JWT: RLS limits every call to their rows."""
+
+    FIELDS = "id,source,kind,content_hash,book_title,book_author,book_id,content,location,shelf,rating,created_at"
+
+    def _table(self, user_token: str):
+        from supabase import create_client
+
+        from ...config import Config
+
+        client = create_client(Config.SUPABASE_URL, Config.SUPABASE_ANON_KEY)
+        client.postgrest.auth(user_token)
+        return client.table("import_items")
+
+    def count_pending(self, user_id: str, user_token: str) -> int:
+        res = (self._table(user_token).select("id", count=CountMethod.exact, head=True)
+               .eq("user_id", user_id).eq("status", "pending").execute())
+        return int(res.count or 0)
+
+    def insert_pending(self, user_id: str, user_token: str, rows) -> int:
+        inserted = 0
+        for start in range(0, len(rows), 500):
+            chunk = [{**r, "user_id": user_id} for r in rows[start:start + 500]]
+            res = (self._table(user_token).upsert(chunk, on_conflict="user_id,content_hash", ignore_duplicates=True)
+                   .execute())
+            inserted += len(res.data or [])
+        return inserted
+
+    def list_pending(self, user_id: str, user_token: str, limit: int):
+        return (self._table(user_token).select(self.FIELDS).eq("user_id", user_id).eq("status", "pending")
+                .order("book_title").order("created_at").limit(limit).execute().data) or []
+
+    def get_pending(self, user_id: str, user_token: str, ids):
+        return (self._table(user_token).select(self.FIELDS).eq("user_id", user_id).eq("status", "pending")
+                .in_("id", ids).execute().data) or []
+
+    def set_status(self, user_id: str, user_token: str, ids, status: str) -> int:
+        res = (self._table(user_token).update({"status": status, "decided_at": datetime.datetime.now(datetime.timezone.utc).isoformat()})
+               .eq("user_id", user_id).eq("status", "pending").in_("id", ids).execute())
+        return len(res.data or [])
+
+    def mark_approved(self, user_id: str, user_token: str, item_id: str, note_id, book_id: str) -> None:
+        (self._table(user_token).update({"status": "approved", "note_id": note_id, "book_id": book_id,
+                                         "decided_at": datetime.datetime.now(datetime.timezone.utc).isoformat()},
+                                        returning=ReturnMethod.minimal)
+         .eq("user_id", user_id).eq("id", item_id).execute())
+
+
+class SupabaseLearningSettingsRepository:
+    """learning_settings (migration 20) through the reader's own JWT."""
+
+    def _table(self, user_token: str):
+        from supabase import create_client
+
+        from ...config import Config
+
+        client = create_client(Config.SUPABASE_URL, Config.SUPABASE_ANON_KEY)
+        client.postgrest.auth(user_token)
+        return client.table("learning_settings")
+
+    def get(self, user_id: str, user_token: str):
+        rows = (self._table(user_token).select("desired_retention").eq("user_id", user_id).limit(1).execute().data) or []
+        return rows[0] if rows else None
+
+    def upsert(self, user_id: str, user_token: str, settings) -> None:
+        self._table(user_token).upsert(
+            {"user_id": user_id, **settings, "updated_at": datetime.datetime.now(datetime.timezone.utc).isoformat()},
+            on_conflict="user_id", returning=ReturnMethod.minimal).execute()

@@ -2,7 +2,7 @@ import { BookGridSkeleton } from '@/components/Skeleton';
 
 export default function PersonalizedDiscoveryLoading() {
   return (
-    <main className="container" style={{ padding: '2.5rem 1rem 5rem' }}>
+    <div className="container" style={{ padding: '2.5rem 1rem 5rem' }}>
       <div style={{ marginBottom: '2rem' }}>
         <div
           className="skeleton animate-pulse"
@@ -24,7 +24,7 @@ export default function PersonalizedDiscoveryLoading() {
       />
 
       <BookGridSkeleton count={8} />
-    </main>
+    </div>
   );
 }
 

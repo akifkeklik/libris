@@ -5,6 +5,17 @@
    hand-written design classes below (declared later) keep control of layout. */
 @import "tailwindcss/theme.css" layer(theme);
 @import "tailwindcss/utilities.css";
+/* dark: utilities follow the app theme (html[data-theme="dark"]), not the OS setting: a reader
+   with a light OS who picked dark mode in Libris got light-mode badge colours, and vice versa. */
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
+/* Tailwind's preflight is not loaded, so a button without its own background got the browser's
+   default: in dark mode Chrome paints it rgb(107,107,107), a grey slab (Learning tabs: 2.1:1).
+   :where() keeps this at zero specificity, so every class or inline style still wins. */
+:where(button) {
+  background-color: transparent;
+  color: inherit;
+}
 
 /* ==========================================================================
    LIBRIS DESIGN SYSTEM — CSS TOKENS & SEMANTIC ROLES
@@ -33,6 +44,8 @@
   --text-primary: #f8fafc;
   --text-secondary: #cbd5e1;
   --text-muted: #94a3b8;
+  --primary-strong: color-mix(in srgb, var(--primary) 80%, var(--foreground));
+  --text-muted-strong: color-mix(in srgb, var(--text-muted) 70%, var(--foreground));
   --foreground: #f8fafc;
   --muted: #94a3b8;
 
@@ -334,7 +347,7 @@ a:hover {
 .input-label {
   font-size: 0.875rem;
   font-weight: 600;
-  color: var(--text-muted);
+  color: var(--text-muted-strong, var(--text-muted));
 }
 
 .input-field {
@@ -366,7 +379,8 @@ a:hover {
 }
 
 .text-muted {
-  color: var(--text-muted);
+  /* Muted text often sits on cards and tints, where --text-muted alone is below AA. */
+  color: var(--text-muted-strong, var(--text-muted));
 }
 
 .text-center {
@@ -426,7 +440,7 @@ a:hover {
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  color: var(--text-muted);
+  color: var(--text-muted-strong, var(--text-muted));
   text-decoration: none;
   transition: color 0.2s ease, opacity 0.2s ease;
   font-weight: 500;
@@ -509,7 +523,8 @@ body {
     white-space: nowrap;
   }
   .nav-primary .nav-link.active {
-    color: var(--primary);
+    color: var(--foreground);
+    font-weight: 700;
   }
   .main-content {
     padding-bottom: calc(5rem + env(safe-area-inset-bottom));
@@ -700,7 +715,7 @@ body {
 
 .book-author {
   font-size: 0.875rem;
-  color: var(--text-muted);
+  color: var(--text-muted-strong, var(--text-muted));
   display: -webkit-box;
   -webkit-line-clamp: 1;
   -webkit-box-orient: vertical;
@@ -729,7 +744,7 @@ body {
   cursor: pointer;
   background: var(--surface);
   border: 1px solid var(--card-border);
-  color: var(--text-muted);
+  color: var(--text-muted-strong, var(--text-muted));
   transition: all 0.2s ease;
 }
 
@@ -741,7 +756,7 @@ body {
 .library-tab-btn.active {
   background: linear-gradient(135deg, color-mix(in srgb, var(--primary) 18%, transparent), color-mix(in srgb, var(--accent) 18%, transparent));
   border-color: var(--primary);
-  color: var(--primary);
+  color: var(--primary-strong, var(--primary));
   box-shadow: 0 0 12px color-mix(in srgb, var(--primary) 20%, transparent);
 }
 
@@ -1163,7 +1178,7 @@ body {
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--text-muted);
+  color: var(--text-muted-strong, var(--text-muted));
 }
 
 .saas-metric-icon {
@@ -1192,7 +1207,7 @@ body {
   align-items: center;
   gap: 0.5rem;
   font-size: 0.8rem;
-  color: var(--text-muted);
+  color: var(--text-muted-strong, var(--text-muted));
 }
 
 /* Micro-Pulse Status Indicators */
@@ -1344,7 +1359,7 @@ body {
 .saas-chart-day-label {
   font-size: 0.7rem;
   font-weight: 600;
-  color: var(--text-muted);
+  color: var(--text-muted-strong, var(--text-muted));
   text-transform: uppercase;
   letter-spacing: 0.04em;
 }
@@ -1392,7 +1407,7 @@ body {
   border-radius: 12px 12px 0 0;
   font-size: 0.85rem;
   font-weight: 600;
-  color: var(--text-muted);
+  color: var(--text-muted-strong, var(--text-muted));
   background: transparent;
   border: none;
   border-bottom: 2px solid transparent;
@@ -1514,8 +1529,242 @@ body {
 }
 
 .nav-link.active {
-  color: var(--electric-blue) !important;
+  /* Text on the active tint failed WCAG AA (3.9:1); the icon, tint and border carry the colour. */
+  color: var(--foreground) !important;
   background: var(--electric-blue-muted) !important;
   border: 1px solid var(--electric-blue-border) !important;
   box-shadow: 0 0 12px -2px color-mix(in srgb, var(--primary) 25%, transparent);
 }
+
+/* Active destinations keep the theme colour on the icon only (text stays AA-readable). */
+.nav-link.active svg {
+  color: var(--primary);
+}
+
+/* ── "Remember me" (sign-in forms) ─────────────────────────────────────── */
+.remember-me {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.65rem;
+  margin: 0.25rem 0 0.5rem;
+  cursor: pointer;
+  font-size: 0.9rem;
+  color: var(--text-primary);
+  user-select: none;
+}
+.remember-me input {
+  position: absolute;
+  opacity: 0;
+  width: 1px;
+  height: 1px;
+}
+.remember-me__box {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.15rem;
+  height: 1.15rem;
+  margin-top: 0.1rem;
+  border-radius: 0.35rem;
+  border: 1.5px solid var(--text-muted-strong);
+  background: var(--card-bg, transparent);
+  color: transparent;
+  transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+.remember-me input:checked + .remember-me__box {
+  background: var(--primary-strong);
+  border-color: var(--primary-strong);
+  color: var(--on-primary, #fff);
+}
+.remember-me input:focus-visible + .remember-me__box {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+.remember-me__text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+.remember-me__hint {
+  font-size: 0.78rem;
+  color: var(--text-muted-strong);
+}
+@media (prefers-reduced-motion: reduce) {
+  .remember-me__box { transition: none; }
+}
+
+/* ── Select (themed dropdown, components/Select.tsx) ───────────────────── */
+.lb-select { position: relative; display: inline-flex; min-width: 0; }
+.lb-select--block { display: flex; width: 100%; }
+.lb-select__trigger {
+  display: inline-flex; align-items: center; justify-content: space-between; gap: 0.6rem;
+  width: 100%; min-width: 10rem; height: 40px; padding: 0 0.8rem 0 0.95rem;
+  border: 1px solid var(--card-border); border-radius: 10px;
+  background: var(--surface-subtle); color: var(--foreground);
+  font-family: var(--font-body); font-size: 0.875rem; font-weight: 500; line-height: 1;
+  cursor: pointer; text-align: left;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
+}
+.lb-select--sm .lb-select__trigger { height: 32px; min-width: 7.5rem; padding: 0 0.6rem 0 0.7rem; font-size: 0.78rem; border-radius: 8px; }
+.lb-select__trigger:hover:not(:disabled) { border-color: color-mix(in srgb, var(--primary) 45%, var(--card-border)); }
+.lb-select__trigger:focus-visible,
+.lb-select__trigger[aria-expanded="true"] {
+  outline: none; border-color: var(--primary);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 22%, transparent);
+}
+.lb-select__trigger:disabled { opacity: 0.55; cursor: not-allowed; }
+.lb-select__value { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.lb-select__chevron { flex: none; color: var(--text-muted-strong); transition: transform 0.18s ease; }
+.lb-select__trigger[aria-expanded="true"] .lb-select__chevron { transform: rotate(180deg); color: var(--primary-strong); }
+.lb-select__list {
+  position: absolute; z-index: 60; top: calc(100% + 6px); right: 0; min-width: 100%; width: max-content; max-width: min(20rem, 90vw);
+  max-height: 18rem; overflow-y: auto; margin: 0; padding: 0.35rem; list-style: none;
+  background: var(--surface-elevated); color: var(--foreground); font-family: var(--font-body);
+  border: 1px solid var(--card-border); border-radius: 12px;
+  box-shadow: 0 2px 6px var(--shadow-color), 0 18px 40px -12px var(--shadow-color);
+  transform-origin: top; animation: lb-select-in 0.14s ease-out;
+}
+.lb-select__list--up { top: auto; bottom: calc(100% + 6px); transform-origin: bottom; }
+.lb-select__option {
+  display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+  padding: 0.55rem 0.7rem; border-radius: 8px; font-size: 0.875rem; cursor: pointer; white-space: nowrap;
+}
+.lb-select--sm .lb-select__option { font-size: 0.8rem; padding: 0.45rem 0.6rem; }
+.lb-select__option.is-active { background: var(--primary-soft); }
+.lb-select__option[aria-selected="true"] { color: var(--primary-strong); font-weight: 600; }
+.lb-select__check { flex: none; color: var(--primary-strong); }
+@keyframes lb-select-in { from { opacity: 0; transform: translateY(-4px) scale(0.98); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) {
+  .lb-select__list { animation: none; }
+  .lb-select__chevron, .lb-select__trigger { transition: none; }
+}
+
+/* ── Navbar between phone and wide desktop: never wrap a label ─────────── */
+.nav-link,
+.nav-links .btn {
+  white-space: nowrap;
+}
+@media (min-width: 769px) {
+  .navbar .nav-container {
+    max-width: min(100%, 1440px);
+    gap: 1rem;
+  }
+}
+@media (min-width: 769px) and (max-width: 1480px) {
+  .nav-links,
+  .nav-primary {
+    gap: 0.35rem;
+  }
+  .navbar .nav-link {
+    padding: 0.25rem 0.45rem;
+  }
+  #nav-spotlight-btn .nav-link-text,
+  #nav-spotlight-btn kbd {
+    display: none;
+  }
+}
+/* Tablets and small laptops: primary links become icon-over-label, like the phone tab bar. */
+@media (min-width: 769px) and (max-width: 1240px) {
+  .nav-primary .nav-link {
+    flex-direction: column;
+    gap: 0.15rem;
+    padding: 0.2rem 0.35rem;
+    font-size: 0.7rem;
+    line-height: 1.1;
+  }
+  .nav-primary .nav-link-text {
+    max-width: 6.5rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .brand {
+    font-size: 1.3rem;
+  }
+  .nav-links .btn {
+    font-size: 0.8rem !important;
+    padding-left: 0.7rem !important;
+    padding-right: 0.7rem !important;
+  }
+}
+@media (min-width: 769px) and (max-width: 960px) {
+  .navbar .nav-container {
+    padding: 0 1rem;
+    gap: 0.5rem;
+  }
+  .nav-primary .nav-link-text {
+    max-width: 5rem;
+  }
+  .brand {
+    font-size: 1.15rem;
+    gap: 0.35rem;
+  }
+  .nav-links .btn svg.lucide-globe {
+    display: none;
+  }
+}
+@media (min-width: 769px) and (max-width: 880px) {
+  /* Narrow tablets: the logo mark stays, the word "Libris" makes room for the links. */
+  .brand > span {
+    display: none;
+  }
+}
+
+/* ── Import page (Faz 4) ───────────────────────────────────────────────── */
+.import-sources { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 0.75rem; }
+.import-source {
+  position: relative; display: flex; flex-direction: column; gap: 0.35rem; padding: 1rem 1.1rem;
+  border: 1px solid var(--card-border); border-radius: 12px; cursor: pointer; background: var(--surface-subtle);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.import-source input { position: absolute; opacity: 0; pointer-events: none; }
+.import-source.is-active { border-color: var(--primary); box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 18%, transparent); }
+.import-source:focus-within { outline: 2px solid var(--primary); outline-offset: 2px; }
+.import-source__title { font-weight: 700; }
+.import-source__hint { font-size: 0.8rem; line-height: 1.5; color: var(--text-muted-strong); }
+.import-toolbar {
+  position: sticky; top: 76px; z-index: 20; display: flex; justify-content: space-between; align-items: center;
+  gap: 1rem; flex-wrap: wrap; padding: 1rem 1.25rem; margin-bottom: 1rem;
+}
+.import-group { padding: 1.1rem 1.25rem; margin-bottom: 0.9rem; }
+.import-group__head { display: flex; justify-content: space-between; gap: 1rem; align-items: flex-start; margin-bottom: 0.75rem; flex-wrap: wrap; }
+.import-badge { font-size: 0.75rem; padding: 0.2rem 0.6rem; border-radius: 999px; border: 1px solid var(--card-border); color: var(--text-muted-strong); white-space: nowrap; }
+.import-badge.is-ok { color: var(--primary-strong); border-color: color-mix(in srgb, var(--primary) 40%, var(--card-border)); background: var(--primary-softer); }
+.import-items { list-style: none; margin: 0.75rem 0 0; padding: 0; display: flex; flex-direction: column; gap: 0.5rem; }
+.import-item { display: flex; gap: 0.65rem; align-items: flex-start; padding: 0.6rem 0.75rem; border-radius: 10px; background: var(--tint-2, transparent); cursor: pointer; }
+.import-item input { margin-top: 0.25rem; flex: none; }
+.import-kind { display: block; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.04em; color: var(--text-muted-strong); margin-bottom: 0.2rem; }
+.import-item__text { display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.55; font-size: 0.92rem; white-space: pre-wrap; }
+.book-picker { margin: 0.25rem 0 0.5rem; max-width: 30rem; }
+.book-picker__results { list-style: none; margin: 0.4rem 0 0; padding: 0.25rem; border: 1px solid var(--card-border); border-radius: 10px; background: var(--surface-elevated); }
+.book-picker__option { display: flex; flex-direction: column; align-items: flex-start; gap: 0.1rem; width: 100%; padding: 0.5rem 0.6rem; border: 0; border-radius: 8px; text-align: left; cursor: pointer; font: inherit; }
+.book-picker__option:hover, .book-picker__option:focus-visible { background: var(--primary-soft); outline: none; }
+@media (max-width: 768px) { .import-toolbar { top: 64px; } }
+
+/* ── Card controls (Faz 5) ─────────────────────────────────────────────── */
+.card-controls { display: block; }
+.card-controls__anchor { position: absolute; top: 1.1rem; right: 1.1rem; }
+.card-controls__trigger {
+  display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px;
+  border-radius: 999px; border: 1px solid var(--card-border); color: var(--text-muted-strong); cursor: pointer;
+}
+.card-controls__trigger:hover, .card-controls__trigger[aria-expanded="true"] { color: var(--foreground); border-color: var(--primary); }
+.card-controls__trigger:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.card-controls__menu {
+  position: absolute; right: 0; top: calc(100% + 6px); z-index: 40; min-width: 13rem; padding: 0.35rem;
+  background: var(--surface-elevated); border: 1px solid var(--card-border); border-radius: 12px;
+  box-shadow: 0 2px 6px var(--shadow-color), 0 18px 40px -12px var(--shadow-color); font-family: var(--font-body);
+}
+.card-controls__menu [role=menuitem] {
+  display: flex; align-items: center; gap: 0.55rem; width: 100%; padding: 0.55rem 0.7rem; border-radius: 8px;
+  font-size: 0.875rem; text-align: left; cursor: pointer; border: 0;
+}
+.card-controls__menu [role=menuitem]:hover, .card-controls__menu [role=menuitem]:focus-visible { background: var(--primary-soft); outline: none; }
+.card-controls__menu [role=menuitem].is-danger { color: var(--danger); }
+.card-controls__panel {
+  display: flex; flex-direction: column; gap: 0.5rem; margin: 0 0 1rem;
+  padding: 1rem; border: 1px solid var(--card-border); border-radius: 12px; background: var(--surface-subtle);
+}
+.card-controls__actions { display: flex; gap: 0.6rem; flex-wrap: wrap; margin-top: 0.25rem; }
+.card-controls__status { margin: 0 0 0.75rem; font-size: 0.8rem; color: var(--text-muted-strong); }
+.card-controls__status:empty { display: none; }

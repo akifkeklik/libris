@@ -116,6 +116,30 @@ function normalizeNoteReview(raw: Record<string, unknown>): NoteReview {
   };
 }
 
+export interface ReminderPreferencesInput {
+  channel: 'email' | 'push' | 'off';
+  local_time: string;
+  timezone: string;
+  quiet_days: number[];
+  language: string;
+}
+export interface ReminderPreferences extends ReminderPreferencesInput { saved: boolean; email?: string | null }
+export interface PushSubscriptionInput { endpoint: string; keys: { p256dh: string; auth: string } }
+export interface LearningSettings { fsrs_enabled: boolean; desired_retention: number }
+export interface ImportSummary { parsed: number; new: number; duplicates: number; skipped: number; truncated: number; books: number; books_matched: number }
+export interface ImportItem {
+  id: string; source: string; kind: 'highlight' | 'note' | 'shelf'; book_title: string; book_author: string | null;
+  book_id: string | null; content: string | null; location: string | null; shelf: 'want_to_read' | 'reading' | 'finished' | null;
+  rating: number | null; created_at: string;
+}
+export type ImportDecision =
+  | { action: 'reject'; ids: string[] }
+  | { action: 'approve'; ids: string[]; highlight_as: 'key_takeaway' | 'personal_note'; book_overrides?: Record<string, string> };
+export interface ImportDecisionResult { approved?: number; rejected?: number; needs_book?: string[]; failed?: number; questions_created?: number; questions_deferred?: number }
+export type ProductEvent =
+  | { event: 'reminder_opened'; props: { channel: 'email' | 'push'; reminder_date?: string } }
+  | { event: 'review_session_completed'; props: { reviewed_count: number } };
+
 export class ApiService {
   private static async fetchWithTimeout(
     url: string,
@@ -754,6 +778,150 @@ export class ApiService {
 
     const data = await res.json();
     return normalizeLearningNote(data?.note || {});
+  }
+
+  /** Reminder preferences of the signed-in reader (never cached: personal data). */
+  static async getReminderPreferences(): Promise<ReminderPreferences | null> {
+    const headers = await this.getHeaders();
+    const res = await this.fetchWithTimeout(`${API_URL}/api/reminders/preferences`, { headers, cache: 'no-store' });
+    return res.ok ? ((await res.json()) as ReminderPreferences) : null;
+  }
+
+  static async saveReminderPreferences(prefs: ReminderPreferencesInput): Promise<{ ok: boolean; status: number }> {
+    const headers = await this.getHeaders();
+    const res = await this.fetchWithTimeout(`${API_URL}/api/reminders/preferences`, {
+      method: 'PUT', headers, body: JSON.stringify(prefs), cache: 'no-store',
+    });
+    return { ok: res.ok, status: res.status };
+  }
+
+  /** Faz 5 card controls. */
+  static async regenerateLearningItem(itemId: string): Promise<{ ok: boolean; status: number; question?: string; reason?: string }> {
+    const headers = await this.getHeaders();
+    const res = await this.fetchWithTimeout(`${API_URL}/api/learning/items/${encodeURIComponent(itemId)}/regenerate`, {
+      method: 'POST', headers, cache: 'no-store',
+    }, 30000);
+    const body = await res.json().catch(() => ({}));
+    return { ok: res.ok, status: res.status, question: body?.item?.question, reason: body?.reason };
+  }
+
+  static async reportLearningItem(itemId: string, reason: string, comment: string): Promise<{ ok: boolean; status: number }> {
+    const headers = await this.getHeaders();
+    const res = await this.fetchWithTimeout(`${API_URL}/api/learning/items/${encodeURIComponent(itemId)}/report`, {
+      method: 'POST', headers, body: JSON.stringify({ reason, comment }), cache: 'no-store',
+    });
+    return { ok: res.ok, status: res.status };
+  }
+
+  static async getLearningSettings(): Promise<LearningSettings | null> {
+    const headers = await this.getHeaders();
+    const res = await this.fetchWithTimeout(`${API_URL}/api/learning/settings`, { headers, cache: 'no-store' });
+    return res.ok ? ((await res.json()) as LearningSettings) : null;
+  }
+
+  static async saveLearningSettings(desiredRetention: number): Promise<{ ok: boolean; status: number }> {
+    const headers = await this.getHeaders();
+    const res = await this.fetchWithTimeout(`${API_URL}/api/learning/settings`, {
+      method: 'PUT', headers, body: JSON.stringify({ desired_retention: desiredRetention }), cache: 'no-store',
+    });
+    return { ok: res.ok, status: res.status };
+  }
+
+  /** GET /api/learning/export/anki -> .apkg bytes (base64, for a server action to hand to the browser). */
+  static async exportAnki(): Promise<string | null> {
+    const headers = await this.getHeaders();
+    const res = await this.fetchWithTimeout(`${API_URL}/api/learning/export/anki`, { headers, cache: 'no-store' }, 60000);
+    if (!res.ok) return null;
+    return Buffer.from(await res.arrayBuffer()).toString('base64');
+  }
+
+  /** POST /api/imports: one piece of an import file -> approval queue. */
+  static async importPiece(source: string, text: string): Promise<{ ok: boolean; status: number; body: ImportSummary | { error?: string } }> {
+    const headers = await this.getHeaders();
+    const res = await this.fetchWithTimeout(`${API_URL}/api/imports`, {
+      method: 'POST', headers, body: JSON.stringify({ source, text }), cache: 'no-store',
+    }, 60000);
+    const body = await res.json().catch(() => ({}));
+    return { ok: res.ok, status: res.status, body };
+  }
+
+  static async getImportQueue(limit = 300): Promise<{ items: ImportItem[]; pending: number } | null> {
+    const headers = await this.getHeaders();
+    const res = await this.fetchWithTimeout(`${API_URL}/api/imports/pending?limit=${limit}`, { headers, cache: 'no-store' });
+    return res.ok ? ((await res.json()) as { items: ImportItem[]; pending: number }) : null;
+  }
+
+  static async decideImports(body: ImportDecision): Promise<{ ok: boolean; status: number; body: ImportDecisionResult | { error?: string } }> {
+    const headers = await this.getHeaders();
+    const res = await this.fetchWithTimeout(`${API_URL}/api/imports/decide`, {
+      method: 'POST', headers, body: JSON.stringify(body), cache: 'no-store',
+    }, 60000);
+    const json = await res.json().catch(() => ({}));
+    return { ok: res.ok, status: res.status, body: json };
+  }
+
+  /** VAPID public key for Web Push, or null when push is not configured on the server. */
+  static async getPushPublicKey(): Promise<string | null> {
+    const headers = await this.getHeaders();
+    const res = await this.fetchWithTimeout(`${API_URL}/api/reminders/push-key`, { headers, cache: 'no-store' });
+    if (!res.ok) return null;
+    const body = (await res.json()) as { public_key?: string | null };
+    return body.public_key || null;
+  }
+
+  static async savePushSubscription(sub: PushSubscriptionInput): Promise<{ ok: boolean; status: number }> {
+    const headers = await this.getHeaders();
+    const res = await this.fetchWithTimeout(`${API_URL}/api/reminders/push-subscription`, {
+      method: 'POST', headers, body: JSON.stringify(sub), cache: 'no-store',
+    });
+    return { ok: res.ok, status: res.status };
+  }
+
+  static async deletePushSubscription(endpoint: string): Promise<{ ok: boolean; status: number }> {
+    const headers = await this.getHeaders();
+    const res = await this.fetchWithTimeout(`${API_URL}/api/reminders/push-subscription`, {
+      method: 'DELETE', headers, body: JSON.stringify({ endpoint }), cache: 'no-store',
+    });
+    return { ok: res.ok, status: res.status };
+  }
+
+  /** First-party product event (reminder_opened, review_session_completed). */
+  static async recordEvent(event: ProductEvent): Promise<boolean> {
+    const headers = await this.getHeaders();
+    const res = await this.fetchWithTimeout(`${API_URL}/api/events`, {
+      method: 'POST', headers, body: JSON.stringify(event), cache: 'no-store',
+    }, 5000);
+    return res.ok;
+  }
+
+  /** GET /api/account/export: everything stored about the reader, as a downloadable file. */
+  static async exportAccount(
+    format: 'json' | 'markdown',
+    options: { signal?: AbortSignal } = {}
+  ): Promise<{ content: string; filename: string; mimeType: string } | null> {
+    const headers = await this.getHeaders();
+    const res = await this.fetchWithTimeout(`${API_URL}/api/account/export?format=${format}`, {
+      headers,
+      cache: 'no-store',
+      signal: options.signal,
+    }, 30000);
+    if (!res.ok) return null;
+    const disposition = res.headers.get('Content-Disposition') || '';
+    const filename = /filename="([^"]+)"/.exec(disposition)?.[1] || `libris-export.${format === 'json' ? 'json' : 'md'}`;
+    return { content: await res.text(), filename, mimeType: res.headers.get('Content-Type') || 'text/plain' };
+  }
+
+  /** DELETE /api/account with the reader's session; returns the HTTP status. Never cached. */
+  static async deleteAccount(options: { signal?: AbortSignal } = {}): Promise<number> {
+    const headers = await this.getHeaders();
+    const res = await this.fetchWithTimeout(`${API_URL}/api/account`, {
+      method: 'DELETE',
+      headers,
+      body: JSON.stringify({ confirm: true }),
+      cache: 'no-store',
+      signal: options.signal,
+    });
+    return res.status;
   }
 
   static async deleteNote(

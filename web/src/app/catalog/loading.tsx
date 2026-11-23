@@ -2,11 +2,13 @@ import { cookies } from 'next/headers';
 import { translate } from '@/lib/i18n';
 import { resolveLanguage } from '@/lib/preferences';
 import { Skeleton, BookGridSkeleton } from '@/components/Skeleton';
+import { SlowServerNotice } from '@/components/SlowServerNotice';
 
 export default async function CatalogLoading() {
   const lang = resolveLanguage((await cookies()).get('libris_lang')?.value);
   return (
     <div className="container animate-fade-in" style={{ paddingBottom: '4rem' }} aria-busy="true">
+      <SlowServerNotice />
       {/* Header and Search Skeleton */}
       <div style={{ marginBottom: '2.5rem' }}>
         <div

@@ -1,8 +1,10 @@
 import { Skeleton, BookGridSkeleton } from '@/components/Skeleton';
+import { SlowServerNotice } from '@/components/SlowServerNotice';
 
 export default function RootLoading() {
   return (
     <div className="container" style={{ padding: '3.5rem 1.5rem', maxWidth: '1200px' }} aria-busy="true">
+      <SlowServerNotice />
       {/* Hero Skeleton */}
       <div style={{ textAlign: 'center', maxWidth: '840px', margin: '0 auto 4.5rem' }}>
         <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1.5rem' }}>

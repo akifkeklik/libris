@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { Select } from '@/components/Select';
 import Link from 'next/link';
 import type { Book, LibraryCollectionStatus, LibraryItem } from '@/types';
 import {
@@ -196,22 +197,17 @@ export function ReadingJourneyDashboard({
                 border: '1px solid var(--primary)',
               }}
             >
-              <select
+              <Select<ReadingGoalType>
                 value={goalTypeInput}
-                onChange={(e) => setGoalTypeInput(e.target.value as ReadingGoalType)}
-                style={{
-                  padding: '0.35rem 0.5rem',
-                  borderRadius: '6px',
-                  background: 'var(--surface-subtle)',
-                  border: '1px solid var(--card-border)',
-                  color: 'var(--foreground)',
-                  fontSize: '0.8rem',
-                }}
-              >
-                <option value="annual">{t('rj_goal_annual')}</option>
-                <option value="weekly">{t('rj_goal_weekly')}</option>
-                <option value="category">{t('rj_goal_topic')}</option>
-              </select>
+                onChange={setGoalTypeInput}
+                ariaLabel={t('rj_goal_type_label')}
+                size="sm"
+                options={[
+                  { value: 'annual', label: t('rj_goal_annual') },
+                  { value: 'weekly', label: t('rj_goal_weekly') },
+                  { value: 'category', label: t('rj_goal_topic') },
+                ]}
+              />
 
               <input
                 type="number"
@@ -443,7 +439,7 @@ export function ReadingJourneyDashboard({
             gap: '1.5rem',
             marginTop: '0.85rem',
             fontSize: '0.8rem',
-            color: 'var(--text-muted)',
+            color: 'var(--text-muted-strong)',
             flexWrap: 'wrap',
           }}
         >
@@ -464,7 +460,7 @@ export function ReadingJourneyDashboard({
         {/* Weekly Reading Activity Visualizer */}
         <div style={{ marginTop: '1.25rem', paddingTop: '1.25rem', borderTop: '1px solid var(--card-border)' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.65rem' }}>
-            <span style={{ fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text-muted)' }}>
+            <span style={{ fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text-muted-strong)' }}>
               {t('rj_activity_title')}
             </span>
             <span style={{ fontSize: '0.75rem', color: 'var(--electric-blue)', fontWeight: 600 }}>

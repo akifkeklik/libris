@@ -14,6 +14,8 @@ export const metadata: Metadata = {
   title: "Libris | Book Discovery & Personal Learning",
   description: "Personalized book discovery, reading tracker, and intellectual library powered by hybrid AI.",
   manifest: "/manifest.json",
+  icons: { icon: [{ url: "/favicon.ico" }, { url: "/icon-192.png", type: "image/png", sizes: "192x192" }], apple: "/apple-touch-icon.png" },
+  appleWebApp: { capable: true, title: "Libris", statusBarStyle: "black-translucent" },
 };
 
 const themeInitScript = `
