@@ -127,9 +127,9 @@ On Windows, `scripts/launch_dev.ps1` starts both.
 
 `main` deploys to Vercel (web) and Render (API). The API runs on a free tier that sleeps when idle, so the first visit after a quiet spell can take up to a minute.
 
-Features that need newer database migrations (`16` to `20`) or extra keys, such as reminders, imports and account deletion, are complete and tested in code; they become active in an environment once the [production checklist](docs/engineering/PRODUCTION_READINESS_CHECKLIST.md) is done there.
+Features that need newer database migrations (`16` to `21`) or extra keys, such as reminders, imports and account deletion, are complete and tested in code; they become active in an environment once the [production checklist](docs/engineering/PRODUCTION_READINESS_CHECKLIST.md) is done there.
 
-Ordered migrations live in `backend/scripts/` (`00` to `20`) and are applied deliberately, never automatically. Migration 14 drops retired tables, so back up first and read [docs/supabase_setup.md](docs/supabase_setup.md).
+Ordered migrations live in `backend/scripts/` (`00` to `21`) and are applied deliberately, never automatically. Migration 14 drops retired tables, so back up first and read [docs/supabase_setup.md](docs/supabase_setup.md).
 
 ## Documentation
 

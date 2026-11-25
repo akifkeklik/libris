@@ -64,3 +64,10 @@ The send log keeps extra runs safe. `workflow_dispatch` defaults to a dry run, s
 The scheduler for that is `backend/scripts/ops/reminder_scheduler.sql` (Supabase `pg_cron` + `pg_net`,
 token in Vault, calls the workflow hourly). Not run anywhere yet: it needs the owner's GitHub token, and
 migration 17. `pg_cron` and `pg_net` are available, not installed, in production (checked 2026-11-25).
+
+## Security correction (2026-11-26)
+
+On Supabase, 17 and 18 left `reminder_candidates` callable without signing in: default privileges grant
+EXECUTE to `anon` directly and `REVOKE ... FROM PUBLIC` does not remove that. CI's plain PostgreSQL has
+no such defaults. Found right after the rollout, while `reminder_preferences` had 0 rows, so no reader
+data was reachable. Migration 21 closes it; its test first reproduces the hole.
