@@ -49,7 +49,7 @@ export const fr: Record<TranslationKey, string> = {
   import_source_readwise: "Readwise (CSV)",
   import_source_readwise_hint: "readwise.io → Export → CSV.",
   import_source_goodreads: "Goodreads (CSV)",
-  import_source_goodreads_hint: "Mes livres → Importer et exporter → Exporter la bibliothèque. Récupère vos étagères, notes et critiques.",
+  import_source_goodreads_hint: "Mes livres → Importer et exporter → Exporter la bibliothèque. Récupère vos étagères et vos critiques.",
   import_choose_file: "Choisir un fichier",
   import_privacy_note: "Le fichier est lu une fois pour remplir votre file ; il n'est pas conservé. 4 Mo max.",
   import_reading: "Lecture du fichier…",

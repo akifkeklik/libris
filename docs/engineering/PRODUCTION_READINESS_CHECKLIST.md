@@ -11,18 +11,19 @@ Tarih: 2026-11-24. İşaretsiz her satır **yapılmadı veya doğrulanmadı** de
 ## B. Veritabanı (sırayla; önce yedek alın)
 - [x] 1. `hardening/01c_DRAFT_catalog_write_lockdown.sql` — **2026-11-25'te sahibinin onayıyla uygulandı** ve doğrulandı (anonim yazma 42501 ile reddediliyor, 6.446 kitap aynı). Geri alma betiği hazır
 - [ ] 2. `hardening/04_DRAFT_harden_vector_rpcs.sql` (runbook Adım 4; `04_phase3_hybrid.sql` **değil**)
-- [ ] 3. `09`, `10`, `13`
-- [ ] 4. `16_account_deletion`
-- [ ] 5. `17_reminders`, 6. `18_push_and_events`
-- [ ] 7. `19_import_queue`, 8. `20_learning_settings`
+- [x] 3. `09`, `10`, `13`
+- [x] 4. `16_account_deletion`
+- [x] 5. `17_reminders`, 6. `18_push_and_events`
+- [x] 7. `19_import_queue`, 8. `20_learning_settings`
+
+**2026-11-26:** 09, 10, 13 ve 16–21 sahibi tarafından uygulandı, salt okunur doğrulandı.
 
 **Kolay yol:** 3–8. adımlar tek dosyada: `backend/scripts/ops/production_rollout.sql`. SQL Editor'a yapıştırıp çalıştırın; `ROLLOUT OK` yazmalı, hata olursa hiçbir şey kaydedilmez.
 
-Bunlar uygulanana kadar not, tekrar kartı, hatırlatma, içe aktarma ve hesap silme canlıda çalışmaz ya da "şu anda kullanılamıyor" der.
 
 ## C. Render
-- [ ] `LLM_API_KEY` silindi
-- [ ] `DATABASE_URL` kontrol edildi (`RENDER_DATABASE_SECURITY_AUDIT.md`)
+- [x] `LLM_API_KEY` yok (2026-11-26, sahibinin ekran görüntüsü)
+- [x] `DATABASE_URL` tanımlı değil, RLS yolu kullanılıyor (`RENDER_DATABASE_SECURITY_AUDIT.md`)
 - [ ] `APP_URL` eklendi
 - [ ] İsteğe bağlı: `VAPID_PUBLIC_KEY`, `FSRS_ENABLED`, `SENTRY_DSN`
 
@@ -36,7 +37,8 @@ Bunlar uygulanana kadar not, tekrar kartı, hatırlatma, içe aktarma ve hesap s
 ## E. Giriş ve hukuk
 - [ ] Google girişi: Supabase sağlayıcısı + `NEXT_PUBLIC_AUTH_GOOGLE_ENABLED`
 - [ ] Supabase yönlendirme adresleri (`/auth/callback`, `/reset-password`)
-- [ ] Gizlilik metnindeki köşeli parantezli boşluklar dolduruldu, hukukçu baktı
+- [x] Gizlilik metnindeki boşluklar dolduruldu
+- [ ] Hukukçu baktı
 
 ## F. Yayın sonrası
 - [ ] `/api/health` ve `/api/health/ready` 200
