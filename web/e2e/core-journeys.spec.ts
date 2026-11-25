@@ -116,3 +116,13 @@ test('a missing book can be added: guests are sent to log in first', async ({ pa
   await add.click();
   await expect(page).toHaveURL(/\/login\?redirect=\/catalog/);
 });
+
+test('an unknown address shows a helpful page once, without reloading', async ({ page }) => {
+  let documents = 0;
+  page.on('request', (r) => { if (r.resourceType() === 'document') documents += 1; });
+  const res = await page.goto('/no-such-page');
+  expect(res?.status()).toBe(404);
+  await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
+  await page.waitForTimeout(3000);
+  expect(documents).toBe(1);
+});

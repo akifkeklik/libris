@@ -1772,3 +1772,7 @@ body {
 
 /* The hidden skip link must not cast its shadow into the top-left corner of every page. */
 .skip-link:not(:focus) { box-shadow: none; }
+
+/* Catalog search: full width on phones, where it used to shrink to a few letters. */
+.catalog-search { display: flex; gap: 0.5rem; flex: 1; max-width: 400px; }
+@media (max-width: 768px) { .catalog-search { flex: 1 1 100%; max-width: none; } }

@@ -100,7 +100,7 @@ Dependencies point inwards: use cases know ports, never Supabase or Gemini. That
 
 ## Quality
 
-More than 1,290 backend tests, 286 web unit tests and 87 browser tests run on every pull request, together with linting, dependency audits, Docker builds and every migration applied to a throwaway PostgreSQL.
+More than 1,290 backend tests, almost 290 web unit tests and 89 browser tests run on every pull request, together with linting, dependency audits, Docker builds and every migration applied to a throwaway PostgreSQL.
 
 ```bash
 ruff check backend/ && PYTHONPATH=. python -m pytest backend/tests/

@@ -11,8 +11,15 @@ import { Navbar } from "@/components/Navbar";
 import { SpotlightSearch } from "@/components/SpotlightSearch";
 
 export const metadata: Metadata = {
-  title: "Libris | Book Discovery & Personal Learning",
-  description: "Personalized book discovery, reading tracker, and intellectual library powered by hybrid AI.",
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://libris-pink.vercel.app"),
+  title: { default: "Libris | Remember what you read", template: "%s | Libris" },
+  description: "Save a takeaway while you read. Libris turns it into a question and asks you again right before you would forget.",
+  openGraph: {
+    type: "website", siteName: "Libris", title: "Libris | Read it once. Remember it for good.",
+    description: "Turn what you highlight into questions, and review them right before you would forget.",
+    images: [{ url: "/og.png", width: 1200, height: 630, alt: "Libris home page: Read it once. Remember it for good." }],
+  },
+  twitter: { card: "summary_large_image" },
   manifest: "/manifest.json",
   icons: { icon: [{ url: "/favicon.ico" }, { url: "/icon-192.png", type: "image/png", sizes: "192x192" }], apple: "/apple-touch-icon.png" },
   appleWebApp: { capable: true, title: "Libris", statusBarStyle: "black-translucent" },

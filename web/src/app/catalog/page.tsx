@@ -85,7 +85,7 @@ export default async function CatalogPage({
           </div>
 
           {/* Unified Search Form */}
-          <form action="/catalog" method="GET" style={{ display: 'flex', gap: '0.5rem', flex: '1', maxWidth: '400px' }}>
+          <form action="/catalog" method="GET" className="catalog-search">
             {category && <input type="hidden" name="category" value={category} />}
             {sort && <input type="hidden" name="sort" value={sort} />}
             {order && <input type="hidden" name="order" value={order} />}
