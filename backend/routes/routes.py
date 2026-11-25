@@ -1172,6 +1172,13 @@ def get_notes():
         return jsonify({"error": "Failed to fetch learning notes"}), 500
 
 
+def _ai_budget_left(user_id: str) -> bool:
+    """Whether this reader may trigger another optional AI call now (30 a minute, separate from chat).
+    Over it, notes and imports are still saved; their questions are written on later queue loads."""
+    allowed, _, overloaded = _rate_limiter.check(bucket_key=f"questions:{user_id}", limit=30, window=60)
+    return bool(allowed) and not overloaded
+
+
 @activity_bp.route("/notes", methods=["POST"])
 @require_auth
 def create_note():
@@ -1212,7 +1219,8 @@ def create_note():
         payload = {"status": "success", "note": result}
         # Turn a takeaway into its AI recall question immediately so the user sees the value
         # of saving it. Never fail the note save because of this optional step.
-        if _get_review_queue_uc and str(note_type) in ("key_takeaway", "question") and isinstance(result, dict):
+        if _get_review_queue_uc and str(note_type) in ("key_takeaway", "question") and isinstance(result, dict) \
+                and _ai_budget_left(user_id):
             try:
                 item = _get_review_queue_uc.create_item_for_note(user_id, result)
                 if item:
@@ -1586,7 +1594,7 @@ def decide_imports():
             if not isinstance(overrides, dict):
                 raise ValueError("book_overrides must be an object")
             return jsonify(uc.approve(g.user_id, token, data.get("ids"), str(data.get("highlight_as") or "key_takeaway"),
-                                      overrides)), 200
+                                      overrides, generate_questions=_ai_budget_left(g.user_id))), 200
         raise ValueError("action must be approve or reject")
     except ValueError as val_err:
         return jsonify({"error": str(val_err)}), 400
