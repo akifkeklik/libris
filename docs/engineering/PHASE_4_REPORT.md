@@ -53,3 +53,7 @@ contributed after the first chat findable in chat.
 `test_18_push_and_events.sql` also failed once: `now()` is constant inside a transaction, so the
 "newest device" was random. `push_subscribe` now uses `clock_timestamp()` and never drops the device
 just added (200/200 rounds locally).
+
+Scope of the risk: it needs a threaded server (Flask's development server, as in CI). The Docker image
+starts gunicorn with one synchronous worker, which handles one request at a time, so the race could not
+happen there unless the start command is overridden. The fix is still required before adding threads.

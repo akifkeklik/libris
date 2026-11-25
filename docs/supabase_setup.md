@@ -43,7 +43,7 @@ The directory backend/scripts/hardening/ contains additional hardening, reconcil
 
 - Do not execute the entire directory recursively.
 - Read the relevant script, preflight checks and rollback procedure before use.
-- Follow [V1_DEPLOYMENT_EXECUTION_CHECKLIST.md](V1_DEPLOYMENT_EXECUTION_CHECKLIST.md).
+- Follow the [production checklist](engineering/PRODUCTION_READINESS_CHECKLIST.md).
 - Use staging first and confirm the expected Supabase roles and privileges.
 - Do not assume that a successful local CI rehearsal proves the remote production schema is ready.
 

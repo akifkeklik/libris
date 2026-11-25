@@ -29,6 +29,7 @@ Bunlar uygulanana kadar not, tekrar kartı, hatırlatma, içe aktarma ve hesap s
 - [ ] İsteğe bağlı: `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT`
 - [ ] `ALTER ROLE reminder_worker LOGIN PASSWORD …`
 - [ ] "Review Reminders" bir kez `dry_run = true` ile çalıştırıldı
+- [ ] **Saatlik dış zamanlayıcı kuruldu.** GitHub zamanlaması ölçümde 31 saatte 4 kez çalıştı (Faz 3 raporunun sonu)
 
 ## E. Giriş ve hukuk
 - [ ] Google girişi: Supabase sağlayıcısı + `NEXT_PUBLIC_AUTH_GOOGLE_ENABLED`

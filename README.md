@@ -77,7 +77,7 @@ flowchart LR
     WEB -- "server actions · JWT" --> R
     A --> DB[("Supabase<br/>Auth · PostgreSQL · RLS · pgvector")]
     A --> AI["Gemini REST API"]
-    CRON["GitHub Actions<br/>hourly worker"] -- "least-privilege role" --> DB
+    CRON["GitHub Actions<br/>reminder worker"] -- "least-privilege role" --> DB
     CRON --> MAIL["Resend · Web Push"]
 ```
 
@@ -96,7 +96,7 @@ Dependencies point inwards: use cases know ports, never Supabase or Gemini. That
 - **Isolation in the database.** Reader tables use row-level security, checked by SQL tests that act as two different readers. Where a direct `DATABASE_URL` is configured, notes and interactions rely on query filters instead; the [database audit](docs/engineering/RENDER_DATABASE_SECURITY_AUDIT.md) covers that trade-off.
 - **A reminder worker that can do almost nothing.** It gets only the readers due right now (address, count, first question), push devices and a send log; it cannot read notes, cards or the preferences table.
 - **No generic filler cards.** When the AI budget is spent, notes wait for a real question instead of getting a permanent placeholder.
-- **A "flaky" test that was a real bug.** Two simultaneous chats could corrupt a shared data frame and take recommendations down. The [story and the fix](docs/engineering/PHASE_4_REPORT.md).
+- **A "flaky" test that was a real bug.** On a threaded server, two simultaneous chats could corrupt a shared data frame and take recommendations down. The [story and the fix](docs/engineering/PHASE_4_REPORT.md).
 
 ## Quality
 

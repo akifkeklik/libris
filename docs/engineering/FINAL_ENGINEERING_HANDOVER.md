@@ -42,3 +42,16 @@ SQL çalışma testleri `backend/tests/sql/`, CI'da Migration Validation işinde
 - `product_events` için bir gösterge ekranı yok.
 - AI değerlendirmesinde insan onaylı etiket yok.
 - Python 3.15 yükseltmesi: bağımlılıkların hazır paketleri yok, Docker derlemesi düşüyor; paketler destekleyince yeniden denenmeli.
+
+## Kıdemli gözüyle değerlendirme (2026-11-24)
+
+| Alan | Durum |
+|---|---|
+| Güçlü | Katmanlı mimari, RLS + iki okurla SQL testi, geniş test seti, TypeScript'te `any` yok, TODO/FIXME yok, container root olmayan kullanıcıyla çalışıyor |
+| **En önemli darboğaz** | Dockerfile `gunicorn --workers 1` ve thread yok: yavaş bir Gemini isteği (15 sn'ye kadar) o sırada herkesi bekletir. Öneri: yük testiyle `--threads 4`. Katalog yarışı düzeltildi, diğer ortak durumlar ayrıca gözden geçirilmeli |
+| Güvenlik | İçerik güvenlik politikası (CSP) başlığı `next.config.ts` ve `proxy.ts` içinde yok. Model dosyası pickle: yalnızca repodaki dosya yüklenmeli |
+| Bakım | `routes.py` 1.958 ve `ai_rag.py` 1.840 satır, bölünmeli; 917 satır içi stil; 177 genel `except`; 46 karmaşık fonksiyon (ruff C901) |
+| Repo | 11,7 MB `tfidf.pkl` git'te; derlemede üretilebilir. `backend/Procfile` Dockerfile'dan farklı bir modül yolu kullanıyor |
+| Ürün | Yeni özellikler canlıda migration bekliyor; gerçek kullanıcı verisi ve insan onaylı AI etiketi yok |
+
+Ruff'ın 122 "hardcoded SQL" uyarısı tek tek incelenmedi.
