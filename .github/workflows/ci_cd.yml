@@ -130,6 +130,8 @@ jobs:
           psql -v ON_ERROR_STOP=1 -h localhost -U postgres -d postgres -f backend/tests/sql/test_20_learning_settings.sql
           psql -v ON_ERROR_STOP=1 -h localhost -U postgres -d postgres -f backend/scripts/rollbacks/20_learning_settings_rollback.sql
           psql -v ON_ERROR_STOP=1 -h localhost -U postgres -d postgres -f backend/scripts/20_learning_settings.sql
+          echo "Supabase default grants are closed (migration 21)..."
+          psql -v ON_ERROR_STOP=1 -h localhost -U postgres -d postgres -f backend/tests/sql/test_21_revoke_default_privileges.sql
 
       - name: Validate Hardening Scripts (Forward & Rollback)
         env:
