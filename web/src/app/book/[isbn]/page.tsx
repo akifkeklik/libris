@@ -4,6 +4,7 @@ import { BookCoverImage } from '@/components/BookCoverImage';
 import type { Book } from '@/types';
 import { Star, ArrowLeft, Calendar, FileText, Bookmark, Hash, AlertTriangle, RefreshCw, PenTool } from 'lucide-react';
 import Link from 'next/link';
+import type { Metadata } from 'next';
 import BookFeedback from '@/components/BookFeedback';
 import BookNotesWidget from '@/components/BookNotesWidget';
 import { getBookNotes } from '@/app/actions/notes';
@@ -15,6 +16,16 @@ import { resolveLanguage } from '@/lib/preferences';
 import { formatCount, formatRating } from '@/lib/format';
 
 export const dynamic = 'force-dynamic';
+
+export async function generateMetadata({ params }: { params: Promise<{ isbn: string }> }): Promise<Metadata> {
+  try {
+    const book = await ApiService.getBookByIsbn((await params).isbn);
+    if (book) return { title: book.title, description: (book.description || '').slice(0, 160) || undefined };
+  } catch {
+    // The page itself explains the error; the default title is enough here.
+  }
+  return {};
+}
 
 export default async function BookPage({ params }: { params: Promise<{ isbn: string }> }) {
   const cookieStore = await cookies();
@@ -79,7 +90,7 @@ export default async function BookPage({ params }: { params: Promise<{ isbn: str
               className="btn btn-primary"
               style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem' }}
             >
-              <RefreshCw size={16} /> Retry
+              <RefreshCw size={16} /> {t('retry')}
             </Link>
             <Link
               href="/catalog"
@@ -105,7 +116,7 @@ export default async function BookPage({ params }: { params: Promise<{ isbn: str
       <div className="container" style={{ textAlign: 'center', padding: '6rem 2rem' }}>
         <h2 style={{ fontSize: '2rem', marginBottom: '1rem' }}>{t('book_not_found')}</h2>
         <p className="text-muted" style={{ marginBottom: '2rem' }}>
-          We couldn&apos;t find any book with ISBN <code style={{ color: 'var(--primary)' }}>{isbn}</code>.
+          {t('book_not_found_isbn', { isbn })}
         </p>
         <Link href="/catalog" className="btn btn-primary">
           {t('back_to_catalog')}

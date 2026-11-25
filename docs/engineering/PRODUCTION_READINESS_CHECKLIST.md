@@ -16,6 +16,8 @@ Tarih: 2026-11-24. İşaretsiz her satır **yapılmadı veya doğrulanmadı** de
 - [ ] 5. `17_reminders`, 6. `18_push_and_events`
 - [ ] 7. `19_import_queue`, 8. `20_learning_settings`
 
+**Kolay yol:** 3–8. adımlar tek dosyada: `backend/scripts/ops/production_rollout.sql`. SQL Editor'a yapıştırıp çalıştırın; `ROLLOUT OK` yazmalı, hata olursa hiçbir şey kaydedilmez.
+
 Bunlar uygulanana kadar not, tekrar kartı, hatırlatma, içe aktarma ve hesap silme canlıda çalışmaz ya da "şu anda kullanılamıyor" der.
 
 ## C. Render

@@ -87,7 +87,7 @@ export function Navbar() {
               <Brain size={18} aria-hidden="true" />
               <span className="nav-link-text">{t('nav_review')}</span>
             </Link>
-            <Link href="/favorites" id="nav-library-link" className={`nav-link ${isActive("/favorites") ? "active" : ""}`}>
+            <Link href="/favorites" prefetch={user ? undefined : false} id="nav-library-link" className={`nav-link ${isActive("/favorites") ? "active" : ""}`}>
               <Bookmark size={18} aria-hidden="true" />
               <span className="nav-link-text">{t('nav_my_library')}</span>
             </Link>

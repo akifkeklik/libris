@@ -28,6 +28,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     let mounted = true;
+    let lastUserId: string | null | undefined;
 
     async function getInitialSession() {
       try {
@@ -46,10 +47,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     getInitialSession();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (_event, newSession) => {
+      (event, newSession) => {
         setSession(newSession);
         setUser(newSession?.user ?? null);
-        router.refresh();
+        // Re-render server components only when the reader changed. The server already rendered
+        // with the current cookies, so INITIAL_SESSION, token refreshes and the SIGNED_IN repeated
+        // on tab focus need nothing. Refreshing on them doubled every page load, and on a 404 page
+        // (where Next turns a refresh into a full reload) it reloaded forever.
+        const id = newSession?.user?.id ?? null;
+        const changed = lastUserId !== undefined && id !== lastUserId;
+        if (event === 'INITIAL_SESSION' || lastUserId === undefined) lastUserId = id;
+        if (changed || event === 'USER_UPDATED') {
+          lastUserId = id;
+          router.refresh();
+        }
       }
     );
 
