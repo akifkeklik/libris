@@ -6,12 +6,14 @@ including the core engine, diversity, and explanation components. It is
 designed to be a self-contained, robust recommendation system.
 """
 
+import functools
 import logging
 import math
 import os
 import pickle
 import re
 import sys
+import threading
 from dataclasses import asdict, dataclass, fields
 from typing import Any, Dict, Iterable, List, Optional, Set
 
@@ -281,6 +283,19 @@ class RecommenderEngine:
         return indices[0] if indices else None
 
 
+# Catalog rows and TF-IDF rows are read together and must match. add_book replaces both, so a request
+# in another thread must not see one new and one old. Module level: instances are pickled, locks are not.
+_CATALOG_LOCK = threading.RLock()
+
+
+def _with_catalog_lock(method):
+    @functools.wraps(method)
+    def locked(*args, **kwargs):
+        with _CATALOG_LOCK:
+            return method(*args, **kwargs)
+    return locked
+
+
 # ── Orchestrator Class ────────────────────────────────────────────────────────
 class BookRecommender:
     """
@@ -405,6 +420,7 @@ class BookRecommender:
         logger.info(f"Model {self.config.model_version} loaded from {path}.")
         return True
 
+    @_with_catalog_lock
     def recommend(
         self,
         seed_titles: Optional[List[str] | str] = None,
@@ -1029,6 +1045,7 @@ class BookRecommender:
 
     LEXICAL_SEARCH_MAX_LIMIT = 50
 
+    @_with_catalog_lock
     def lexical_search(
         self, query: str, limit: int = 10, exclude: Optional[List[str]] = None
     ) -> List[Dict[str, Any]]:
@@ -1361,6 +1378,7 @@ class BookRecommender:
             ]
         return same_title.iloc[0].to_dict() if not same_title.empty else None
 
+    @_with_catalog_lock
     def add_book(self, book: Dict[str, Any]) -> Dict[str, Any]:
         """
         Appends a contributed book to the in-memory catalog so it can be browsed and searched
