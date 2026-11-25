@@ -292,7 +292,7 @@ class ImportUseCase:
         return self._repo.set_status(user_id, token, _clean_ids(ids), "rejected")
 
     def approve(self, user_id: str, token: str, ids: List[str], highlight_as: str = "key_takeaway",
-                book_overrides: Optional[Dict[str, str]] = None) -> Dict[str, Any]:
+                book_overrides: Optional[Dict[str, str]] = None, generate_questions: bool = True) -> Dict[str, Any]:
         if highlight_as not in ("key_takeaway", "personal_note"):
             raise ValueError("highlight_as must be key_takeaway or personal_note")
         overrides = {str(k): str(v).strip()[:64] for k, v in (book_overrides or {}).items() if str(v).strip()}
@@ -325,7 +325,10 @@ class ImportUseCase:
             self._repo.mark_approved(user_id, token, item_id, note_id, book_id)
         questions, deferred = 0, 0
         if self._review_queue and notes:
-            created, deferred = self._review_queue.create_items_for_notes(user_id, notes)
+            if generate_questions:
+                created, deferred = self._review_queue.create_items_for_notes(user_id, notes)
+            else:
+                created, deferred = [], sum(1 for n in notes if n.get("note_type") == "key_takeaway")
             questions = len(created)
         return {"approved": len(approved), "needs_book": needs_book, "failed": failed,
                 "questions_created": questions, "questions_deferred": deferred}

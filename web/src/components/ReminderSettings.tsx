@@ -13,6 +13,9 @@ import {
 import { pushSupport, subscribeToPush, unsubscribeFromPush, type PushSupport } from '@/lib/push';
 import type { TranslationKey } from '@/lib/i18n';
 
+/** Hidden until delivery (Resend, scheduler) is set up: a form that saves but never sends misleads. */
+const REMINDERS_ENABLED = process.env.NEXT_PUBLIC_REMINDERS_ENABLED === 'true';
+
 const WEEKDAYS: TranslationKey[] = ['day_sun', 'day_mon', 'day_tue', 'day_wed', 'day_thu', 'day_fri', 'day_sat'];
 
 let zoneCache: string[] | null = null;
@@ -42,6 +45,10 @@ function browserTimeZone(): string {
  * address of the signed-in account.
  */
 export function ReminderSettings() {
+  return REMINDERS_ENABLED ? <ReminderForm /> : null;
+}
+
+function ReminderForm() {
   const { t, preferences } = usePreferences();
   const [channel, setChannel] = useState<'email' | 'push' | 'off'>('email');
   const [savedChannel, setSavedChannel] = useState<'email' | 'push' | 'off' | null>(null);
