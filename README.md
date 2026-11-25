@@ -127,7 +127,16 @@ On Windows, `scripts/launch_dev.ps1` starts both.
 
 `main` deploys to Vercel (web) and Render (API). The API runs on a free tier that sleeps when idle, so the first visit after a quiet spell can take up to a minute.
 
-Features that need newer database migrations (`16` to `21`) or extra keys, such as reminders, imports and account deletion, are complete and tested in code; they become active in an environment once the [production checklist](docs/engineering/PRODUCTION_READINESS_CHECKLIST.md) is done there.
+What is built and what is live are kept apart (checked 2026-11-26):
+
+| State | Features |
+|---|---|
+| **Live, checked** | Catalog, search, book pages, Ask AI answers from Gemini, six languages, PWA install files; saving a note (confirmed by the owner) |
+| **Live, tested only outside production** | Review cards, imports, card editing, Anki and data export, account deletion. Their tables are in production |
+| **Built, switched off** | Reminders (hidden until e-mail and scheduler are set up), FSRS (`FSRS_ENABLED`), Google sign-in (`NEXT_PUBLIC_AUTH_GOOGLE_ENABLED`) |
+| **Not done** | Tests on real phones, legal review |
+
+Remaining steps: [production checklist](docs/engineering/PRODUCTION_READINESS_CHECKLIST.md).
 
 Ordered migrations live in `backend/scripts/` (`00` to `21`) and are applied deliberately, never automatically. Migration 14 drops retired tables, so back up first and read [docs/supabase_setup.md](docs/supabase_setup.md).
 
