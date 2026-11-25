@@ -52,3 +52,11 @@ PR for the code. Database: the rollback scripts above (push readers are moved ba
 - `product_events` has no dashboard yet; query it in the SQL editor (`select event, count(*) … group by 1`).
 - Quiet hours inside a day are not supported (one send time per day by design).
 - GitHub scheduled workflows can start a few minutes late; reminders are "around" the chosen time.
+
+## Finding after release: GitHub does not run the schedule hourly
+
+Measured 2026-11-24 to 25: four scheduled runs (05:57, 17:33, 02:20, 12:42 UTC) instead of about 31,
+9 to 12 hours apart. "A few minutes late" above was wrong. A 09:00 reminder could arrive in the evening,
+and one set late in the day can miss its date. Do not enable reminders for readers until an external
+scheduler (Supabase `pg_cron` + `pg_net`, or a free cron service calling `workflow_dispatch`) runs it hourly.
+The send log keeps extra runs safe. `workflow_dispatch` defaults to a dry run, so pass `dry_run=false`.

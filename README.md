@@ -77,7 +77,7 @@ flowchart LR
     WEB -- "server actions · JWT" --> R
     A --> DB[("Supabase<br/>Auth · PostgreSQL · RLS · pgvector")]
     A --> AI["Gemini REST API"]
-    CRON["GitHub Actions<br/>hourly worker"] -- "least-privilege role" --> DB
+    CRON["GitHub Actions<br/>reminder worker"] -- "least-privilege role" --> DB
     CRON --> MAIL["Resend · Web Push"]
 ```
 
