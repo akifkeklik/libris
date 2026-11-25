@@ -7,6 +7,7 @@ enforcing Model A canonical contracts, constraints, and RLS contexts.
 import datetime
 import logging
 import os
+import threading
 from contextlib import contextmanager
 from typing import Any, Dict, List, Optional
 
@@ -74,6 +75,27 @@ def _transaction(conn, explicit: bool = False):
             conn.commit()
 
 
+# One connection per thread and URI. psycopg2 lets threads share a connection, but then they also
+# share its transaction: one request's BEGIN / SET LOCAL / ROLLBACK would apply to another's work.
+_thread_connections = threading.local()
+
+
+def _connection_for(adapter) -> Any:
+    """The adapter's injected connection, or this thread's own connection to its URI."""
+    if adapter._conn is not None and not adapter._conn.closed:
+        return adapter._conn
+    uri = adapter._db_uri
+    if not uri:
+        raise RuntimeError("No active database connection or URI provided")
+    pool = _thread_connections.__dict__.setdefault("by_uri", {})
+    conn = pool.get(uri)
+    if conn is None or conn.closed:
+        conn = psycopg2.connect(uri)
+        conn.autocommit = True
+        pool[uri] = conn
+    return conn
+
+
 class PostgresInteractionRepository:
     """
     Direct PostgreSQL implementation of UserInteractionRepository.
@@ -89,13 +111,7 @@ class PostgresInteractionRepository:
             self._conn = db_uri_or_conn
 
     def _get_connection(self):
-        if self._conn and not self._conn.closed:
-            return self._conn
-        if self._db_uri:
-            self._conn = psycopg2.connect(self._db_uri)
-            self._conn.autocommit = True
-            return self._conn
-        raise RuntimeError("No active database connection or URI provided")
+        return _connection_for(self)
 
     def get_user_interactions(self, user_id: str) -> List[Dict[str, Any]]:
         conn = self._get_connection()
@@ -376,13 +392,7 @@ class PostgresBookDataPort:
             self._conn = db_uri_or_conn
 
     def _get_connection(self):
-        if self._conn and not self._conn.closed:
-            return self._conn
-        if self._db_uri:
-            self._conn = psycopg2.connect(self._db_uri)
-            self._conn.autocommit = True
-            return self._conn
-        raise RuntimeError("No active database connection or URI provided")
+        return _connection_for(self)
 
     def get_books_by_isbns(self, isbns: List[str]) -> List[Dict[str, Any]]:
         if not isbns:
@@ -566,28 +576,33 @@ class PostgresNoteRepository:
             self._conn = db_uri_or_conn
 
     def _get_connection(self):
-        if self._conn and not self._conn.closed:
-            return self._conn
-        if self._db_uri:
-            self._conn = psycopg2.connect(self._db_uri)
-            self._conn.autocommit = True
-            return self._conn
-        raise RuntimeError("No active database connection or URI provided")
+        return _connection_for(self)
 
     def create_note(
-        self, user_id: str, book_id: str, note_type: str, content: str
+        self, user_id: str, book_id: str, note_type: str, content: str, client_id: Optional[str] = None
     ) -> Dict[str, Any]:
         conn = self._get_connection()
         with _transaction(conn), conn.cursor(cursor_factory=RealDictCursor) as cur:
+            # client_id (migration 10) makes a retried save or a repeated import return the same note.
             cur.execute(
                 """
-                INSERT INTO public.user_notes (user_id, book_id, note_type, content)
-                VALUES (%s, %s, %s, %s)
+                INSERT INTO public.user_notes (user_id, book_id, note_type, content, client_id)
+                VALUES (%s, %s, %s, %s, %s)
+                ON CONFLICT (user_id, client_id) WHERE client_id IS NOT NULL DO NOTHING
                 RETURNING id, user_id, book_id, note_type, content, created_at, updated_at;
                 """,
-                (user_id, book_id, note_type, content),
+                (user_id, book_id, note_type, content, client_id),
             )
             row = cur.fetchone()
+            if row is None:
+                cur.execute(
+                    """
+                    SELECT id, user_id, book_id, note_type, content, created_at, updated_at
+                    FROM public.user_notes WHERE user_id = %s AND client_id = %s;
+                    """,
+                    (user_id, client_id),
+                )
+                row = cur.fetchone()
             res = dict(row)
             for k in ("created_at", "updated_at"):
                 if isinstance(res.get(k), (datetime.date, datetime.datetime)):

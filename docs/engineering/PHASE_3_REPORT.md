@@ -60,3 +60,7 @@ Measured 2026-11-24 to 25: four scheduled runs (05:57, 17:33, 02:20, 12:42 UTC) 
 and one set late in the day can miss its date. Do not enable reminders for readers until an external
 scheduler (Supabase `pg_cron` + `pg_net`, or a free cron service calling `workflow_dispatch`) runs it hourly.
 The send log keeps extra runs safe. `workflow_dispatch` defaults to a dry run, so pass `dry_run=false`.
+
+The scheduler for that is `backend/scripts/ops/reminder_scheduler.sql` (Supabase `pg_cron` + `pg_net`,
+token in Vault, calls the workflow hourly). Not run anywhere yet: it needs the owner's GitHub token, and
+migration 17. `pg_cron` and `pg_net` are available, not installed, in production (checked 2026-11-25).

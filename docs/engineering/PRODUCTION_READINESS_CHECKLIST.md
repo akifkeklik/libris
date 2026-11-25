@@ -9,7 +9,7 @@ Tarih: 2026-11-24. İşaretsiz her satır **yapılmadı veya doğrulanmadı** de
 - [x] Hata takibi (Sentry) kodda; DSN verilince çalışır, kullanıcı metni temizlenir
 
 ## B. Veritabanı (sırayla; önce yedek alın)
-- [ ] 1. `hardening/01c_DRAFT_catalog_write_lockdown.sql` → ardından `verify_01c` 0 FAIL. **En acil:** 22 Kasım'da kitap tablosuna girişsiz yazılabiliyordu
+- [x] 1. `hardening/01c_DRAFT_catalog_write_lockdown.sql` — **2026-11-25'te sahibinin onayıyla uygulandı** ve doğrulandı (anonim yazma 42501 ile reddediliyor, 6.446 kitap aynı). Geri alma betiği hazır
 - [ ] 2. `hardening/04_DRAFT_harden_vector_rpcs.sql` (runbook Adım 4; `04_phase3_hybrid.sql` **değil**)
 - [ ] 3. `09`, `10`, `13`
 - [ ] 4. `16_account_deletion`
@@ -29,7 +29,7 @@ Bunlar uygulanana kadar not, tekrar kartı, hatırlatma, içe aktarma ve hesap s
 - [ ] İsteğe bağlı: `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT`
 - [ ] `ALTER ROLE reminder_worker LOGIN PASSWORD …`
 - [ ] "Review Reminders" bir kez `dry_run = true` ile çalıştırıldı
-- [ ] **Saatlik dış zamanlayıcı kuruldu.** GitHub zamanlaması ölçümde 31 saatte 4 kez çalıştı (Faz 3 raporunun sonu)
+- [ ] **Saatlik dış zamanlayıcı kuruldu.** GitHub zamanlaması ölçümde 31 saatte 4 kez çalıştı → `backend/scripts/ops/reminder_scheduler.sql`
 
 ## E. Giriş ve hukuk
 - [ ] Google girişi: Supabase sağlayıcısı + `NEXT_PUBLIC_AUTH_GOOGLE_ENABLED`

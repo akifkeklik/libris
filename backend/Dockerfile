@@ -49,4 +49,4 @@ HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
   CMD python -c "import urllib.request, sys; sys.exit(0 if urllib.request.urlopen('http://localhost:5000/api/health', timeout=3).getcode() == 200 else 1)"
 
 # High-performance server: Gunicorn with 1 worker to fit in Free Tier RAM (512MB)
-CMD sh -c "gunicorn --bind 0.0.0.0:${PORT:-5000} --workers 1 --preload --timeout 120 backend.app:app"
+CMD sh -c "gunicorn --bind 0.0.0.0:${PORT:-5000} --workers 1 --worker-class gthread --threads ${WEB_THREADS:-4} --preload --timeout 120 backend.app:app"
