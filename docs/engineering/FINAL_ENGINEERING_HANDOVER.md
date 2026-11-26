@@ -49,9 +49,15 @@ SQL çalışma testleri `backend/tests/sql/`, CI'da Migration Validation işinde
 |---|---|
 | Güçlü | Katmanlı mimari, RLS + iki okurla SQL testi, geniş test seti, TypeScript'te `any` yok, TODO/FIXME yok, container root olmayan kullanıcıyla çalışıyor |
 | Sunucu darboğazı | Çözüldü: gunicorn `gthread`, 4 thread (`WEB_THREADS`). Postgres bağlantısı thread başına, katalog değişiklikleri kilitli. Render'da başlatma komutu Dockerfile'ı eziyorsa orada da değiştirilmeli |
-| Güvenlik | İçerik güvenlik politikası (CSP) başlığı `next.config.ts` ve `proxy.ts` içinde yok. Model dosyası pickle: yalnızca repodaki dosya yüklenmeli |
-| Bakım | `routes.py` 1.958 ve `ai_rag.py` 1.840 satır, bölünmeli; 917 satır içi stil; 177 genel `except`; 46 karmaşık fonksiyon (ruff C901) |
+| Güvenlik | CSP **rapor modunda** (2026-11-26): giriş yapılmış 9 ekran × 2 boyutta ihlal 0 (archive.org kapakları eklendi). Birkaç gün canlıda ihlal görünmezse `next.config.ts`'te anahtar adı `Content-Security-Policy` yapılmalı. Model dosyası pickle: yalnızca repodaki dosya yüklenmeli |
+| Bakım | Okur araçları `routes.py`'den `reader_tools.py`'ye taşındı (1.968 → 1.711 satır; 61 ucun URL haritası birebir aynı). `ai_rag.py` (1.850) hâlâ büyük; ayrı, davranış testli bir PR ister. 917 satır içi stil; 177 genel `except` |
 | Repo | 11,7 MB `tfidf.pkl` git'te; derlemede üretilebilir. `backend/Procfile` Dockerfile'dan farklı bir modül yolu kullanıyor |
 | Ürün | Yeni özellikler canlıda migration bekliyor; gerçek kullanıcı verisi ve insan onaylı AI etiketi yok |
 
 Ruff'ın 122 "hardcoded SQL" uyarısı tek tek incelenmedi.
+
+## 2026-11-26 ölçümleri
+
+- **AI süresi (backend içinde, gerçek Gemini, 3 soru):** toplam 2,3–4,2 sn. Vektör araması 1,0–1,6 sn, Gemini 0,8–1,4 sn, soru vektörü 0,4–1,2 sn. Kullanıcının gördüğü 6–10 sn'nin kalanı Render ücretsiz katmanı ve ağ. Önce Render'da aynı ölçüm, sonra `hardening/04` (vektör RPC) değerlendirilmeli.
+- **Goodreads puanı:** veri modelinde kitap başına tek durum var (raf veya beğeni), puan alanı yok. Puanı uygulamak yeni bir sütun ve kütüphane arayüzü ister; ekran metni artık puan vaat etmiyor.
+- **Erişilebilirlik (giriş yapılmış ekranlar):** cevap butonları ve açılır menüde 3 kontrast hatası bulundu, düzeltildi; tekrar taramada 0.

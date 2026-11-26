@@ -288,7 +288,9 @@ class GetReviewQueueUseCase:
         concept: Optional[str] = None,
         limit: int = 20,
         as_of: Optional[datetime.datetime] = None,
+        allow_llm: bool = True,
     ) -> List[Dict[str, Any]]:
+        """allow_llm=False: notes still become cards later; this request makes no model call."""
         if not user_id or not user_id.strip():
             raise ValueError("user_id is required")
 
@@ -321,7 +323,7 @@ class GetReviewQueueUseCase:
                 existing_source_ids = {
                     i.get("source_id") for i in list(items) + list(all_items) if i.get("source_id")
                 }
-                llm_budget = [MAX_RECALL_QUESTIONS_PER_REQUEST]
+                llm_budget = [MAX_RECALL_QUESTIONS_PER_REQUEST if allow_llm else 0]
                 for note in user_notes:
                     note_id = str(note.get("id", ""))
                     if not note_id or note_id in existing_source_ids:
