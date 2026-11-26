@@ -1,5 +1,25 @@
 import type { NextConfig } from "next";
 
+/** Where the site may load from. Next inlines small scripts and styles, hence 'unsafe-inline'. */
+export function contentSecurityPolicy(): string {
+  const supabase = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://*.supabase.co';
+  const dev = process.env.NODE_ENV !== 'production';
+  return [
+    "default-src 'self'",
+    `script-src 'self' 'unsafe-inline'${dev ? " 'unsafe-eval'" : ''}`,
+    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+    "font-src 'self' data: https://fonts.gstatic.com",
+    "img-src 'self' data: blob: https://books.google.com http://books.google.com https://covers.openlibrary.org https://*.archive.org http://*.archive.org https://images.unsplash.com",
+    `connect-src 'self' ${supabase} ${supabase.replace(/^https/, 'wss')} https://*.ingest.sentry.io https://*.ingest.de.sentry.io`,
+    "worker-src 'self'",
+    "manifest-src 'self'",
+    "object-src 'none'",
+    "base-uri 'self'",
+    "form-action 'self'",
+    "frame-ancestors 'none'",
+  ].join('; ');
+}
+
 const nextConfig: NextConfig = {
   // The dev-only route indicator overlaps the phone tab bar.
   devIndicators: false,
@@ -30,6 +50,9 @@ const nextConfig: NextConfig = {
           { key: 'X-Content-Type-Options', value: 'nosniff' },
           { key: 'X-Frame-Options', value: 'DENY' },
           { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
+          { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=(), payment=()' },
+          // Report-only until it has run in production without violations; then rename the key.
+          { key: 'Content-Security-Policy-Report-Only', value: contentSecurityPolicy() },
         ],
       },
       // 2. Public Taxonomy: bounded TTL with stale-while-revalidate for CDN

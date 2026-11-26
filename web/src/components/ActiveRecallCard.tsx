@@ -191,7 +191,7 @@ export function ActiveRecallCard({
       {revealed && !lastFeedback && (
         <div className="mt-4 pt-4 border-t border-[var(--border)] space-y-4 animate-in fade-in duration-200">
           <div>
-            <h5 className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 mb-1 uppercase tracking-wider flex items-center gap-1.5">
+            <h5 className="text-xs font-semibold text-emerald-700 dark:text-emerald-400 mb-1 uppercase tracking-wider flex items-center gap-1.5">
               <CheckCircle2 className="w-3.5 h-3.5" />
               {t('question_answer_label')}
             </h5>
@@ -218,7 +218,7 @@ export function ActiveRecallCard({
               type="button"
               disabled={submitting}
               onClick={() => handleSubmit('remembered')}
-              className="w-full sm:flex-1 py-3 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-bold flex items-center justify-center gap-2 transition-colors disabled:opacity-50"
+              className="w-full sm:flex-1 py-3 px-4 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white text-sm font-bold flex items-center justify-center gap-2 transition-colors disabled:opacity-50"
             >
               {submitting ? (
                 <Loader2 className="w-4 h-4 animate-spin" />
@@ -232,7 +232,7 @@ export function ActiveRecallCard({
               type="button"
               disabled={submitting}
               onClick={() => handleSubmit('struggled')}
-              className="w-full sm:flex-1 py-3 px-4 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-sm font-bold flex items-center justify-center gap-2 transition-colors disabled:opacity-50"
+              className="w-full sm:flex-1 py-3 px-4 rounded-xl bg-amber-700 hover:bg-amber-800 text-white text-sm font-bold flex items-center justify-center gap-2 transition-colors disabled:opacity-50"
             >
               {submitting ? (
                 <Loader2 className="w-4 h-4 animate-spin" />
